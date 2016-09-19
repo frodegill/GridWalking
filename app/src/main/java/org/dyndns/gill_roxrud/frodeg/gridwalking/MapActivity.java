@@ -26,8 +26,6 @@ public class MapActivity extends Activity {
     private TilesOverlay tilesOverlay;
     private MapTileProviderBasic mapProvider;
 
-    private boolean useDataConnection = true;
-
     private View tempPopupMenuParentView = null;
 
 
@@ -61,92 +59,6 @@ public class MapActivity extends Activity {
         this.mapView.getController().setZoom(15);
     }
 
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v,
-                                    ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.fragment_map, menu);
-    }
 
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.offline:
-                useDataConnection = !useDataConnection;
-                item.setChecked(!useDataConnection);
-                if (this.mapView != null) {
-                    this.mapView.setUseDataConnection(useDataConnection);
-                }
-                return true;
-            default:
-                return super.onContextItemSelected(item);
-        }
-    }
-
-    public void toggleUseDataConnection() {
-        useDataConnection = !useDataConnection;
-        //item.setChecked(!useDataConnection);
-        if (this.mapView != null) {
-            this.mapView.setUseDataConnection(useDataConnection);
-        }
-    }
-
-    public void onLongPress()
-    {
-        if (false) {
-            PopupMenu popup = new PopupMenu(this.getBaseContext(), mapView);
-            MenuInflater inflater = popup.getMenuInflater();
-            inflater.inflate(R.menu.fragment_map, popup.getMenu());
-            popup.show();
-        } else {
-            showContextMenu(new GeoPoint(59.675330, 10.663672));
-        }
-    }
-
-    protected boolean showContextMenu(final GeoPoint geoPosition) {
-        MenuInflater inflater = getMenuInflater();
-        if (tempPopupMenuParentView != null) {
-            mapView.removeView(tempPopupMenuParentView);
-            tempPopupMenuParentView = null;
-        }
-
-        createTempPopupParentMenuView(geoPosition);
-        PopupMenu menu = new PopupMenu(this, tempPopupMenuParentView);
-
-        inflater.inflate(R.menu.fragment_map, menu.getMenu());
-
-        menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (tempPopupMenuParentView != null) {
-                    mapView.removeView(tempPopupMenuParentView);
-                    tempPopupMenuParentView = null;
-                }
-
-                switch (item.getItemId()) {
-                    case R.id.offline:
-                        toggleUseDataConnection();
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        });
-        menu.show();
-        return true;
-    }
-
-    // inspired by org.osmdroid.bonuspack.overlays.InfoWindow
-    private View createTempPopupParentMenuView(final GeoPoint position) {
-        if (tempPopupMenuParentView != null) {
-            mapView.removeView(tempPopupMenuParentView);
-        }
-        tempPopupMenuParentView = new View(this);
-        MapView.LayoutParams lp = new MapView.LayoutParams(1, 1, position, MapView.LayoutParams.CENTER, 0, 0);
-        tempPopupMenuParentView.setVisibility(View.VISIBLE);
-        mapView.addView(tempPopupMenuParentView, lp);
-        return tempPopupMenuParentView;
-    }
 }
 */

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.PopupMenu;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
 
@@ -29,6 +31,7 @@ public class MapFragment extends Fragment {
 
     private SharedPreferences preferences;
     private MapView mapView;
+    private View tempPopupMenuParentView = null;
 
 
     public static MapFragment newInstance() {
@@ -68,7 +71,7 @@ public class MapFragment extends Fragment {
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(false);
 
-        mapView.getOverlays().add(new GridOverlay(context));
+        mapView.getOverlays().add(new GridOverlay(context, this));
         mapView.getOverlays().add(new BonusOverlay(context));
 
         mapView.getController().setZoom(preferences.getInt(PREFS_ZOOM_LEVEL, 8));
@@ -135,6 +138,63 @@ public class MapFragment extends Fragment {
         }
         if (this.mapView != null) {
             this.mapView.setUseDataConnection(useDataConnection);
+        }
+    }
+
+    protected boolean showContextMenu(final GeoPoint geoPosition) {
+        MenuInflater inflater = getActivity().getMenuInflater();
+        if (tempPopupMenuParentView != null) {
+            mapView.removeView(tempPopupMenuParentView);
+            tempPopupMenuParentView = null;
+        }
+
+        createTempPopupParentMenuView(geoPosition);
+        PopupMenu menu = new PopupMenu(getActivity(), tempPopupMenuParentView);
+
+        inflater.inflate(R.menu.activity_map, menu.getMenu());
+
+        menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (tempPopupMenuParentView != null) {
+                    mapView.removeView(tempPopupMenuParentView);
+                    tempPopupMenuParentView = null;
+                }
+
+                switch (item.getItemId()) {
+                    case R.id.offline:
+                        toggleUseDataConnection();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        });
+        menu.show();
+        return true;
+    }
+
+    // inspired by org.osmdroid.bonuspack.overlays.InfoWindow
+    private View createTempPopupParentMenuView(final GeoPoint position) {
+        if (tempPopupMenuParentView != null) {
+            mapView.removeView(tempPopupMenuParentView);
+        }
+        tempPopupMenuParentView = new View(getActivity());
+        MapView.LayoutParams lp = new MapView.LayoutParams(1, 1, position, MapView.LayoutParams.CENTER, 0, 0);
+        tempPopupMenuParentView.setVisibility(View.VISIBLE);
+        mapView.addView(tempPopupMenuParentView, lp);
+        return tempPopupMenuParentView;
+    }
+
+    public void onLongPress()
+    {
+        if (false) {
+            PopupMenu popup = new PopupMenu(getActivity(), mapView);
+            MenuInflater inflater = popup.getMenuInflater();
+            inflater.inflate(R.menu.activity_map, popup.getMenu());
+            popup.show();
+        } else {
+            showContextMenu(new GeoPoint(59.675330, 10.663672));
         }
     }
 }
