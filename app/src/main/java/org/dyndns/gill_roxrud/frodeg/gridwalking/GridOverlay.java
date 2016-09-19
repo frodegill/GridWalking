@@ -18,11 +18,8 @@ import org.osmdroid.views.overlay.Overlay;
 
 public class GridOverlay extends Overlay {
 
-    private MapActivity mapActivity;
-
-    public GridOverlay(Context ctx, MapActivity activity) {
+    public GridOverlay(Context ctx) {
         super(ctx);
-        this.mapActivity = activity;
     }
 
     @Override
@@ -77,7 +74,7 @@ public class GridOverlay extends Overlay {
     @Override
     public boolean onLongPress(final MotionEvent e, final MapView mapView)
     {
-        mapActivity.onLongPress();
+//        mapActivity.onLongPress();
         return true;
     }
 

@@ -15,8 +15,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MapActivity"
-            android:label="OSMapView">
+            android:name=".MapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

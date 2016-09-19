@@ -1,25 +1,25 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
-import org.osmdroid.api.IGeoPoint;
-import org.osmdroid.tileprovider.MapTileProviderBasic;
-import org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.TilesOverlay;
-
-import android.app.Activity;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.widget.PopupMenu;
-import android.view.ContextMenu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.RelativeLayout;
-import android.widget.RelativeLayout.LayoutParams;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
 
 
+public class MapActivity extends AppCompatActivity {
+    private static final String MAP_FRAGMENT_TAG = "org.dyndns.gill_roxrud.frodeg.gridwalking.MAP_FRAGMENT_TAG";
+
+    @Override
+    public void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        this.setContentView(R.layout.activity_map);
+        FragmentManager fm = this.getSupportFragmentManager();
+        if (fm.findFragmentByTag(MAP_FRAGMENT_TAG) == null) {
+            MapFragment mapFragment = MapFragment.newInstance();
+            fm.beginTransaction().add(R.id.map_container, mapFragment, MAP_FRAGMENT_TAG).commit();
+        }
+    }
+}
+/*
 public class MapActivity extends Activity {
 
     private MapView mapView;
@@ -66,7 +66,7 @@ public class MapActivity extends Activity {
                                     ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.activity_map, menu);
+        inflater.inflate(R.menu.fragment_map, menu);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class MapActivity extends Activity {
         if (false) {
             PopupMenu popup = new PopupMenu(this.getBaseContext(), mapView);
             MenuInflater inflater = popup.getMenuInflater();
-            inflater.inflate(R.menu.activity_map, popup.getMenu());
+            inflater.inflate(R.menu.fragment_map, popup.getMenu());
             popup.show();
         } else {
             showContextMenu(new GeoPoint(59.675330, 10.663672));
@@ -114,7 +114,7 @@ public class MapActivity extends Activity {
         createTempPopupParentMenuView(geoPosition);
         PopupMenu menu = new PopupMenu(this, tempPopupMenuParentView);
 
-        inflater.inflate(R.menu.activity_map, menu.getMenu());
+        inflater.inflate(R.menu.fragment_map, menu.getMenu());
 
         menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
@@ -149,3 +149,4 @@ public class MapActivity extends Activity {
         return tempPopupMenuParentView;
     }
 }
+*/
