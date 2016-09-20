@@ -4,6 +4,7 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.*;
+import android.graphics.Rect;
 import android.support.v7.widget.PopupMenu;
 import android.view.MenuInflater;
 import android.view.MotionEvent;
@@ -51,26 +52,25 @@ public class GridOverlay extends Overlay {
         int bottomGrid = Grid.ToVerticalGridBounded(sw.getLatitude()) & mask;
         int rightGrid = Grid.ToHorizontalGrid(ne.getLongitude()) & mask;
 
-        android.graphics.Point point = new android.graphics.Point();
-
         Paint gridColour = Grid.gridColours[gridLevel];
 
-        android.graphics.Point upperLeftPixel = GridToPixel(leftGrid, topGrid, projection, point);
-        android.graphics.Point lowerRightPixel = GridToPixel(rightGrid, bottomGrid, projection, point);
+        android.graphics.Point upperLeftPixel = GridToPixel(leftGrid, topGrid, projection, new android.graphics.Point());
+        android.graphics.Point lowerRightPixel = GridToPixel(rightGrid, bottomGrid, projection, new android.graphics.Point());
 
         int x, y;
-        for (y=bottomGrid; y<=topGrid; y+=stepping) {
+        android.graphics.Point point = new android.graphics.Point();
+        for (y=bottomGrid; y<=(topGrid+stepping); y+=stepping) {
             point = GridToPixel(leftGrid, y, projection, point);
-            canvas.drawLine(upperLeftPixel.x, point.y, lowerRightPixel.x, point.y, gridColour);
+            canvas.drawRect(new Rect(upperLeftPixel.x, point.y-2, lowerRightPixel.x, point.y+2), gridColour);
         }
-        for (x=leftGrid; x<=rightGrid; x+=stepping) {
+        for (x=leftGrid; x<=(rightGrid+stepping); x+=stepping) {
             point = GridToPixel(x, topGrid, projection, point);
-            canvas.drawLine(point.x, upperLeftPixel.y, point.x, lowerRightPixel.y, gridColour);
+            canvas.drawRect(new Rect(point.x-2, upperLeftPixel.y, point.x+2, lowerRightPixel.y), gridColour);
         }
     }
 
     private android.graphics.Point GridToPixel(int x, int y, Projection projection, android.graphics.Point reusePoint) {
-        GeoPoint geoPoint = new GeoPoint(Bonus.FromVerticalBonusGrid(y), Bonus.FromHorizontalBonusGrid(x));
+        GeoPoint geoPoint = new GeoPoint(Grid.FromVerticalGrid(y), Grid.FromHorizontalGrid(x));
         reusePoint = projection.toProjectedPixels(geoPoint, reusePoint);
         return projection.toPixelsFromProjected(reusePoint, reusePoint);
     }

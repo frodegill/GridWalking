@@ -184,28 +184,22 @@ public class Grid {
     static int ToVerticalGridBounded(final double y_pos) {
         if (Grid.GRID_MAX_SOUTH>y_pos) {
             return ToVerticalGridBounded(Grid.GRID_MAX_SOUTH);
-        } else if (Grid.GRID_MAX_NORTH<=y_pos) {
+        } else if (Grid.GRID_MAX_NORTH<y_pos) {
             return ToVerticalGridBounded(Grid.GRID_MAX_NORTH);
         }
 
         int value = new Double(VER_GRID_COUNT * ((y_pos-GRID_MAX_SOUTH)/(VER_GRID_DEGREES))).intValue();
-        if (VER_GRID_COUNT==value)
+        if (VER_GRID_COUNT<=value)
             value = VER_GRID_COUNT-1;
 
         return value;
     }
 
-    private double FromHorizontalGrid(final int x_grid) throws InvalidPositionException {
-        if (HOR_GRID_COUNT<=x_grid)
-            throw new InvalidPositionException();
-
+    static double FromHorizontalGrid(final int x_grid) {
         return WEST + ((double)x_grid/(double)HOR_GRID_COUNT) * (HOR_DEGREES);
     }
 
-    private double FromVerticalGrid(final int y_grid) throws InvalidPositionException {
-        if (VER_GRID_COUNT<=y_grid)
-            throw new InvalidPositionException();
-
+    static double FromVerticalGrid(final int y_grid) {
         return GRID_MAX_SOUTH + ((double)y_grid/(double)VER_GRID_COUNT) * (VER_GRID_DEGREES);
     }
 
@@ -259,7 +253,7 @@ public class Grid {
     }
 
     static int OsmToGridLevel(int osmZoomLevel) {
-        int gridLevel = osmZoomLevel - 15;
+        int gridLevel = 18 - osmZoomLevel;
         if (0>gridLevel) {
             gridLevel = 0;
         } else if (LEVEL_COUNT<=gridLevel) {
