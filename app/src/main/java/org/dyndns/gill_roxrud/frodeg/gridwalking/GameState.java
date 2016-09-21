@@ -4,8 +4,8 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 public class GameState {
 
     private static GameState instance = null;
-    Grid grid;
-    Bonus bonus;
+    private Grid grid;
+    private Bonus bonus;
     boolean showMap;
 
     public GameState() {
@@ -22,6 +22,14 @@ public class GameState {
             instance = new GameState();
         }
         return instance;
+    }
+
+    public Grid getGrid() {
+        return grid;
+    }
+
+    public Bonus getBonus() {
+        return bonus;
     }
 
     void Load() {

@@ -54,9 +54,10 @@ public class BonusOverlay extends Overlay {
         black.setColor(Color.argb(128, 0, 0, 0));
 
         int x, y;
+        Bonus  bonus = GameState.getInstance().getBonus();
         for (y=bottomGrid; y<=topGrid; y++) {
             for (x=leftGrid; x<=rightGrid; x++) {
-                if (GameState.getInstance().bonus.Contains(x, y)) {
+                if (bonus.Contains(x, y)) {
                     continue;
                 }
 

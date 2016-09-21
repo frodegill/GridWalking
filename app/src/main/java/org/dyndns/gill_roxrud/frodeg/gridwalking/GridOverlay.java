@@ -29,10 +29,6 @@ public class GridOverlay extends Overlay {
 
     @Override
     protected void draw(Canvas canvas, MapView mapView, boolean shadow) {
-        if (Grid.gridColours == null) {
-            return;
-        }
-
         if (shadow) {
             return;
         }
@@ -54,10 +50,11 @@ public class GridOverlay extends Overlay {
         int bottomGrid = Grid.ToVerticalGridBounded(sw.getLatitude()) & mask;
         int rightGrid = Grid.ToHorizontalGrid(ne.getLongitude()) & mask;
 
-        Paint gridColour = Grid.gridColours[gridLevel];
+        Paint gridColour = GameState.getInstance().getGrid().gridColours[gridLevel];
+        gridColour.setAlpha(255);
 
-        android.graphics.Point upperLeftPixel = GridToPixel(leftGrid, topGrid, projection, new android.graphics.Point());
-        android.graphics.Point lowerRightPixel = GridToPixel(rightGrid, bottomGrid, projection, new android.graphics.Point());
+        android.graphics.Point upperLeftPixel = GridToPixel(leftGrid, topGrid+11, projection, new android.graphics.Point());
+        android.graphics.Point lowerRightPixel = GridToPixel(rightGrid+1, bottomGrid, projection, new android.graphics.Point());
 
         int x, y;
         android.graphics.Point point = new android.graphics.Point();
@@ -71,6 +68,10 @@ public class GridOverlay extends Overlay {
             canvas.drawRect(new RectF(point.x-line_halfwidth, upperLeftPixel.y,
                                       point.x+line_halfwidth, lowerRightPixel.y), gridColour);
         }
+
+        canvas.scale(4,4);
+        canvas.drawText("Level:"+gridLevel, 100, 100, new Paint(Color.rgb(0,0,0)));
+        canvas.scale(1,1);
     }
 
     private android.graphics.Point GridToPixel(int x, int y, Projection projection, android.graphics.Point reusePoint) {
