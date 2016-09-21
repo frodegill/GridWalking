@@ -4,9 +4,9 @@ import java.util.HashSet;
 
 
 public class Bonus {
-    static final int HOR_BONUS_COUNT = 10000;             //Less than 2^16
+    static final int HOR_BONUS_COUNT = 5000;             //Less than 2^16
     static final int VER_BONUS_COUNT = HOR_BONUS_COUNT/2; //Less than 2^15
-    static final float BONUS_SIZE_RADIUS = 25.0f; //meters
+    static final float BONUS_SIZE_RADIUS = 100.0f; //meters
 
     static final double HALF_HOR_BONUS_DEGREE = (Grid.HOR_DEGREES/HOR_BONUS_COUNT)/2; //Used for rounding
     static final double HALF_VER_BONUS_DEGREE = (Grid.VER_DEGREES/VER_BONUS_COUNT)/2; //Used for rounding

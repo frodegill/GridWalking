@@ -37,6 +37,8 @@ public class GridOverlay extends Overlay {
             return;
         }
 
+        float line_halfwidth = Math.min(canvas.getWidth(), canvas.getHeight()) / 320;
+
         Projection projection = mapView.getProjection();
         IGeoPoint ne = projection.getNorthEast();
         IGeoPoint sw = projection.getSouthWest();
@@ -61,11 +63,13 @@ public class GridOverlay extends Overlay {
         android.graphics.Point point = new android.graphics.Point();
         for (y=bottomGrid; y<=(topGrid+stepping); y+=stepping) {
             point = GridToPixel(leftGrid, y, projection, point);
-            canvas.drawRect(new Rect(upperLeftPixel.x, point.y-2, lowerRightPixel.x, point.y+2), gridColour);
+            canvas.drawRect(new RectF(upperLeftPixel.x, point.y-line_halfwidth,
+                                      lowerRightPixel.x, point.y+line_halfwidth), gridColour);
         }
         for (x=leftGrid; x<=(rightGrid+stepping); x+=stepping) {
             point = GridToPixel(x, topGrid, projection, point);
-            canvas.drawRect(new Rect(point.x-2, upperLeftPixel.y, point.x+2, lowerRightPixel.y), gridColour);
+            canvas.drawRect(new RectF(point.x-line_halfwidth, upperLeftPixel.y,
+                                      point.x+line_halfwidth, lowerRightPixel.y), gridColour);
         }
     }
 

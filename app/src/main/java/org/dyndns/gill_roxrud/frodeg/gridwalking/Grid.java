@@ -13,7 +13,7 @@ public class Grid {
     static final double AVERAGE_RADIUS_OF_EARTH = 6371000; //meters
     static final double AVERAGE_CIRCUMFENCE_OF_EARTH = AVERAGE_RADIUS_OF_EARTH*2*Math.PI; //meters
 
-    static final byte LEVEL_COUNT = 18;
+    static final byte LEVEL_COUNT = 15;
     private static final int HOR_GRID_COUNT = (1<<(LEVEL_COUNT-1))*2; //Less than 2^32. Times two because East and West
     private static final int VER_GRID_COUNT = HOR_GRID_COUNT/2; //Less than 2^31
 
@@ -253,7 +253,7 @@ public class Grid {
     }
 
     static int OsmToGridLevel(int osmZoomLevel) {
-        int gridLevel = 18 - osmZoomLevel;
+        int gridLevel = 15 - osmZoomLevel;
         if (0>gridLevel) {
             gridLevel = 0;
         } else if (LEVEL_COUNT<=gridLevel) {

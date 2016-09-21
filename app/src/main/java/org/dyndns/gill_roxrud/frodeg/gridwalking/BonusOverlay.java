@@ -23,11 +23,13 @@ public class BonusOverlay extends Overlay {
             return;
         }
 
-        Projection projection = mapView.getProjection();
-        float radius = 	projection.metersToPixels(Bonus.BONUS_SIZE_RADIUS);
-        if (2.0>=radius) {
+        int gridLevel = Grid.OsmToGridLevel(mapView.getZoomLevel());
+        if (4<=gridLevel) {
             return;
         }
+
+        Projection projection = mapView.getProjection();
+        float radius = projection.metersToPixels(Bonus.BONUS_SIZE_RADIUS);
 
         IGeoPoint ne = projection.getNorthEast();
         IGeoPoint sw = projection.getSouthWest();
@@ -43,12 +45,13 @@ public class BonusOverlay extends Overlay {
         android.graphics.Point point = null;
         GeoPoint geoPoint;
 
-        Paint yellow = new Paint();
-        yellow.setColor(Color.argb(128, 255, 255, 0));
+        Paint white = new Paint();
+        white.setColor(Color.argb(128, 255, 255, 255));
+        white.setStyle(Paint.Style.STROKE);
+        white.setStrokeWidth(radius/4);
 
         Paint black = new Paint();
-        black.setColor(Color.argb(255, 0, 0, 0));
-        black.setStyle(Paint.Style.STROKE);
+        black.setColor(Color.argb(128, 0, 0, 0));
 
         int x, y;
         for (y=bottomGrid; y<=topGrid; y++) {
@@ -61,8 +64,8 @@ public class BonusOverlay extends Overlay {
                 point = projection.toProjectedPixels(geoPoint, point);
                 point = projection.toPixelsFromProjected(point, point);
 
+                canvas.drawCircle(point.x, point.y, 2*radius, white);
                 canvas.drawCircle(point.x, point.y, radius, black);
-                canvas.drawCircle(point.x, point.y, radius-2, yellow);
             }
         }
     }
