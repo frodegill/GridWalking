@@ -77,6 +77,7 @@ public class MapFragment extends Fragment {
 
         mapView.getOverlays().add(new GridOverlay(context, this));
         mapView.getOverlays().add(new BonusOverlay(context));
+        mapView.getOverlays().add(new ScoreOverlay(context));
 
         mapView.getController().setZoom(preferences.getInt(PREFS_ZOOM_LEVEL, 8));
         mapView.scrollTo(preferences.getInt(PREFS_SCROLL_X, 0), preferences.getInt(PREFS_SCROLL_Y, 0));
@@ -119,12 +120,16 @@ public class MapFragment extends Fragment {
     @Override
     public void onPrepareOptionsMenu(final Menu pMenu) {
         super.onPrepareOptionsMenu(pMenu);
+        MenuItem offlineItem = pMenu.findItem(R.id.offline);
+        if (offlineItem != null) {
+            offlineItem.setChecked(!useDataConnection);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.menu.activity_map:
+            case R.id.offline:
                 toggleUseDataConnection(item);
                 return true;
         }
