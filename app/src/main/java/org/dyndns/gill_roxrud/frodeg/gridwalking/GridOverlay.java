@@ -33,7 +33,9 @@ public class GridOverlay extends Overlay {
             return;
         }
 
-        float line_halfwidth = Math.min(canvas.getWidth(), canvas.getHeight()) / 320;
+        int canvasWidth = canvas.getWidth();
+        int canvasHeight = canvas.getHeight();
+        float line_halfwidth = Math.min(canvasWidth, canvasHeight) / 320;
 
         Projection projection = mapView.getProjection();
         IGeoPoint ne = projection.getNorthEast();
@@ -53,25 +55,16 @@ public class GridOverlay extends Overlay {
         Paint gridColour = GameState.getInstance().getGrid().gridColours[gridLevel];
         gridColour.setAlpha(255);
 
-        android.graphics.Point upperLeftPixel = GridToPixel(leftGrid, topGrid+11, projection, new android.graphics.Point());
-        android.graphics.Point lowerRightPixel = GridToPixel(rightGrid+1, bottomGrid, projection, new android.graphics.Point());
-
         int x, y;
         android.graphics.Point point = new android.graphics.Point();
         for (y=bottomGrid; y<=(topGrid+stepping); y+=stepping) {
             point = GridToPixel(leftGrid, y, projection, point);
-            canvas.drawRect(new RectF(upperLeftPixel.x, point.y-line_halfwidth,
-                                      lowerRightPixel.x, point.y+line_halfwidth), gridColour);
+            canvas.drawRect(new RectF(0, point.y-line_halfwidth, canvasWidth-1, point.y+line_halfwidth), gridColour);
         }
         for (x=leftGrid; x<=(rightGrid+stepping); x+=stepping) {
             point = GridToPixel(x, topGrid, projection, point);
-            canvas.drawRect(new RectF(point.x-line_halfwidth, upperLeftPixel.y,
-                                      point.x+line_halfwidth, lowerRightPixel.y), gridColour);
+            canvas.drawRect(new RectF(point.x-line_halfwidth, 0, point.x+line_halfwidth, canvasHeight-1), gridColour);
         }
-
-        canvas.scale(4,4);
-        canvas.drawText("Level:"+gridLevel, 100, 100, new Paint(Color.rgb(0,0,0)));
-        canvas.scale(1,1);
     }
 
     private android.graphics.Point GridToPixel(int x, int y, Projection projection, android.graphics.Point reusePoint) {

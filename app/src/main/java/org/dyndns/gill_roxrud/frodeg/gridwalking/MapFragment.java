@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -64,12 +65,15 @@ public class MapFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         final Context context = this.getActivity();
-        final DisplayMetrics dm = context.getResources().getDisplayMetrics();
 
         preferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
+        //OpenStreetMapTileProviderConstants.DEBUG_TILE_PROVIDERS = true;
+        OpenStreetMapTileProviderConstants.DEBUGMODE = true;
+
         mapView.setBuiltInZoomControls(true);
-        mapView.setMultiTouchControls(false);
+        mapView.setMultiTouchControls(true);
+//        this.mapView.setTilesScaledToDpi(true);
 
         mapView.getOverlays().add(new GridOverlay(context, this));
         mapView.getOverlays().add(new BonusOverlay(context));
