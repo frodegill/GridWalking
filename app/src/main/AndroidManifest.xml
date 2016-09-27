@@ -3,6 +3,8 @@
     package="org.dyndns.gill_roxrud.frodeg.gridwalking">
 
     <application
+        android:name=".GridWalkingApplication"
+        android:hardwareAccelerated="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
