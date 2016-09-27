@@ -7,13 +7,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.PopupMenu;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -48,8 +48,9 @@ public class MapFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mapView = new MapView(inflater.getContext());
-        return mapView;
+        View view = inflater.inflate(R.layout.fragment_map, null);
+        mapView = (MapView) view.findViewById(R.id.mapview);
+        return view;
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -77,7 +78,6 @@ public class MapFragment extends Fragment {
 
         mapView.getOverlays().add(new GridOverlay(context, this));
         mapView.getOverlays().add(new BonusOverlay(context));
-        mapView.getOverlays().add(new ScoreOverlay(context));
 
         mapView.getController().setZoom(preferences.getInt(PREFS_ZOOM_LEVEL, 8));
         mapView.scrollTo(preferences.getInt(PREFS_SCROLL_X, 0), preferences.getInt(PREFS_SCROLL_Y, 0));
@@ -205,5 +205,10 @@ public class MapFragment extends Fragment {
         } else {
             showContextMenu(new GeoPoint(59.675330, 10.663672));
         }
+    }
+
+    public void onUpdateScoreUpdated() {
+        TextView scoreView = (TextView) getView().findViewById(R.id.score);
+        scoreView.setText("Test");
     }
 }

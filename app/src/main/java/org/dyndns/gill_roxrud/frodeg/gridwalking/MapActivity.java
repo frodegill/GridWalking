@@ -12,10 +12,11 @@ public class MapActivity extends AppCompatActivity {
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_map);
+
         FragmentManager fm = this.getSupportFragmentManager();
         if (fm.findFragmentByTag(MAP_FRAGMENT_TAG) == null) {
             MapFragment mapFragment = MapFragment.newInstance();
-            fm.beginTransaction().add(R.id.map_container, mapFragment, MAP_FRAGMENT_TAG).commit();
+            fm.beginTransaction().add(R.id.activity_map_layout, mapFragment, MAP_FRAGMENT_TAG).commit();
         }
     }
 }
