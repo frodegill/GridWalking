@@ -134,4 +134,8 @@ public class Bonus {
 
         return Grid.AVERAGE_RADIUS_OF_EARTH * c;
     }
+
+    public String getBonusString() {
+        return Integer.toString(bonuses.size());
+    }
 }

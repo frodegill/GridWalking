@@ -55,7 +55,6 @@ public class MapFragment extends Fragment {
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private void setHardwareAccelerationOff() {
-        // Turn off hardware acceleration here, or in manifest
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             mapView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         }
@@ -74,7 +73,7 @@ public class MapFragment extends Fragment {
 
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(true);
-//        this.mapView.setTilesScaledToDpi(true);
+        //this.mapView.setTilesScaledToDpi(true);
 
         mapView.getOverlays().add(new GridOverlay(context, this));
         mapView.getOverlays().add(new BonusOverlay(context));
@@ -207,8 +206,11 @@ public class MapFragment extends Fragment {
         }
     }
 
-    public void onUpdateScoreUpdated() {
-        TextView scoreView = (TextView) getView().findViewById(R.id.score);
-        scoreView.setText("Test");
+    public void onScoreUpdated() {
+        TextView view = (TextView) getView().findViewById(R.id.score);
+        view.setText(GameState.getInstance().getGrid().getScoreString());
+
+        view = (TextView) getView().findViewById(R.id.bonus);
+        view.setText(GameState.getInstance().getBonus().getBonusString());
     }
 }

@@ -264,4 +264,28 @@ public class Grid {
         }
         return gridLevel;
     }
+
+    public String getScoreString() {
+        StringBuilder sb = new StringBuilder();
+        long score = 0;
+        int levelCount;
+        int i;
+        synchronized(gridsLock) {
+            for (i = LEVEL_COUNT - 1; i >= 0; i--) {
+                levelCount = grids[i].size();
+                if (levelCount > 0) {
+                    if (sb.length() != 0) {
+                        sb.append(':');
+                    }
+                    sb.append(Integer.toString(levelCount));
+                    score += levelCount<<i;
+                }
+            }
+        }
+
+        sb.append(" (");
+        sb.append(Long.toString(score));
+        sb.append(')');
+        return sb.toString();
+    }
 }
