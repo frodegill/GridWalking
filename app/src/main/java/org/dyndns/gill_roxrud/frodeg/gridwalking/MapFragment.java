@@ -1,10 +1,16 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
@@ -21,7 +27,10 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 
 
-public class MapFragment extends Fragment {
+public class MapFragment extends Fragment implements LocationListener {
+    static final long  LOCATION_UPDATE_INTERVAL = 30l;
+    static final float LOCATION_UPDATE_DISTANCE = 25.0f;
+
     static final String PREFS_NAME = "org.dyndns.gill_roxrud.frodeg.gridwalking.prefs";
     static final String PREFS_SCROLL_X = "scrollX";
     static final String PREFS_SCROLL_Y = "scrollY";
@@ -33,6 +42,8 @@ public class MapFragment extends Fragment {
     private SharedPreferences preferences;
     private MapView mapView;
     private View tempPopupMenuParentView = null;
+
+    private Location location = null;
 
 
     public static MapFragment newInstance() {
@@ -71,9 +82,10 @@ public class MapFragment extends Fragment {
         //OpenStreetMapTileProviderConstants.DEBUG_TILE_PROVIDERS = true;
         OpenStreetMapTileProviderConstants.DEBUGMODE = true;
 
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(true);
-        //this.mapView.setTilesScaledToDpi(true);
+        mapView.setTilesScaledToDpi(true);
 
         mapView.getOverlays().add(new GridOverlay(context, this));
         mapView.getOverlays().add(new BonusOverlay(context));
@@ -96,6 +108,7 @@ public class MapFragment extends Fragment {
         edit.commit();
 
         super.onPause();
+        DisableLocationUpdates();
     }
 
     @Override
@@ -107,7 +120,7 @@ public class MapFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        EnableLocationUpdates();
     }
 
     @Override
@@ -212,5 +225,42 @@ public class MapFragment extends Fragment {
 
         view = (TextView) getView().findViewById(R.id.bonus);
         view.setText(GameState.getInstance().getBonus().getBonusString());
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        this.location = location;
+        GameState.getInstance().onPositionChanged(location.getLatitude(), location.getLongitude());
+
+        GeoPoint position = new GeoPoint(location.getLatitude(), location.getLongitude());
+        mapView.getController().setCenter(position);
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+    }
+
+    private void DisableLocationUpdates() {
+        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+            ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.removeUpdates(this);
+        }
+    }
+
+    private void EnableLocationUpdates() {
+        LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_UPDATE_INTERVAL, LOCATION_UPDATE_DISTANCE, this);
+        }
     }
 }
