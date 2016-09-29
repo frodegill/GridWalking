@@ -89,6 +89,7 @@ public class MapFragment extends Fragment implements LocationListener {
 
         mapView.getOverlays().add(new GridOverlay(context, this));
         mapView.getOverlays().add(new BonusOverlay(context));
+        mapView.getOverlays().add(new MyLocationOverlay(context));
 
         mapView.getController().setZoom(preferences.getInt(PREFS_ZOOM_LEVEL, 8));
         mapView.scrollTo(preferences.getInt(PREFS_SCROLL_X, 0), preferences.getInt(PREFS_SCROLL_Y, 0));
@@ -234,6 +235,7 @@ public class MapFragment extends Fragment implements LocationListener {
 
         GeoPoint position = new GeoPoint(location.getLatitude(), location.getLongitude());
         mapView.getController().setCenter(position);
+        mapView.postInvalidate(); //Is this needed (after calling setCenter)?
     }
 
     @Override
