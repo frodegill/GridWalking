@@ -79,13 +79,12 @@ public class Grid {
     }
 
     private boolean DiscoverGrid(final Point<Integer> p) throws InvalidPositionException {
-        if (0 != DiscoveredLevel(p)) {
+        long key = ToKey(p);
+        if (IsInMRU(key)) {
             return false;
         }
 
-        long key = ToKey(p);
-
-        if (IsInMRU(key)) {
+        if (-1 != DiscoveredLevel(p)) {
             return false;
         }
 
@@ -104,15 +103,19 @@ public class Grid {
         long key;
         byte level;
         synchronized(gridsLock) {
-            for (level = LEVEL_COUNT-1; 0 < level; level--) {
+            for (level = LEVEL_COUNT-1; 0<=level; level--) {
+                if (grids[level].isEmpty()) {
+                    continue;
+                }
+
                 upperLeft = GetUpperLeft(p, level);
                 key = ToKey(upperLeft);
-                if (grids[level - 1].contains(key)) {
-                    break;
+                if (grids[level].contains(key)) {
+                    return level;
                 }
             }
         }
-        return level;
+        return -1;
     }
 
     private void RecursiveCheck(final Point<Integer> p, final byte level) throws InvalidPositionException {
@@ -122,7 +125,7 @@ public class Grid {
         if (LEVEL_COUNT==level)
             return;
 
-        Rect r = GetBoundingBox(p, level);
+        Rect r = GetBoundingBox(p, (byte)(level+1));
 
         long keys[] = new long[4];
         keys[0] = ToKey(r.getUpperLeft());
@@ -220,8 +223,10 @@ public class Grid {
 
         int mask = (1<<level) - 1;
         Rect<Integer> r = new Rect();
-        r.setUpperLeft(new Point(p.getX() & ~mask, p.getY() & ~mask));
-        r.setLowerRight(new Point(r.getLeft() + mask, r.getTop() - mask));
+        r.setLeft(p.getX() & ~mask);
+        r.setBottom(p.getY() & ~mask);
+        r.setRight(r.getLeft() + mask);
+        r.setTop(r.getBottom() + mask);
         return r;
     }
 

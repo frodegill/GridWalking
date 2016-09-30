@@ -20,7 +20,7 @@ public class Bonus {
         }
     }
 
-    public Long ValidBonusKeyFromPos(final Point<Double> pos) throws InvalidPositionException {
+    public Integer ValidBonusKeyFromPos(final Point<Double> pos) throws InvalidPositionException {
         double horizontal_pos_rounding = pos.getX()+HALF_HOR_BONUS_DEGREE;
         if (Grid.EAST<=horizontal_pos_rounding) {
             horizontal_pos_rounding -= Grid.HOR_DEGREES;
@@ -30,7 +30,9 @@ public class Bonus {
         Point<Double> bonus_pos = new Point(FromHorizontalBonusGrid(p.getX()), FromVerticalBonusGrid(p.getY()));
 
         if (BONUS_SIZE_RADIUS >= CalculateDistance(pos, bonus_pos)) {
-            return ToBonusKey(p);
+            int key = ToBonusKey(p);
+            bonuses.add(key);
+            return key;
         }
         return null;
     }
@@ -94,26 +96,22 @@ public class Bonus {
 
     boolean Contains(final int x, final int y) {
         try {
-            long key = ToBonusKey(new Point<Integer>(x, y));
+            int key = ToBonusKey(new Point(x, y));
             return bonuses.contains(key);
         } catch (InvalidPositionException e) {
             return false;
         }
     }
 
-    boolean Contains(final long key) {
-        return bonuses.contains(key);
-    }
-
-    static long ToBonusKey(final Point<Integer> p) throws InvalidPositionException {
+    static int ToBonusKey(final Point<Integer> p) throws InvalidPositionException {
         if (VER_BONUS_COUNT<=p.getY() || HOR_BONUS_COUNT<=p.getX())
             throw new InvalidPositionException();
 
-        return (((long)p.getY())<<16) | p.getX();
+        return (p.getY()<<16) | p.getX();
     }
 
-    static Point<Integer> FromBonusKey(final long key) throws InvalidPositionException {
-        Point<Integer> p = new Point((int)(key&0xFFFF), (int)((key>>16)&0xFFFF));
+    static Point<Integer> FromBonusKey(final int key) throws InvalidPositionException {
+        Point<Integer> p = new Point(key&0xFFFF, (key>>16)&0xFFFF);
         if (VER_BONUS_COUNT<=p.getY() || HOR_BONUS_COUNT<=p.getX())
             throw new InvalidPositionException();
 
