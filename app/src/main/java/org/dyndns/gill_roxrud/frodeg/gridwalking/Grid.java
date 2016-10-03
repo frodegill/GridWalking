@@ -230,15 +230,19 @@ public class Grid {
         return r;
     }
 
-    private long ToKey(final Point<Integer> p) throws InvalidPositionException {
-        if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX())
+    long ToKey(final Point<Integer> p) throws InvalidPositionException {
+        return ToKey(p.getX(), p.getY());
+    }
+
+    static long ToKey(final int x, final int y) throws InvalidPositionException {
+        if (VER_GRID_COUNT<=y || HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
 
-        long key = (((long)p.getY())<<32) | p.getX();
+        long key = (((long)y)<<32) | x;
         return key;
     }
 
-    private Point<Integer> FromKey(final long key) throws InvalidPositionException {
+    Point<Integer> FromKey(final long key) throws InvalidPositionException {
         Point<Integer> p = new Point((int)(key&0xFFFFFFFF), (int)((key>>32)&0xFFFFFFFF));
         if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX())
             throw new InvalidPositionException();
@@ -283,7 +287,7 @@ public class Grid {
                         sb.append(':');
                     }
                     sb.append(Integer.toString(levelCount));
-                    score += levelCount<<i;
+                    score += levelCount<<(2*i); //Each level up represents 4 squares
                 }
             }
         }

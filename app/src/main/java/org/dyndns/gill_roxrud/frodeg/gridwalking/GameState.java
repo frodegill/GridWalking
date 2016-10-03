@@ -42,11 +42,12 @@ public class GameState {
         persist.Save(grid, bonus);
     }
 
-    public void onPositionChanged(double x_pos, double y_pos) {
+    public void onPositionChanged(MapFragment mapFragment, double x_pos, double y_pos) {
         Point<Double> pos = new Point(x_pos, y_pos);
         try {
             if (true == grid.Discover(pos) || null != bonus.ValidBonusKeyFromPos(pos)) {
                 Save();
+                mapFragment.onScoreUpdated();
             }
         } catch (InvalidPositionException e) {
         }

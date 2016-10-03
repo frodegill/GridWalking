@@ -16,6 +16,9 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.Overlay;
 
+import java.util.Iterator;
+import java.util.SortedSet;
+
 
 public class GridOverlay extends Overlay {
 
@@ -56,6 +59,7 @@ public class GridOverlay extends Overlay {
         gridColour.setAlpha(255);
 
         int x, y;
+        //Draw grid
         android.graphics.Point point = new android.graphics.Point();
         for (y=bottomGrid; y<=(topGrid+stepping); y+=stepping) {
             point = GridToPixel(leftGrid, y, projection, point);
@@ -64,6 +68,42 @@ public class GridOverlay extends Overlay {
         for (x=leftGrid; x<=(rightGrid+stepping); x+=stepping) {
             point = GridToPixel(x, topGrid, projection, point);
             canvas.drawRect(new RectF(point.x-line_halfwidth, 0, point.x+line_halfwidth, canvasHeight-1), gridColour);
+        }
+
+        //Draw visitted squares
+        int currentLevel;
+        int fromLevel = gridLevel - 3;
+        if (0 > fromLevel) {
+            fromLevel = 0;
+        }
+        synchronized (Grid.gridsLock) {
+            for (currentLevel = fromLevel; currentLevel < Grid.LEVEL_COUNT; currentLevel++) {
+                if (Grid.grids[currentLevel].isEmpty()) {
+                    continue;
+                }
+
+                int currentStepping = 1<<currentLevel;
+                int currentMask = ~(currentStepping-1);
+                int currentTopGrid = Grid.ToVerticalGridBounded(ne.getLatitude()) & currentMask;
+                int currentLeftGrid = Grid.ToHorizontalGrid(sw.getLongitude()) & currentMask;
+                int currentBottomGrid = Grid.ToVerticalGridBounded(sw.getLatitude()) & currentMask;
+                int currentRightGrid = Grid.ToHorizontalGrid(ne.getLongitude()) & currentMask;
+                SortedSet<Long> currentSet;
+                Iterator<Long> currentKeyIterator;
+                long currentKey;
+                for (y=currentBottomGrid; y<=(currentTopGrid+currentStepping); y+=currentStepping) {
+                    try {
+                        currentSet = Grid.grids[currentLevel].subSet(Grid.ToKey(currentLeftGrid, y), Grid.ToKey(currentRightGrid, y));
+                    } catch (InvalidPositionException e) {
+                        continue;
+                    }
+
+                    currentKeyIterator = currentSet.iterator();
+                    while (currentKeyIterator.hasNext()) {
+                        currentKey = currentKeyIterator.next();
+                    }
+                }
+            }
         }
     }
 

@@ -231,7 +231,7 @@ public class MapFragment extends Fragment implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         this.location = location;
-        GameState.getInstance().onPositionChanged(location.getLatitude(), location.getLongitude());
+        GameState.getInstance().onPositionChanged(this, location.getLatitude(), location.getLongitude());
 
         GeoPoint position = new GeoPoint(location.getLatitude(), location.getLongitude());
         mapView.getController().setCenter(position);
