@@ -250,6 +250,22 @@ public class Grid {
         return p;
     }
 
+    static int XFromKey(final long key) throws InvalidPositionException {
+        int x = (int)(key&0xFFFFFFFF);
+        if (HOR_GRID_COUNT<=x)
+            throw new InvalidPositionException();
+
+        return x;
+    }
+
+    static int YFromKey(final long key) throws InvalidPositionException {
+        int y = (int)((key>>32)&0xFFFFFFFF);
+        if (VER_GRID_COUNT<=y)
+            throw new InvalidPositionException();
+
+        return y;
+    }
+
     private boolean IsInMRU(final long key)
     {
         return mru_list.contains(key);

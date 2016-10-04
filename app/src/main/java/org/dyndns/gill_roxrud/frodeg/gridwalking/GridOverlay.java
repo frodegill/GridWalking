@@ -70,7 +70,7 @@ public class GridOverlay extends Overlay {
             canvas.drawRect(new RectF(point.x-line_halfwidth, 0, point.x+line_halfwidth, canvasHeight-1), gridColour);
         }
 
-        //Draw visitted squares
+        //Draw visited squares
         int currentLevel;
         int fromLevel = gridLevel - 3;
         if (0 > fromLevel) {
@@ -88,12 +88,20 @@ public class GridOverlay extends Overlay {
                 int currentLeftGrid = Grid.ToHorizontalGrid(sw.getLongitude()) & currentMask;
                 int currentBottomGrid = Grid.ToVerticalGridBounded(sw.getLatitude()) & currentMask;
                 int currentRightGrid = Grid.ToHorizontalGrid(ne.getLongitude()) & currentMask;
+
+                int currentX;
+                int currentY;
+                android.graphics.Point currentUpperLeft = new android.graphics.Point();
+                android.graphics.Point currentLowerRight = new android.graphics.Point();
+
                 SortedSet<Long> currentSet;
                 Iterator<Long> currentKeyIterator;
                 long currentKey;
                 for (y=currentBottomGrid; y<=(currentTopGrid+currentStepping); y+=currentStepping) {
                     try {
-                        currentSet = Grid.grids[currentLevel].subSet(Grid.ToKey(currentLeftGrid, y), Grid.ToKey(currentRightGrid, y));
+                        Long gridLeftKey = Grid.ToKey(currentLeftGrid, y);
+                        Long gridRightKey = Grid.ToKey(currentRightGrid, y);
+                        currentSet = Grid.grids[currentLevel].subSet(gridLeftKey, gridRightKey);
                     } catch (InvalidPositionException e) {
                         continue;
                     }
@@ -101,6 +109,40 @@ public class GridOverlay extends Overlay {
                     currentKeyIterator = currentSet.iterator();
                     while (currentKeyIterator.hasNext()) {
                         currentKey = currentKeyIterator.next();
+                        try {
+                            currentX = Grid.XFromKey(currentKey);
+                            currentY = Grid.YFromKey(currentKey);
+                        }
+                        catch (InvalidPositionException e) {
+                            continue;
+                        }
+
+                        currentUpperLeft = GridToPixel(currentX, currentY, projection, currentUpperLeft);
+                        if (currentUpperLeft.x<0) {
+                            currentUpperLeft.x=0;
+                        } else if (currentUpperLeft.x>=canvasWidth) {
+                            currentUpperLeft.x=canvasWidth;
+                        }
+                        if (currentUpperLeft.y<0) {
+                            currentUpperLeft.y=0;
+                        } else if (currentUpperLeft.y>canvasHeight) {
+                            currentUpperLeft.y=canvasHeight;
+                        }
+
+                        currentLowerRight = GridToPixel(currentX+currentStepping, currentY-currentStepping, projection, currentLowerRight);
+                        if (currentLowerRight.x<0) {
+                            currentLowerRight.x=0;
+                        } else if (currentLowerRight.x>=canvasWidth) {
+                            currentLowerRight.x=canvasWidth;
+                        }
+                        if (currentLowerRight.y<0) {
+                            currentLowerRight.y=0;
+                        } else if (currentLowerRight.y>canvasHeight) {
+                            currentLowerRight.y=canvasHeight;
+                        }
+
+                        canvas.drawRect(new Rect(currentUpperLeft.x, currentUpperLeft.y, currentLowerRight.x, currentLowerRight.y),
+                                Grid.gridColours[currentLevel]);
                     }
                 }
             }
