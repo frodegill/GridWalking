@@ -33,12 +33,12 @@ public class MyLocationOverlay extends Overlay {
         float line_halfwidth = Math.min(canvasWidth, canvasHeight) / 320;
 
         Paint red = new Paint();
-        red.setColor(Color.argb(128, 192, 0, 0));
+        red.setColor(Color.argb(0x80, 0xC0, 0x00, 0x00));
         red.setStyle(Paint.Style.STROKE);
         red.setStrokeWidth(line_halfwidth);
 
         Paint black = new Paint();
-        black.setColor(Color.argb(128, 0, 0, 0));
+        black.setColor(Color.argb(0x80, 0x00, 0x00, 0x00));
 
         canvas.drawCircle(canvasWidth/2, canvasHeight/2, line_halfwidth*16, red);
         canvas.drawCircle(canvasWidth/2, canvasHeight/2, line_halfwidth*4, black);

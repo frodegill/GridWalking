@@ -99,7 +99,7 @@ public class Grid {
     }
 
     private byte DiscoveredLevel(final Point<Integer> p) throws InvalidPositionException {
-        Point<Integer> upperLeft;
+        Point<Integer> lowerLeft;
         long key;
         byte level;
         synchronized(gridsLock) {
@@ -108,8 +108,8 @@ public class Grid {
                     continue;
                 }
 
-                upperLeft = GetUpperLeft(p, level);
-                key = ToKey(upperLeft);
+                lowerLeft = GetLowerLeft(p, level);
+                key = ToKey(lowerLeft);
                 if (grids[level].contains(key)) {
                     return level;
                 }
@@ -128,10 +128,10 @@ public class Grid {
         Rect r = GetBoundingBox(p, (byte)(level+1));
 
         long keys[] = new long[4];
-        keys[0] = ToKey(r.getUpperLeft());
-        keys[1] = ToKey(r.getUpperRight());
-        keys[2] = ToKey(r.getLowerLeft());
-        keys[3] = ToKey(r.getLowerRight());
+        keys[0] = ToKey(r.getLowerLeft());
+        keys[1] = ToKey(r.getLowerRight());
+        keys[2] = ToKey(r.getUpperLeft());
+        keys[3] = ToKey(r.getUpperRight());
 
         byte i;
         byte matches = 0;
@@ -147,8 +147,18 @@ public class Grid {
                 grids[level].remove(keys[i]);
             }
 
+            if (GridWalkingApplication.DEBUGMODE) {
+                Point<Integer> debugPoint = FromKey(keys[0]);
+                int debugMask = 1<<(level+1)-1;
+                if ((debugPoint.getX()&debugMask) != 0) {
+                    throw new AssertionError("X is " + debugPoint.getX() + ", Level=" + (level+1));
+                }
+                if ((debugPoint.getY()&debugMask) != 0) {
+                    throw new AssertionError("Y is " + debugPoint.getY() + ", Level=" + (level+1));
+                }
+            }
             grids[level + 1].add(keys[0]);
-            RecursiveCheck(r.getUpperLeft(), (byte) (level + 1));
+            RecursiveCheck(r.getLowerLeft(), (byte) (level + 1));
         }
     }
 
@@ -209,7 +219,7 @@ public class Grid {
         return GRID_MAX_SOUTH + ((double)y_grid/(double)VER_GRID_COUNT) * (VER_GRID_DEGREES);
     }
 
-    private Point<Integer> GetUpperLeft(final Point<Integer> p, final byte level) throws InvalidPositionException {
+    private Point<Integer> GetLowerLeft(final Point<Integer> p, final byte level) throws InvalidPositionException {
         if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX() || LEVEL_COUNT<=level)
             throw new InvalidPositionException();
 
@@ -227,6 +237,15 @@ public class Grid {
         r.setBottom(p.getY() & ~mask);
         r.setRight(r.getLeft() + mask);
         r.setTop(r.getBottom() + mask);
+        if (GridWalkingApplication.DEBUGMODE) {
+            if (r.getLeft()>r.getRight()) {
+                throw new AssertionError("Left is " + r.getLeft() + ", Right is " + r.getRight());
+            }
+            if (r.getTop()<r.getBottom()) {
+                throw new AssertionError("Top is " + r.getTop() + ", Bottom is " + r.getBottom());
+            }
+        }
+
         return r;
     }
 

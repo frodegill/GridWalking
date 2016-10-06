@@ -7,6 +7,8 @@ import android.util.Log;
 
 public class GridWalkingApplication extends Application{
 
+    public static boolean DEBUGMODE = true;
+
     @Override
     public void onCreate(){
         super.onCreate();

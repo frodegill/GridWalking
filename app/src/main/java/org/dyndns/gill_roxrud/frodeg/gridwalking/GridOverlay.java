@@ -56,7 +56,7 @@ public class GridOverlay extends Overlay {
         int rightGrid = Grid.ToHorizontalGrid(ne.getLongitude()) & mask;
 
         Paint gridColour = GameState.getInstance().getGrid().gridColours[gridLevel];
-        gridColour.setAlpha(255);
+        gridColour.setAlpha(0xFF);
 
         int x, y;
         //Draw grid
@@ -72,7 +72,7 @@ public class GridOverlay extends Overlay {
 
         //Draw visited squares
         int currentLevel;
-        int fromLevel = gridLevel - 3;
+        int fromLevel = gridLevel - 4;
         if (0 > fromLevel) {
             fromLevel = 0;
         }
@@ -82,6 +82,10 @@ public class GridOverlay extends Overlay {
                     continue;
                 }
 
+                Paint currentColourMarker = new Paint(Grid.gridColours[currentLevel]);
+                currentColourMarker.setAlpha(0xC0);
+                currentColourMarker.setStrokeWidth(4*line_halfwidth);
+
                 int currentStepping = 1<<currentLevel;
                 int currentMask = ~(currentStepping-1);
                 int currentTopGrid = Grid.ToVerticalGridBounded(ne.getLatitude()) & currentMask;
@@ -89,10 +93,15 @@ public class GridOverlay extends Overlay {
                 int currentBottomGrid = Grid.ToVerticalGridBounded(sw.getLatitude()) & currentMask;
                 int currentRightGrid = Grid.ToHorizontalGrid(ne.getLongitude()) & currentMask;
 
+                int nextSteppingMask = (1<<gridLevel) - 1;
+                if (GridWalkingApplication.DEBUGMODE==true && Grid.grids[currentLevel].size() > 1) {
+                    int d = 0;
+                }
+
                 int currentX;
                 int currentY;
-                android.graphics.Point currentUpperLeft = new android.graphics.Point();
-                android.graphics.Point currentLowerRight = new android.graphics.Point();
+                android.graphics.Point currentLowerLeft = new android.graphics.Point();
+                android.graphics.Point currentUpperRight = new android.graphics.Point();
 
                 SortedSet<Long> currentSet;
                 Iterator<Long> currentKeyIterator;
@@ -117,32 +126,19 @@ public class GridOverlay extends Overlay {
                             continue;
                         }
 
-                        currentUpperLeft = GridToPixel(currentX, currentY, projection, currentUpperLeft);
-                        if (currentUpperLeft.x<0) {
-                            currentUpperLeft.x=0;
-                        } else if (currentUpperLeft.x>=canvasWidth) {
-                            currentUpperLeft.x=canvasWidth;
-                        }
-                        if (currentUpperLeft.y<0) {
-                            currentUpperLeft.y=0;
-                        } else if (currentUpperLeft.y>canvasHeight) {
-                            currentUpperLeft.y=canvasHeight;
-                        }
+                        currentLowerLeft = GridToPixel(currentX, currentY, projection, currentLowerLeft);
+                        currentUpperRight = GridToPixel(currentX+currentStepping, currentY+currentStepping, projection, currentUpperRight);
 
-                        currentLowerRight = GridToPixel(currentX+currentStepping, currentY-currentStepping, projection, currentLowerRight);
-                        if (currentLowerRight.x<0) {
-                            currentLowerRight.x=0;
-                        } else if (currentLowerRight.x>=canvasWidth) {
-                            currentLowerRight.x=canvasWidth;
-                        }
-                        if (currentLowerRight.y<0) {
-                            currentLowerRight.y=0;
-                        } else if (currentLowerRight.y>canvasHeight) {
-                            currentLowerRight.y=canvasHeight;
-                        }
-
-                        canvas.drawRect(new Rect(currentUpperLeft.x, currentUpperLeft.y, currentLowerRight.x, currentLowerRight.y),
+                        canvas.drawRect(new Rect(currentLowerLeft.x, currentUpperRight.y, currentUpperRight.x, currentLowerLeft.y),
                                 Grid.gridColours[currentLevel]);
+
+                        boolean isLeftSquare = (currentX&nextSteppingMask)==0;
+                        boolean isBottomSquare = (currentY&nextSteppingMask)==0;
+                        canvas.drawLine((float)(currentLowerLeft.x+(isLeftSquare?0.9:0.1)*(currentUpperRight.x-currentLowerLeft.x)),
+                                        (float)(isBottomSquare?currentUpperRight.y:currentLowerLeft.y),
+                                        (float)(isLeftSquare?currentUpperRight.x:currentLowerLeft.x),
+                                        (float)(currentLowerLeft.y+(isBottomSquare?0.9:0.1)*(currentUpperRight.y-currentLowerLeft.y)),
+                                        currentColourMarker);
                     }
                 }
             }

@@ -46,12 +46,12 @@ public class BonusOverlay extends Overlay {
         GeoPoint geoPoint;
 
         Paint white = new Paint();
-        white.setColor(Color.argb(128, 255, 255, 255));
+        white.setColor(Color.argb(0x80, 0xFF, 0xFF, 0xFF));
         white.setStyle(Paint.Style.STROKE);
         white.setStrokeWidth(radius/4);
 
         Paint black = new Paint();
-        black.setColor(Color.argb(128, 0, 0, 0));
+        black.setColor(Color.argb(0x80, 0x00, 0x00, 0x00));
 
         int x, y;
         Bonus  bonus = GameState.getInstance().getBonus();
