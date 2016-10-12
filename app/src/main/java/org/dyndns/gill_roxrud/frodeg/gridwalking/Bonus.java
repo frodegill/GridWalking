@@ -94,20 +94,19 @@ public class Bonus {
         return Grid.GRID_MAX_SOUTH + ((double)y_grid/(double)VER_BONUS_COUNT) * (Grid.VER_GRID_DEGREES);
     }
 
-    boolean Contains(final int x, final int y) {
-        try {
-            int key = ToBonusKey(new Point(x, y));
-            return bonuses.contains(key);
-        } catch (InvalidPositionException e) {
-            return false;
-        }
+    boolean Contains(final int key) {
+        return bonuses.contains(key);
     }
 
     static int ToBonusKey(final Point<Integer> p) throws InvalidPositionException {
-        if (VER_BONUS_COUNT<=p.getY() || HOR_BONUS_COUNT<=p.getX())
+        return ToBonusKey(p.getX(), p.getY());
+    }
+
+    static int ToBonusKey(final int x, final int y) throws InvalidPositionException {
+        if (VER_BONUS_COUNT<=y || HOR_BONUS_COUNT<=x)
             throw new InvalidPositionException();
 
-        return (p.getY()<<16) | p.getX();
+        return (y<<16) | x;
     }
 
     static Point<Integer> FromBonusKey(final int key) throws InvalidPositionException {

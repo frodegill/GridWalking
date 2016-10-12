@@ -10,11 +10,23 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.Overlay;
 
+import java.util.HashSet;
+
 
 public class BonusOverlay extends Overlay {
 
+    static final private int MAX_DRAW_LEVEL = 4;
+
+    static Paint white = new Paint();
+    static Paint black = new Paint();
+
     public BonusOverlay(Context ctx) {
         super(ctx);
+
+        white.setColor(Color.argb(0x80, 0xFF, 0xFF, 0xFF));
+        white.setStyle(Paint.Style.STROKE);
+
+        black.setColor(Color.argb(0x80, 0x00, 0x00, 0x00));
     }
 
     @Override
@@ -24,7 +36,7 @@ public class BonusOverlay extends Overlay {
         }
 
         int gridLevel = Grid.OsmToGridLevel(mapView.getZoomLevel());
-        if (4<=gridLevel) {
+        if (MAX_DRAW_LEVEL < gridLevel) {
             return;
         }
 
@@ -45,19 +57,20 @@ public class BonusOverlay extends Overlay {
         android.graphics.Point point = null;
         GeoPoint geoPoint;
 
-        Paint white = new Paint();
-        white.setColor(Color.argb(0x80, 0xFF, 0xFF, 0xFF));
-        white.setStyle(Paint.Style.STROKE);
         white.setStrokeWidth(radius/4);
 
-        Paint black = new Paint();
-        black.setColor(Color.argb(0x80, 0x00, 0x00, 0x00));
+        HashSet<Integer> drawnBonuses = new HashSet();
+        int x, y, key;
+        Bonus bonus = GameState.getInstance().getBonus();
+        for (y=bottomGrid; y<=(topGrid+1); y++) {
+            for (x=leftGrid; x<=(rightGrid+1); x++) {
+                try {
+                    key = Bonus.ToBonusKey(x, y);
+                } catch (InvalidPositionException e) {
+                    continue;
+                }
 
-        int x, y;
-        Bonus  bonus = GameState.getInstance().getBonus();
-        for (y=bottomGrid; y<=topGrid; y++) {
-            for (x=leftGrid; x<=rightGrid; x++) {
-                if (bonus.Contains(x, y)) {
+                if (bonus.Contains(key) || drawnBonuses.contains(key)) {
                     continue;
                 }
 
@@ -67,6 +80,7 @@ public class BonusOverlay extends Overlay {
 
                 canvas.drawCircle(point.x, point.y, 2*radius, white);
                 canvas.drawCircle(point.x, point.y, radius, black);
+                drawnBonuses.add(key);
             }
         }
     }
