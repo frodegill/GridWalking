@@ -14,6 +14,7 @@ public class Grid {
     static final double AVERAGE_CIRCUMFENCE_OF_EARTH = AVERAGE_RADIUS_OF_EARTH*2*Math.PI; //meters
 
     static final byte LEVEL_COUNT = 15;
+    static final byte LEVEL_0 = 0;
     private static final int HOR_GRID_COUNT = (1<<(LEVEL_COUNT-1))*2; //Less than 2^32. Times two because East and West
     private static final int VER_GRID_COUNT = HOR_GRID_COUNT/2; //Less than 2^31
 
@@ -75,7 +76,7 @@ public class Grid {
     }
 
     public boolean Discover(final Point<Double> pos) throws InvalidPositionException {
-        return DiscoverGrid(new Point(ToHorizontalGrid(pos.getX()), ToVerticalGrid(pos.getY())));
+        return DiscoverGrid(new Point(ToHorizontalGrid(pos.getX(), LEVEL_0), ToVerticalGrid(pos.getY(), LEVEL_0)));
     }
 
     private boolean DiscoverGrid(final Point<Integer> p) throws InvalidPositionException {
@@ -162,7 +163,7 @@ public class Grid {
         }
     }
 
-    static int ToHorizontalGrid(double x_pos) {
+    static int ToHorizontalGrid(double x_pos, final byte level) {
         if (WEST>x_pos) {
             x_pos += HOR_DEGREES;
         } else if (EAST<=x_pos) {
@@ -173,41 +174,47 @@ public class Grid {
         if (HOR_GRID_COUNT==value)
             value = HOR_GRID_COUNT-1;
 
+        value &= ~((1<<level) - 1);
         return value;
     }
 
-    static int ToHorizontalGridBounded(final double x_pos) {
+    static int ToHorizontalGridBounded(final double x_pos, final byte level) {
         if (Grid.WEST>x_pos) {
-            return ToHorizontalGridBounded(Grid.WEST);
+            return ToHorizontalGridBounded(Grid.WEST,level);
         } else if (Grid.EAST<x_pos) {
-            return ToHorizontalGridBounded(Grid.EAST);
+            return ToHorizontalGridBounded(Grid.EAST, level);
         }
 
         int value = new Double(HOR_GRID_COUNT * ((x_pos-WEST)/(HOR_DEGREES))).intValue();
         if (HOR_GRID_COUNT==value)
             value = HOR_GRID_COUNT-1;
 
+        value &= ~((1<<level) - 1);
         return value;
     }
 
-    static int ToVerticalGrid(final double y_pos) throws InvalidPositionException {
+    static int ToVerticalGrid(final double y_pos, final byte level) throws InvalidPositionException {
         if (GRID_MAX_SOUTH>y_pos || GRID_MAX_NORTH<=y_pos)
             throw new InvalidPositionException();
 
-        return new Double(VER_GRID_COUNT * ((y_pos-GRID_MAX_SOUTH)/(VER_GRID_DEGREES))).intValue();
+        int value = new Double(VER_GRID_COUNT * ((y_pos-GRID_MAX_SOUTH)/(VER_GRID_DEGREES))).intValue();
+
+        value &= ~((1<<level) - 1);
+        return value;
     }
 
-    static int ToVerticalGridBounded(final double y_pos) {
+    static int ToVerticalGridBounded(final double y_pos, final byte level) {
         if (Grid.GRID_MAX_SOUTH>y_pos) {
-            return ToVerticalGridBounded(Grid.GRID_MAX_SOUTH);
+            return ToVerticalGridBounded(Grid.GRID_MAX_SOUTH, level);
         } else if (Grid.GRID_MAX_NORTH<y_pos) {
-            return ToVerticalGridBounded(Grid.GRID_MAX_NORTH);
+            return ToVerticalGridBounded(Grid.GRID_MAX_NORTH, level);
         }
 
         int value = new Double(VER_GRID_COUNT * ((y_pos-GRID_MAX_SOUTH)/(VER_GRID_DEGREES))).intValue();
         if (VER_GRID_COUNT<=value)
             value = VER_GRID_COUNT-1;
 
+        value &= ~((1<<level) - 1);
         return value;
     }
 
@@ -299,14 +306,14 @@ public class Grid {
         }
     }
 
-    static int OsmToGridLevel(int osmZoomLevel) {
+    static byte OsmToGridLevel(int osmZoomLevel) {
         int gridLevel = 15 - osmZoomLevel;
         if (0>gridLevel) {
             gridLevel = 0;
         } else if (LEVEL_COUNT<=gridLevel) {
             gridLevel = LEVEL_COUNT-1;
         }
-        return gridLevel;
+        return (byte)gridLevel;
     }
 
     public String getScoreString() {
