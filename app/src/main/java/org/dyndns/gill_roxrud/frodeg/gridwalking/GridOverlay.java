@@ -105,7 +105,7 @@ public class GridOverlay extends Overlay {
                     try {
                         Long gridLeftKey = Grid.ToKey(currentLeftGrid, y);
                         Long gridRightKey = Grid.ToKey(currentRightGrid, y);
-                        currentSet = Grid.grids[currentLevel].subSet(gridLeftKey, gridRightKey);
+                        currentSet = Grid.grids[currentLevel].subSet(gridLeftKey, gridRightKey+currentStepping);
                     } catch (InvalidPositionException e) {
                         continue;
                     }
