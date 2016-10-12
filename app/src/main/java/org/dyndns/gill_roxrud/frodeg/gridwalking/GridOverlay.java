@@ -18,6 +18,8 @@ import java.util.SortedSet;
 
 public class GridOverlay extends Overlay {
 
+    static final private int DRAW_LEVEL_DEPTH = 5;
+
     private MapFragment mapFragment;
 
 
@@ -76,7 +78,7 @@ public class GridOverlay extends Overlay {
         int canvasHeight = canvas.getHeight();
         float line_halfwidth = Math.min(canvasWidth, canvasHeight) / 320;
 
-        byte fromLevel = (byte) Math.max(gridLevel-4, Grid.LEVEL_0);
+        byte fromLevel = (byte) Math.max(gridLevel-DRAW_LEVEL_DEPTH, Grid.LEVEL_0);
 
         byte currentLevel;
         int y;
