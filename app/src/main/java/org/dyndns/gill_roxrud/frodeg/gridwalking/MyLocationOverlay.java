@@ -17,9 +17,16 @@ import org.osmdroid.views.overlay.Overlay;
 
 public class MyLocationOverlay extends Overlay {
 
+    static Paint red = new Paint();
+    static Paint black = new Paint();
 
     public MyLocationOverlay(Context ctx) {
         super(ctx);
+
+        red.setColor(Color.argb(0x80, 0xC0, 0x00, 0x00));
+        red.setStyle(Paint.Style.STROKE);
+
+        black.setColor(Color.argb(0x80, 0x00, 0x00, 0x00));
     }
 
     @Override
@@ -32,16 +39,17 @@ public class MyLocationOverlay extends Overlay {
         int canvasHeight = canvas.getHeight();
         float line_halfwidth = Math.min(canvasWidth, canvasHeight) / 320;
 
-        Paint red = new Paint();
-        red.setColor(Color.argb(0x80, 0xC0, 0x00, 0x00));
-        red.setStyle(Paint.Style.STROKE);
         red.setStrokeWidth(line_halfwidth);
 
-        Paint black = new Paint();
-        black.setColor(Color.argb(0x80, 0x00, 0x00, 0x00));
+        Projection projection = mapView.getProjection();
+        Point<Double> currentPos = GameState.getInstance().getCurrentPos();
+        GeoPoint geoPoint = new GeoPoint(currentPos.getY(), currentPos.getX());
+        android.graphics.Point reusePoint = null;
+        reusePoint = projection.toProjectedPixels(geoPoint, reusePoint);
+        reusePoint = projection.toPixelsFromProjected(reusePoint, reusePoint);
 
-        canvas.drawCircle(canvasWidth/2, canvasHeight/2, line_halfwidth*16, red);
-        canvas.drawCircle(canvasWidth/2, canvasHeight/2, line_halfwidth*4, black);
+        canvas.drawCircle(reusePoint.x, reusePoint.y, line_halfwidth*16, red);
+        canvas.drawCircle(reusePoint.x, reusePoint.y, line_halfwidth*4, black);
     }
 
 }
