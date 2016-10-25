@@ -88,10 +88,6 @@ public class GridOverlay extends Overlay {
                     continue;
                 }
 
-                Paint currentColourMarker = new Paint(Grid.gridColours[currentLevel]);
-                currentColourMarker.setAlpha(0xC0);
-                currentColourMarker.setStrokeWidth(4*line_halfwidth);
-
                 int currentStepping = 1<<currentLevel;
                 int currentTopGrid = Grid.ToVerticalGridBounded(ne.getLatitude(), currentLevel);
                 int currentLeftGrid = Grid.ToHorizontalGrid(sw.getLongitude(), currentLevel);
@@ -115,7 +111,7 @@ public class GridOverlay extends Overlay {
                     currentKeyIterator = currentSet.iterator();
                     while (currentKeyIterator.hasNext()) {
                         drawSquare(canvas, projection, currentKeyIterator.next(), currentLevel,
-                                   Grid.gridColours[currentLevel], currentColourMarker,
+                                   Grid.gridColours[currentLevel],
                                    tmpPoint1, tmpPoint2);
                     }
                 }
@@ -125,10 +121,9 @@ public class GridOverlay extends Overlay {
 
     private void drawSquare(Canvas canvas, Projection projection,
                             long gridKey, int gridLevel,
-                            Paint squareColour, Paint cornerColour,
+                            Paint squareColour,
                             android.graphics.Point reusePoint1, android.graphics.Point reusePoint2) {
         int gridStepping = 1<<gridLevel;
-        int gridMask = (gridStepping<<1) - 1;
 
         int gridX;
         int gridY;
@@ -144,14 +139,6 @@ public class GridOverlay extends Overlay {
         android.graphics.Point currentUpperRight = GridToPixel(gridX+gridStepping, gridY+gridStepping, projection, reusePoint2);
 
         canvas.drawRect(new Rect(currentLowerLeft.x, currentUpperRight.y, currentUpperRight.x, currentLowerLeft.y), squareColour);
-
-        boolean isLeftSquare = (gridX&gridMask)==0;
-        boolean isBottomSquare = (gridY&gridMask)==0;
-        canvas.drawLine((float)(currentLowerLeft.x+(isLeftSquare?0.9:0.1)*(currentUpperRight.x-currentLowerLeft.x)),
-                (float)(isBottomSquare?currentUpperRight.y:currentLowerLeft.y),
-                (float)(isLeftSquare?currentUpperRight.x:currentLowerLeft.x),
-                (float)(currentLowerLeft.y+(isBottomSquare?0.9:0.1)*(currentUpperRight.y-currentLowerLeft.y)),
-                cornerColour);
     }
 
 
