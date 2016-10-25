@@ -12,6 +12,10 @@ import java.util.InputMismatchException;
 
 public class Persist {
 
+    private static final long PERSIST_INTERVAL = 30*1000;
+    private long mostRecentPersist = 0;
+    private boolean isModified = false;
+
     private static final String FILENAME = "filename";
 
     private static final byte[] SALT = new byte[] {94, -19, 78, -35, -34, -9, 16, 10}; // http://www.random.org
@@ -19,7 +23,14 @@ public class Persist {
     private static final byte[] buffer = new byte[8];
 
 
-    public static void Load(Grid grid, Bonus bonus) {
+    public void setIsModified() {
+        isModified = true;
+    }
+
+    public void Load() {
+        Grid grid = GameState.getInstance().getGrid();
+        Bonus bonus = GameState.getInstance().getBonus();
+
         InputStream stream = null;
         try {
             stream = new FileInputStream(FILENAME);
@@ -82,50 +93,69 @@ public class Persist {
                 } catch (IOException e) {
                 }
             }
+
+            mostRecentPersist = System.currentTimeMillis();
+            isModified = false;
         }
     }
 
-    public static void Save(Grid grid, Bonus bonus) {
-        OutputStream stream = null;
-        try {
-            stream = new FileOutputStream(FILENAME);
-
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            digest.update(SALT);
-
-            int i;
-            //Write Grid
-            synchronized (grid.gridsLock) {
-                for (i = 0; Grid.LEVEL_COUNT>i; i++) {
-                    Write32Bit(grid.grids[i].size(), stream, digest);
-                    for (Long value : grid.grids[i]) {
-                        Write64Bit(value, stream, digest);
-                    }
-                    Write8Bit((byte) 0, stream, digest);
-                }
-            }
-
-            //Write Bonus
-            Write32Bit(bonus.bonuses.size(), stream, digest);
-            for (Integer value : bonus.bonuses) {
-                Write32Bit(value, stream, digest);
-            }
-
-            Write8Bit((byte) 0, stream, digest);
-
-            byte[] actual_digest = digest.digest();
-            for (i = 0; 32 > i; i++) {
-                Write8Bit(actual_digest[i], stream, digest);
-            }
+    public void saveIfModified() {
+        if (!isModified) {
+            return;
         }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            if(stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException e) {
+
+        long now = System.currentTimeMillis();
+        if (PERSIST_INTERVAL>(now-mostRecentPersist)) {
+            isModified = true;
+            return;
+        }
+
+        Grid grid = GameState.getInstance().getGrid();
+        Bonus bonus = GameState.getInstance().getBonus();
+        if (false) {
+            OutputStream stream = null;
+            try {
+                stream = new FileOutputStream(FILENAME);
+
+                MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                digest.update(SALT);
+
+                int i;
+                //Write Grid
+                synchronized (grid.gridsLock) {
+                    for (i = 0; Grid.LEVEL_COUNT > i; i++) {
+                        Write32Bit(grid.grids[i].size(), stream, digest);
+                        for (Long value : grid.grids[i]) {
+                            Write64Bit(value, stream, digest);
+                        }
+                        Write8Bit((byte) 0, stream, digest);
+                    }
                 }
+
+                //Write Bonus
+                Write32Bit(bonus.bonuses.size(), stream, digest);
+                for (Integer value : bonus.bonuses) {
+                    Write32Bit(value, stream, digest);
+                }
+
+                Write8Bit((byte) 0, stream, digest);
+
+                byte[] actual_digest = digest.digest();
+                for (i = 0; 32 > i; i++) {
+                    Write8Bit(actual_digest[i], stream, digest);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
+                if (stream != null) {
+                    try {
+                        stream.close();
+                    } catch (IOException e) {
+                    }
+                }
+
+                mostRecentPersist = System.currentTimeMillis();
+                isModified = false;
             }
         }
     }

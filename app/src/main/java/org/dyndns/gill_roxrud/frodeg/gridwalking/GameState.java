@@ -6,6 +6,7 @@ public class GameState {
     private static GameState instance = null;
     private Grid grid;
     private Bonus bonus;
+    private Persist persist;
     boolean showMap;
 
     Point<Double> currentPos = new Point(Grid.EAST+1.0, Grid.NORTH+1.0);
@@ -15,9 +16,10 @@ public class GameState {
 
         grid = new Grid();
         bonus = new Bonus();
+        persist = new Persist();
         showMap = true;
 
-        Load();
+//        persist.Load();
     }
 
     public static GameState getInstance() {
@@ -39,23 +41,14 @@ public class GameState {
         return currentPos;
     }
 
-    void Load() {
-        Persist persist = new Persist();
-        persist.Load(grid, bonus);
-    }
-
-    void Save() {
-        Persist persist = new Persist();
-        persist.Save(grid, bonus);
-    }
-
     public void onPositionChanged(MapFragment mapFragment, double x_pos, double y_pos) {
         currentPos.set(x_pos, y_pos);
         try {
             if (true == grid.Discover(currentPos) || null != bonus.ValidBonusKeyFromPos(currentPos)) {
-                Save();
+                persist.setIsModified();
                 mapFragment.onScoreUpdated();
             }
+            persist.saveIfModified();
         } catch (InvalidPositionException e) {
         }
     }
