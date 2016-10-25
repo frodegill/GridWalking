@@ -29,23 +29,9 @@ public class BonusOverlay extends Overlay {
         black.setColor(Color.argb(0x80, 0x00, 0x00, 0x00));
     }
 
-    @Override
-    protected void draw(Canvas canvas, MapView mapView, boolean shadow) {
-        if (shadow) {
-            return;
-        }
-
+    private void draw(Canvas canvas, MapView mapView, IGeoPoint ne, IGeoPoint sw) {
         int gridLevel = Grid.OsmToGridLevel(mapView.getZoomLevel());
         if (MAX_DRAW_LEVEL < gridLevel) {
-            return;
-        }
-
-        Projection projection = mapView.getProjection();
-        float radius = projection.metersToPixels(Bonus.BONUS_SIZE_RADIUS);
-
-        IGeoPoint ne = projection.getNorthEast();
-        IGeoPoint sw = projection.getSouthWest();
-        if (Grid.GRID_MAX_NORTH<sw.getLatitude() || Grid.GRID_MAX_SOUTH>ne.getLatitude()) {
             return;
         }
 
@@ -56,6 +42,9 @@ public class BonusOverlay extends Overlay {
 
         android.graphics.Point point = null;
         GeoPoint geoPoint;
+
+        Projection projection = mapView.getProjection();
+        float radius = projection.metersToPixels(Bonus.BONUS_SIZE_RADIUS);
 
         white.setStrokeWidth(radius/4);
 
@@ -82,6 +71,29 @@ public class BonusOverlay extends Overlay {
                 canvas.drawCircle(point.x, point.y, radius, black);
                 drawnBonuses.add(key);
             }
+        }
+    }
+
+    @Override
+    protected void draw(Canvas canvas, MapView mapView, boolean shadow) {
+        if (shadow) {
+            return;
+        }
+
+        Projection projection = mapView.getProjection();
+        IGeoPoint ne = projection.getNorthEast();
+        IGeoPoint sw = projection.getSouthWest();
+        if (Grid.GRID_MAX_NORTH<sw.getLatitude() || Grid.GRID_MAX_SOUTH>ne.getLatitude()) {
+            return;
+        }
+
+        if (ne.getLongitude() < sw.getLongitude()) { //Across date-line?
+            GeoPoint neEastBorder = new GeoPoint(ne.getLatitudeE6(), Grid.EAST*1E6-1);
+            GeoPoint swWestBorder = new GeoPoint(sw.getLatitudeE6(), Grid.WEST*1E6);
+            draw(canvas, mapView, neEastBorder, sw);
+            draw(canvas, mapView, ne, swWestBorder);
+        } else {
+            draw(canvas, mapView, ne, sw);
         }
     }
 
