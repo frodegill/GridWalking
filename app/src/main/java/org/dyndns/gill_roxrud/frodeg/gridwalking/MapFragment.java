@@ -43,8 +43,6 @@ public class MapFragment extends Fragment implements LocationListener {
     private MapView mapView;
     private View tempPopupMenuParentView = null;
 
-    private Location location = null;
-
 
     public static MapFragment newInstance() {
         return new MapFragment();
@@ -106,7 +104,7 @@ public class MapFragment extends Fragment implements LocationListener {
         edit.putInt(PREFS_SCROLL_Y, mapView.getScrollY());
         edit.putInt(PREFS_ZOOM_LEVEL, mapView.getZoomLevel());
         edit.putBoolean(PREFS_USE_DATA_CONNECTION, mapView.useDataConnection());
-        edit.commit();
+        edit.apply();
 
         super.onPause();
         DisableLocationUpdates();
@@ -221,16 +219,21 @@ public class MapFragment extends Fragment implements LocationListener {
     }
 
     public void onScoreUpdated() {
-        TextView view = (TextView) getView().findViewById(R.id.score);
-        view.setText(GameState.getInstance().getGrid().getScoreString());
+        TextView view;
+        try {
+            view = (TextView) getView().findViewById(R.id.score);
+            view.setText(GameState.getInstance().getGrid().getScoreString());
+        }
+        catch(NullPointerException e) {}
 
-        view = (TextView) getView().findViewById(R.id.bonus);
-        view.setText(GameState.getInstance().getBonus().getBonusString());
+        try {
+            view = (TextView) getView().findViewById(R.id.bonus);
+            view.setText(GameState.getInstance().getBonus().getBonusString());
+        } catch(NullPointerException e) {}
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        this.location = location;
         GameState.getInstance().onPositionChanged(this, location.getLongitude(), location.getLatitude());
 
         GeoPoint position = new GeoPoint(location.getLatitude(), location.getLongitude());

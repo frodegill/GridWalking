@@ -31,19 +31,19 @@ public class Grid {
 
     private static final byte MAX_MRU_COUNT = 10;
 
-    List<Long> mru_list = new ArrayList();
+    List<Long> mru_list = new ArrayList<>();
 
     static SortedSet<Long> grids[];
-    static Object gridsLock = new Object();
+    static final Object gridsLock = new Object();
 
-    static Paint gridColours[];
+    Paint gridColours[] = null;
 
 
     public Grid() {
         if (grids == null) {
             grids = new SortedSet[LEVEL_COUNT];
             for (byte i = 0; i<LEVEL_COUNT; i++) {
-                grids[i] = new TreeSet();
+                grids[i] = new TreeSet<>();
             }
         }
         if (gridColours == null) {
@@ -76,7 +76,7 @@ public class Grid {
     }
 
     public boolean Discover(final Point<Double> pos) throws InvalidPositionException {
-        return DiscoverGrid(new Point(ToHorizontalGrid(pos.getX(), LEVEL_0), ToVerticalGrid(pos.getY(), LEVEL_0)));
+        return DiscoverGrid(new Point<>(ToHorizontalGrid(pos.getX(), LEVEL_0), ToVerticalGrid(pos.getY(), LEVEL_0)));
     }
 
     private boolean DiscoverGrid(final Point<Integer> p) throws InvalidPositionException {
@@ -126,7 +126,7 @@ public class Grid {
         if (LEVEL_COUNT==level)
             return;
 
-        Rect r = GetBoundingBox(p, (byte)(level+1));
+        Rect<Integer> r = GetBoundingBox(p, (byte)(level+1));
 
         long keys[] = new long[4];
         keys[0] = ToKey(r.getLowerLeft());
@@ -170,7 +170,7 @@ public class Grid {
             x_pos -= HOR_DEGREES;
         }
 
-        int value = new Double(HOR_GRID_COUNT * ((x_pos-WEST)/(HOR_DEGREES))).intValue();
+        int value = Double.valueOf(HOR_GRID_COUNT * ((x_pos-WEST)/(HOR_DEGREES))).intValue();
         if (HOR_GRID_COUNT==value)
             value = HOR_GRID_COUNT-1;
 
@@ -185,7 +185,7 @@ public class Grid {
             return ToHorizontalGridBounded(Grid.EAST, level);
         }
 
-        int value = new Double(HOR_GRID_COUNT * ((x_pos-WEST)/(HOR_DEGREES))).intValue();
+        int value = Double.valueOf(HOR_GRID_COUNT * ((x_pos-WEST)/(HOR_DEGREES))).intValue();
         if (HOR_GRID_COUNT==value)
             value = HOR_GRID_COUNT-1;
 
@@ -197,7 +197,7 @@ public class Grid {
         if (GRID_MAX_SOUTH>y_pos || GRID_MAX_NORTH<=y_pos)
             throw new InvalidPositionException();
 
-        int value = new Double(VER_GRID_COUNT * ((y_pos-GRID_MAX_SOUTH)/(VER_GRID_DEGREES))).intValue();
+        int value = Double.valueOf(VER_GRID_COUNT * ((y_pos-GRID_MAX_SOUTH)/(VER_GRID_DEGREES))).intValue();
 
         value &= ~((1<<level) - 1);
         return value;
@@ -210,7 +210,7 @@ public class Grid {
             return ToVerticalGridBounded(Grid.GRID_MAX_NORTH, level);
         }
 
-        int value = new Double(VER_GRID_COUNT * ((y_pos-GRID_MAX_SOUTH)/(VER_GRID_DEGREES))).intValue();
+        int value = Double.valueOf(VER_GRID_COUNT * ((y_pos-GRID_MAX_SOUTH)/(VER_GRID_DEGREES))).intValue();
         if (VER_GRID_COUNT<=value)
             value = VER_GRID_COUNT-1;
 
@@ -231,15 +231,15 @@ public class Grid {
             throw new InvalidPositionException();
 
         int mask = (1<<level) - 1;
-        return new Point(p.getX() & ~mask, p.getY() & ~mask);
+        return new Point<>(p.getX() & ~mask, p.getY() & ~mask);
     }
 
-    private Rect GetBoundingBox(final Point<Integer> p, final byte level) throws InvalidPositionException {
+    private Rect<Integer> GetBoundingBox(final Point<Integer> p, final byte level) throws InvalidPositionException {
         if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX() || LEVEL_COUNT<=level)
             throw new InvalidPositionException();
 
         int mask = (1<<level) - 1;
-        Rect<Integer> r = new Rect();
+        Rect<Integer> r = new Rect<>();
         r.setLeft(p.getX() & ~mask);
         r.setBottom(p.getY() & ~mask);
         r.setRight(r.getLeft() + mask);
@@ -264,12 +264,11 @@ public class Grid {
         if (VER_GRID_COUNT<=y || HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
 
-        long key = (((long)y)<<32) | x;
-        return key;
+        return (((long)y)<<32) | x;
     }
 
     Point<Integer> FromKey(final long key) throws InvalidPositionException {
-        Point<Integer> p = new Point((int)(key&0xFFFFFFFF), (int)((key>>32)&0xFFFFFFFF));
+        Point<Integer> p = new Point<>((int)key, (int)(key>>32));
         if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX())
             throw new InvalidPositionException();
 
@@ -277,7 +276,7 @@ public class Grid {
     }
 
     static int XFromKey(final long key) throws InvalidPositionException {
-        int x = (int)(key&0xFFFFFFFF);
+        int x = (int)key;
         if (HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
 
@@ -285,7 +284,7 @@ public class Grid {
     }
 
     static int YFromKey(final long key) throws InvalidPositionException {
-        int y = (int)((key>>32)&0xFFFFFFFF);
+        int y = (int)(key>>32);
         if (VER_GRID_COUNT<=y)
             throw new InvalidPositionException();
 

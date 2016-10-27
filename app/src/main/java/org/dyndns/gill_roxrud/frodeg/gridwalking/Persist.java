@@ -40,13 +40,13 @@ public class Persist {
 
             int i, count;
             //Read Grid
-            synchronized (grid.gridsLock) {
+            synchronized (Grid.gridsLock) {
                 for (i = 0; Grid.LEVEL_COUNT>i; i++) {
-                    grid.grids[i].clear();
+                    Grid.grids[i].clear();
 
                     count = Read32Bit(stream, digest);
                     while (0 < count) {
-                        grid.grids[i].add(Read64Bit(stream, digest));
+                        Grid.grids[i].add(Read64Bit(stream, digest));
                     }
 
                     byte crc = Read8Bit(stream, digest);
@@ -58,10 +58,10 @@ public class Persist {
             }
 
             //Read Bonus
-            bonus.bonuses.clear();
+            Bonus.bonuses.clear();
             count = Read32Bit(stream, digest);
             while (0 < count) {
-                bonus.bonuses.add(Read32Bit(stream, digest));
+                Bonus.bonuses.add(Read32Bit(stream, digest));
             }
 
             byte crc = Read8Bit(stream, digest);
@@ -79,13 +79,13 @@ public class Persist {
             }
         }
         catch (Exception e) {
-            synchronized (grid.gridsLock) {
+            synchronized (Grid.gridsLock) {
                 for (int i = 0; Grid.LEVEL_COUNT>i; i++) {
-                    grid.grids[i].clear();
+                    Grid.grids[i].clear();
                 }
                 grid.mru_list.clear();
             }
-            bonus.bonuses.clear();
+            Bonus.bonuses.clear();
         } finally {
             if(stream != null) {
                 try {
@@ -122,10 +122,10 @@ public class Persist {
 
                 int i;
                 //Write Grid
-                synchronized (grid.gridsLock) {
+                synchronized (Grid.gridsLock) {
                     for (i = 0; Grid.LEVEL_COUNT > i; i++) {
-                        Write32Bit(grid.grids[i].size(), stream, digest);
-                        for (Long value : grid.grids[i]) {
+                        Write32Bit(Grid.grids[i].size(), stream, digest);
+                        for (Long value : Grid.grids[i]) {
                             Write64Bit(value, stream, digest);
                         }
                         Write8Bit((byte) 0, stream, digest);
@@ -133,8 +133,8 @@ public class Persist {
                 }
 
                 //Write Bonus
-                Write32Bit(bonus.bonuses.size(), stream, digest);
-                for (Integer value : bonus.bonuses) {
+                Write32Bit(Bonus.bonuses.size(), stream, digest);
+                for (Integer value : Bonus.bonuses) {
                     Write32Bit(value, stream, digest);
                 }
 
@@ -161,19 +161,25 @@ public class Persist {
     }
 
     private static byte Read8Bit(InputStream s, MessageDigest digest) throws IOException, DigestException {
-        s.read(buffer, 0, 1);
+        if (s.read(buffer, 0, 1) != 1) {
+            throw new IOException("Expected to read 1 byte");
+        }
         digest.update(buffer, 0, 1);
         return buffer[0];
     }
 
     private static int Read32Bit(InputStream s, MessageDigest digest) throws IOException, DigestException {
-        s.read(buffer, 0, 4);
+        if (s.read(buffer, 0, 4) != 4) {
+            throw new IOException("Expected to read 4 bytes");
+        }
         digest.update(buffer, 0, 4);
         return buffer[0]<<24 | buffer[1]<<16 | buffer[2]<<8 | buffer[3];
     }
 
     private static long Read64Bit(InputStream s, MessageDigest digest) throws IOException, DigestException {
-        s.read(buffer, 0, 8);
+        if (s.read(buffer, 0, 8) != 8) {
+            throw new IOException("Expected to read 8 bytes");
+        }
         digest.update(buffer, 0, 8);
         return buffer[0]<<56 | buffer[1]<<48 | buffer[2]<<40 | buffer[3]<<32 | buffer[4]<<24 | buffer[5]<<16 | buffer[6]<<8 | buffer[7];
     }

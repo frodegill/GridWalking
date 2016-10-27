@@ -28,6 +28,14 @@ public class GridOverlay extends Overlay {
         this.mapFragment = mapFragment;
     }
 
+    private void draw(Canvas canvas, MapView mapView, IGeoPoint ne, IGeoPoint sw) {
+        Projection projection = mapView.getProjection();
+        byte gridLevel = Grid.OsmToGridLevel(mapView.getZoomLevel());
+
+        drawGrid(canvas, projection, sw, ne, gridLevel);
+        drawSquares(canvas, projection, sw, ne, gridLevel);
+    }
+
     @Override
     protected void draw(Canvas canvas, MapView mapView, boolean shadow) {
         if (shadow) {
@@ -41,10 +49,14 @@ public class GridOverlay extends Overlay {
             return;
         }
 
-        byte gridLevel = Grid.OsmToGridLevel(mapView.getZoomLevel());
-
-        drawGrid(canvas, projection, sw, ne, gridLevel);
-        drawSquares(canvas, projection, sw, ne, gridLevel);
+        if (ne.getLongitude() < sw.getLongitude()) { //Across date-line?
+            GeoPoint neEastBorder = new GeoPoint(ne.getLatitudeE6(), Grid.EAST*1E6-1);
+            GeoPoint swWestBorder = new GeoPoint(sw.getLatitudeE6(), Grid.WEST*1E6);
+            draw(canvas, mapView, neEastBorder, sw);
+            draw(canvas, mapView, ne, swWestBorder);
+        } else {
+            draw(canvas, mapView, ne, sw);
+        }
     }
 
     private void drawGrid(Canvas canvas, Projection projection, IGeoPoint sw, IGeoPoint ne, byte gridLevel) {
@@ -74,10 +86,6 @@ public class GridOverlay extends Overlay {
     }
 
     private void drawSquares(Canvas canvas, Projection projection, IGeoPoint sw, IGeoPoint ne, byte gridLevel) {
-        int canvasWidth = canvas.getWidth();
-        int canvasHeight = canvas.getHeight();
-        float line_halfwidth = Math.min(canvasWidth, canvasHeight) / 320;
-
         byte fromLevel = (byte) Math.max(gridLevel-DRAW_LEVEL_DEPTH, Grid.LEVEL_0);
 
         byte currentLevel;
@@ -111,7 +119,7 @@ public class GridOverlay extends Overlay {
                     currentKeyIterator = currentSet.iterator();
                     while (currentKeyIterator.hasNext()) {
                         drawSquare(canvas, projection, currentKeyIterator.next(), currentLevel,
-                                   Grid.gridColours[currentLevel],
+                                   GameState.getInstance().getGrid().gridColours[currentLevel],
                                    tmpPoint1, tmpPoint2);
                     }
                 }

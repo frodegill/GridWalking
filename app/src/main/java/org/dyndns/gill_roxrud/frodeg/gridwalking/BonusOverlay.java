@@ -48,7 +48,7 @@ public class BonusOverlay extends Overlay {
 
         white.setStrokeWidth(radius/4);
 
-        HashSet<Integer> drawnBonuses = new HashSet();
+        HashSet<Integer> drawnBonuses = new HashSet<>();
         int x, y, key;
         Bonus bonus = GameState.getInstance().getBonus();
         for (y=bottomGrid; y<=(topGrid+1); y++) {
