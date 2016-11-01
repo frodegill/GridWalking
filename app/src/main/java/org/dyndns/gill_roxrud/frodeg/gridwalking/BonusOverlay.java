@@ -30,7 +30,10 @@ public class BonusOverlay extends Overlay {
     }
 
     private void draw(Canvas canvas, MapView mapView, IGeoPoint ne, IGeoPoint sw) {
-        int gridLevel = Grid.OsmToGridLevel(mapView.getZoomLevel());
+        Grid grid = GameState.getInstance().getGrid();
+        Bonus bonus = GameState.getInstance().getBonus();
+
+        int gridLevel = grid.OsmToGridLevel(mapView.getZoomLevel());
         if (MAX_DRAW_LEVEL < gridLevel) {
             return;
         }
@@ -50,7 +53,6 @@ public class BonusOverlay extends Overlay {
 
         HashSet<Integer> drawnBonuses = new HashSet<>();
         int x, y, key;
-        Bonus bonus = GameState.getInstance().getBonus();
         for (y=bottomGrid; y<=(topGrid+1); y++) {
             for (x=leftGrid; x<=(rightGrid+1); x++) {
                 try {

@@ -3,6 +3,8 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 import android.graphics.Color;
 import android.graphics.Paint;
 
+import org.osmdroid.api.IGeoPoint;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
@@ -99,7 +101,7 @@ public class Grid {
         return true;
     }
 
-    private byte DiscoveredLevel(final Point<Integer> p) throws InvalidPositionException {
+    public byte DiscoveredLevel(final Point<Integer> p) throws InvalidPositionException {
         Point<Integer> lowerLeft;
         long key;
         byte level;
@@ -163,7 +165,7 @@ public class Grid {
         }
     }
 
-    static int ToHorizontalGrid(double x_pos, final byte level) {
+    public int ToHorizontalGrid(double x_pos, final byte level) {
         if (WEST>x_pos) {
             x_pos += HOR_DEGREES;
         } else if (EAST<=x_pos) {
@@ -178,7 +180,7 @@ public class Grid {
         return value;
     }
 
-    static int ToHorizontalGridBounded(final double x_pos, final byte level) {
+    private int ToHorizontalGridBounded(final double x_pos, final byte level) {
         if (Grid.WEST>x_pos) {
             return ToHorizontalGridBounded(Grid.WEST,level);
         } else if (Grid.EAST<x_pos) {
@@ -193,7 +195,7 @@ public class Grid {
         return value;
     }
 
-    static int ToVerticalGrid(final double y_pos, final byte level) throws InvalidPositionException {
+    private int ToVerticalGrid(final double y_pos, final byte level) throws InvalidPositionException {
         if (GRID_MAX_SOUTH>y_pos || GRID_MAX_NORTH<=y_pos)
             throw new InvalidPositionException();
 
@@ -203,7 +205,7 @@ public class Grid {
         return value;
     }
 
-    static int ToVerticalGridBounded(final double y_pos, final byte level) {
+    public int ToVerticalGridBounded(final double y_pos, final byte level) {
         if (Grid.GRID_MAX_SOUTH>y_pos) {
             return ToVerticalGridBounded(Grid.GRID_MAX_SOUTH, level);
         } else if (Grid.GRID_MAX_NORTH<y_pos) {
@@ -218,11 +220,11 @@ public class Grid {
         return value;
     }
 
-    static double FromHorizontalGrid(final int x_grid) {
+    public double FromHorizontalGrid(final int x_grid) {
         return WEST + ((double)x_grid/(double)HOR_GRID_COUNT) * (HOR_DEGREES);
     }
 
-    static double FromVerticalGrid(final int y_grid) {
+    public double FromVerticalGrid(final int y_grid) {
         return GRID_MAX_SOUTH + ((double)y_grid/(double)VER_GRID_COUNT) * (VER_GRID_DEGREES);
     }
 
@@ -256,18 +258,18 @@ public class Grid {
         return r;
     }
 
-    long ToKey(final Point<Integer> p) throws InvalidPositionException {
+    public long ToKey(final Point<Integer> p) throws InvalidPositionException {
         return ToKey(p.getX(), p.getY());
     }
 
-    static long ToKey(final int x, final int y) throws InvalidPositionException {
+    public long ToKey(final int x, final int y) throws InvalidPositionException {
         if (VER_GRID_COUNT<=y || HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
 
         return (((long)y)<<32) | x;
     }
 
-    Point<Integer> FromKey(final long key) throws InvalidPositionException {
+    private Point<Integer> FromKey(final long key) throws InvalidPositionException {
         Point<Integer> p = new Point<>((int)key, (int)(key>>32));
         if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX())
             throw new InvalidPositionException();
@@ -275,7 +277,7 @@ public class Grid {
         return p;
     }
 
-    static int XFromKey(final long key) throws InvalidPositionException {
+    public int XFromKey(final long key) throws InvalidPositionException {
         int x = (int)key;
         if (HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
@@ -283,12 +285,16 @@ public class Grid {
         return x;
     }
 
-    static int YFromKey(final long key) throws InvalidPositionException {
+    public int YFromKey(final long key) throws InvalidPositionException {
         int y = (int)(key>>32);
         if (VER_GRID_COUNT<=y)
             throw new InvalidPositionException();
 
         return y;
+    }
+
+    public Point<Integer> ToGrid(final IGeoPoint geoPoint) throws InvalidPositionException {
+        return new Point<>(ToHorizontalGrid(geoPoint.getLongitude(), LEVEL_0), ToVerticalGrid(geoPoint.getLatitude(), LEVEL_0));
     }
 
     private boolean IsInMRU(final long key)
@@ -305,7 +311,7 @@ public class Grid {
         }
     }
 
-    static byte OsmToGridLevel(int osmZoomLevel) {
+    public byte OsmToGridLevel(final int osmZoomLevel) {
         int gridLevel = 15 - osmZoomLevel;
         if (0>gridLevel) {
             gridLevel = 0;

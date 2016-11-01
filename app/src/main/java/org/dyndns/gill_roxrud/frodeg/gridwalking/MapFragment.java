@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
@@ -38,10 +38,10 @@ public class MapFragment extends Fragment implements LocationListener {
     static final String PREFS_USE_DATA_CONNECTION = "useDataConnection";
 
     private boolean useDataConnection = true;
+    private Long selectdGrid = null;
 
     private SharedPreferences preferences;
     private MapView mapView;
-    private View tempPopupMenuParentView = null;
 
 
     public static MapFragment newInstance() {
@@ -129,11 +129,16 @@ public class MapFragment extends Fragment implements LocationListener {
     }
 
     @Override
-    public void onPrepareOptionsMenu(final Menu pMenu) {
-        super.onPrepareOptionsMenu(pMenu);
-        MenuItem offlineItem = pMenu.findItem(R.id.offline);
-        if (offlineItem != null) {
-            offlineItem.setChecked(!useDataConnection);
+    public void onPrepareOptionsMenu(final Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        MenuItem item = menu.findItem(R.id.offline);
+        if (item != null) {
+            item.setChecked(!useDataConnection);
+        }
+
+        item = menu.findItem(R.id.mark_visitted);
+        if (item != null) {
+            item.setVisible(selectdGrid!=null);
         }
     }
 
@@ -147,10 +152,6 @@ public class MapFragment extends Fragment implements LocationListener {
         return super.onOptionsItemSelected(item);
     }
 
-    public void toggleUseDataConnection() {
-        toggleUseDataConnection(null);
-    }
-
     private void toggleUseDataConnection(MenuItem item) {
         useDataConnection = !useDataConnection;
         if (item != null) {
@@ -161,61 +162,22 @@ public class MapFragment extends Fragment implements LocationListener {
         }
     }
 
-    protected boolean showContextMenu(final GeoPoint geoPosition) {
-        MenuInflater inflater = getActivity().getMenuInflater();
-        if (tempPopupMenuParentView != null) {
-            mapView.removeView(tempPopupMenuParentView);
-            tempPopupMenuParentView = null;
-        }
-
-        createTempPopupParentMenuView(geoPosition);
-        PopupMenu menu = new PopupMenu(getActivity(), tempPopupMenuParentView);
-
-        inflater.inflate(R.menu.activity_map, menu.getMenu());
-
-        menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                if (tempPopupMenuParentView != null) {
-                    mapView.removeView(tempPopupMenuParentView);
-                    tempPopupMenuParentView = null;
-                }
-
-                switch (item.getItemId()) {
-                    case R.id.offline:
-                        toggleUseDataConnection();
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        });
-        menu.show();
-        return true;
-    }
-
-    // inspired by org.osmdroid.bonuspack.overlays.InfoWindow
-    private View createTempPopupParentMenuView(final GeoPoint position) {
-        if (tempPopupMenuParentView != null) {
-            mapView.removeView(tempPopupMenuParentView);
-        }
-        tempPopupMenuParentView = new View(getActivity());
-        MapView.LayoutParams lp = new MapView.LayoutParams(1, 1, position, MapView.LayoutParams.CENTER, 0, 0);
-        tempPopupMenuParentView.setVisibility(View.VISIBLE);
-        mapView.addView(tempPopupMenuParentView, lp);
-        return tempPopupMenuParentView;
-    }
-
-    public void onLongPress()
+    public void onLongPress(IGeoPoint geoPoint)
     {
-        if (false) {
-            PopupMenu popup = new PopupMenu(getActivity(), mapView);
-            MenuInflater inflater = popup.getMenuInflater();
-            inflater.inflate(R.menu.activity_map, popup.getMenu());
-            popup.show();
-        } else {
-            showContextMenu(new GeoPoint(59.675330, 10.663672));
+        try {
+            Grid grid = GameState.getInstance().getGrid();
+            Point<Integer> gridPoint = grid.ToGrid(geoPoint);
+            if (-1 == grid.DiscoveredLevel(gridPoint)) {
+                selectdGrid = grid.ToKey(gridPoint);
+//                this.getActivity().openOptionsMenu();
+            } else {
+                selectdGrid = null;
+            }
+        } catch (InvalidPositionException e) {
+            selectdGrid = null;
         }
+
+        mapView.postInvalidate();
     }
 
     public void onScoreUpdated() {
