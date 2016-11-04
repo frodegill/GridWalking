@@ -117,6 +117,24 @@ public class Grid {
         return gameState.getSelectedGridKey() != oldSelectedGridKey;
     }
 
+    public boolean DiscoverSelectedGrid() {
+        GameState gameState = GameState.getInstance();
+        Long selectedGridKey = gameState.getSelectedGridKey();
+        if (selectedGridKey == null) {
+            return false;
+        }
+        try {
+            Bonus bonus = gameState.getBonus();
+            if (bonus.GetUnusedBonusCount()>0 &&
+                DiscoverGrid(FromKey(selectedGridKey))) {
+                gameState.getBonus().ConsumeBonus();
+                return true;
+            }
+        } catch (InvalidPositionException e) {
+        }
+        return false;
+    }
+
     public boolean Discover(final Point<Double> pos) throws InvalidPositionException {
         return DiscoverGrid(new Point<>(ToHorizontalGrid(pos.getX(), LEVEL_0), ToVerticalGrid(pos.getY(), LEVEL_0)));
     }

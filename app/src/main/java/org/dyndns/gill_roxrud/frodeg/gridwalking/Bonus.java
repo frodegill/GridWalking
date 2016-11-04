@@ -25,6 +25,12 @@ public class Bonus {
         return bonuses.size() - usedBonuses;
     }
 
+    public void ConsumeBonus() {
+        if (bonuses.size() > usedBonuses) {
+            usedBonuses++;
+        }
+    }
+
     public Integer ValidBonusKeyFromPos(final Point<Double> pos) throws InvalidPositionException {
         double horizontal_pos_rounding = pos.getX()+HALF_HOR_BONUS_DEGREE;
         if (Grid.EAST<=horizontal_pos_rounding) {

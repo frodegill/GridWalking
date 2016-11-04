@@ -146,6 +146,9 @@ public class MapFragment extends Fragment implements LocationListener {
             case R.id.offline:
                 toggleUseDataConnection(item);
                 return true;
+            case R.id.mark_visitted:
+                discoverSelectedGrid();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -158,6 +161,12 @@ public class MapFragment extends Fragment implements LocationListener {
         }
         if (this.mapView != null) {
             this.mapView.setUseDataConnection(gameState.getUseDataConnection());
+        }
+    }
+
+    private void discoverSelectedGrid() {
+        if (GameState.getInstance().getGrid().DiscoverSelectedGrid()) {
+            mapView.postInvalidate();
         }
     }
 
