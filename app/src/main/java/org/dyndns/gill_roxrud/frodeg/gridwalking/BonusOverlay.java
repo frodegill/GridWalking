@@ -38,10 +38,10 @@ public class BonusOverlay extends Overlay {
             return;
         }
 
-        int topGrid = Bonus.ToVerticalBonusGridBounded(ne.getLatitude());
-        int leftGrid = Bonus.ToHorizontalBonusGrid(sw.getLongitude());
-        int bottomGrid = Bonus.ToVerticalBonusGridBounded(sw.getLatitude());
-        int rightGrid = Bonus.ToHorizontalBonusGrid(ne.getLongitude());
+        int topGrid = bonus.ToVerticalBonusGridBounded(ne.getLatitude());
+        int leftGrid = bonus.ToHorizontalBonusGrid(sw.getLongitude());
+        int bottomGrid = bonus.ToVerticalBonusGridBounded(sw.getLatitude());
+        int rightGrid = bonus.ToHorizontalBonusGrid(ne.getLongitude());
 
         android.graphics.Point point = null;
         GeoPoint geoPoint;
@@ -56,7 +56,7 @@ public class BonusOverlay extends Overlay {
         for (y=bottomGrid; y<=(topGrid+1); y++) {
             for (x=leftGrid; x<=(rightGrid+1); x++) {
                 try {
-                    key = Bonus.ToBonusKey(x, y);
+                    key = bonus.ToBonusKey(x, y);
                 } catch (InvalidPositionException e) {
                     continue;
                 }
@@ -65,7 +65,7 @@ public class BonusOverlay extends Overlay {
                     continue;
                 }
 
-                geoPoint = new GeoPoint(Bonus.FromVerticalBonusGrid(y), Bonus.FromHorizontalBonusGrid(x));
+                geoPoint = new GeoPoint(bonus.FromVerticalBonusGrid(y), bonus.FromHorizontalBonusGrid(x));
                 point = projection.toProjectedPixels(geoPoint, point);
                 point = projection.toPixelsFromProjected(point, point);
 

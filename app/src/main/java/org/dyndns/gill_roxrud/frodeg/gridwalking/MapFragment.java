@@ -37,9 +37,6 @@ public class MapFragment extends Fragment implements LocationListener {
     static final String PREFS_ZOOM_LEVEL = "zoomLevel";
     static final String PREFS_USE_DATA_CONNECTION = "useDataConnection";
 
-    private boolean useDataConnection = true;
-    private Long selectdGrid = null;
-
     private SharedPreferences preferences;
     private MapView mapView;
 
@@ -130,15 +127,16 @@ public class MapFragment extends Fragment implements LocationListener {
 
     @Override
     public void onPrepareOptionsMenu(final Menu menu) {
+        GameState gameState = GameState.getInstance();
         super.onPrepareOptionsMenu(menu);
         MenuItem item = menu.findItem(R.id.offline);
         if (item != null) {
-            item.setChecked(!useDataConnection);
+            item.setChecked(!gameState.getUseDataConnection());
         }
 
         item = menu.findItem(R.id.mark_visitted);
         if (item != null) {
-            item.setVisible(selectdGrid!=null);
+            item.setVisible(gameState.getSelectedGridKey() !=null);
         }
     }
 
@@ -153,31 +151,29 @@ public class MapFragment extends Fragment implements LocationListener {
     }
 
     private void toggleUseDataConnection(MenuItem item) {
-        useDataConnection = !useDataConnection;
+        GameState gameState = GameState.getInstance();
+        gameState.setUseDataConnection(!gameState.getUseDataConnection());
         if (item != null) {
-            item.setChecked(useDataConnection);
+            item.setChecked(gameState.getUseDataConnection());
         }
         if (this.mapView != null) {
-            this.mapView.setUseDataConnection(useDataConnection);
+            this.mapView.setUseDataConnection(gameState.getUseDataConnection());
         }
     }
 
     public void onLongPress(IGeoPoint geoPoint)
     {
-        try {
-            Grid grid = GameState.getInstance().getGrid();
-            Point<Integer> gridPoint = grid.ToGrid(geoPoint);
-            if (-1 == grid.DiscoveredLevel(gridPoint)) {
-                selectdGrid = grid.ToKey(gridPoint);
-//                this.getActivity().openOptionsMenu();
-            } else {
-                selectdGrid = null;
-            }
-        } catch (InvalidPositionException e) {
-            selectdGrid = null;
+        GameState gameState = GameState.getInstance();
+        if (gameState.getBonus().GetUnusedBonusCount() == 0) {
+            return;
         }
 
-        mapView.postInvalidate();
+        if (gameState.getGrid().SelectGridIfValid(geoPoint, true)) {
+            mapView.postInvalidate();
+            if (gameState.getSelectedGridKey() != null) {
+                //this.getActivity().openOptionsMenu();
+            }
+        }
     }
 
     public void onScoreUpdated() {

@@ -12,12 +12,17 @@ public class Bonus {
     static final double HALF_VER_BONUS_DEGREE = (Grid.VER_DEGREES/VER_BONUS_COUNT)/2; //Used for rounding
 
     static HashSet<Integer> bonuses;
+    static int usedBonuses = 0;
 
 
     public Bonus() {
         if (bonuses == null) {
             bonuses = new HashSet();
         }
+    }
+
+    public int GetUnusedBonusCount() {
+        return bonuses.size() - usedBonuses;
     }
 
     public Integer ValidBonusKeyFromPos(final Point<Double> pos) throws InvalidPositionException {
@@ -37,7 +42,7 @@ public class Bonus {
         return null;
     }
 
-    static int ToHorizontalBonusGrid(double x_pos) {
+    public int ToHorizontalBonusGrid(double x_pos) {
         if (Grid.WEST>x_pos) {
             x_pos += Grid.HOR_DEGREES;
         } else if (Grid.EAST<=x_pos) {
@@ -51,7 +56,7 @@ public class Bonus {
         return value;
     }
 
-    static int ToHorizontalBonusGridBounded(final double x_pos) {
+    private int ToHorizontalBonusGridBounded(final double x_pos) {
         if (Grid.WEST>x_pos) {
             return ToHorizontalBonusGridBounded(Grid.WEST);
         } else if (Grid.EAST<x_pos) {
@@ -65,14 +70,14 @@ public class Bonus {
         return value;
     }
 
-    static int ToVerticalBonusGrid(final double y_pos) throws InvalidPositionException {
+    public int ToVerticalBonusGrid(final double y_pos) throws InvalidPositionException {
         if (Grid.GRID_MAX_SOUTH>y_pos || Grid.GRID_MAX_NORTH<=y_pos)
             throw new InvalidPositionException();
 
         return new Double(VER_BONUS_COUNT * ((y_pos-Grid.GRID_MAX_SOUTH)/(Grid.VER_GRID_DEGREES))).intValue();
     }
 
-    static int ToVerticalBonusGridBounded(final double y_pos) {
+    public int ToVerticalBonusGridBounded(final double y_pos) {
         if (Grid.GRID_MAX_SOUTH>y_pos) {
             return ToVerticalBonusGridBounded(Grid.GRID_MAX_SOUTH);
         } else if (Grid.GRID_MAX_NORTH<=y_pos) {
@@ -86,30 +91,30 @@ public class Bonus {
         return value;
     }
 
-    static double FromHorizontalBonusGrid(final int x_grid) {
+    public double FromHorizontalBonusGrid(final int x_grid) {
         return Grid.WEST + ((double)x_grid/(double)HOR_BONUS_COUNT) * (Grid.HOR_DEGREES);
     }
 
-    static double FromVerticalBonusGrid(final int y_grid) {
+    public double FromVerticalBonusGrid(final int y_grid) {
         return Grid.GRID_MAX_SOUTH + ((double)y_grid/(double)VER_BONUS_COUNT) * (Grid.VER_GRID_DEGREES);
     }
 
-    boolean Contains(final int key) {
+    public boolean Contains(final int key) {
         return bonuses.contains(key);
     }
 
-    static int ToBonusKey(final Point<Integer> p) throws InvalidPositionException {
+    public int ToBonusKey(final Point<Integer> p) throws InvalidPositionException {
         return ToBonusKey(p.getX(), p.getY());
     }
 
-    static int ToBonusKey(final int x, final int y) throws InvalidPositionException {
+    public int ToBonusKey(final int x, final int y) throws InvalidPositionException {
         if (VER_BONUS_COUNT<=y || HOR_BONUS_COUNT<=x)
             throw new InvalidPositionException();
 
         return (y<<16) | x;
     }
 
-    static Point<Integer> FromBonusKey(final int key) throws InvalidPositionException {
+    public Point<Integer> FromBonusKey(final int key) throws InvalidPositionException {
         Point<Integer> p = new Point(key&0xFFFF, (key>>16)&0xFFFF);
         if (VER_BONUS_COUNT<=p.getY() || HOR_BONUS_COUNT<=p.getX())
             throw new InvalidPositionException();
@@ -118,7 +123,7 @@ public class Bonus {
     }
 
     /* http://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula */
-    static double CalculateDistance(final Point<Double> p1, final Point<Double> p2) {
+    private double CalculateDistance(final Point<Double> p1, final Point<Double> p2) {
 
         double latDistance = Math.toRadians(p1.getY() - p2.getY());
         double lngDistance = Math.toRadians(p1.getX() - p2.getX());

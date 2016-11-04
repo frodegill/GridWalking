@@ -39,6 +39,7 @@ public class Grid {
     static final Object gridsLock = new Object();
 
     Paint gridColours[] = null;
+    Paint selectedGridColour = null;
 
 
     public Grid() {
@@ -74,7 +75,46 @@ public class Grid {
 /*15*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xB0, 0x30, 0x60)); //Maroon
 /*16*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xBA, 0x55, 0xD3)); //Medium Orchid
 /*17*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xFF, 0xE4, 0xE1)); //Misty Rose
+
+            selectedGridColour = new Paint();
+            selectedGridColour.setColor(Color.argb(0xA0, 0xFF, 0xFF, 0x00));
         }
+    }
+
+    public Paint getSelectedGridColour() {
+        return selectedGridColour;
+    }
+
+    public boolean SelectGridIfValid(IGeoPoint geoPoint, boolean unselectIfSelected) {
+        try {
+            return SelectGridIfValid(ToGrid(geoPoint), unselectIfSelected);
+        } catch (InvalidPositionException e) {
+            GameState gameState = GameState.getInstance();
+            Long oldSelectedGridKey = gameState.getSelectedGridKey();
+            gameState.setSelectedGridKey(null);
+            return gameState.getSelectedGridKey() != oldSelectedGridKey;
+        }
+    }
+
+    public boolean SelectGridIfValid(Point<Integer> gridPoint, boolean unselectIfSelected) {
+        GameState gameState = GameState.getInstance();
+        Long oldSelectedGridKey = gameState.getSelectedGridKey();
+        try {
+            if (-1 == DiscoveredLevel(gridPoint)) {
+                Long selectedGridKey = ToKey(gridPoint);
+                if (unselectIfSelected && oldSelectedGridKey!=null && oldSelectedGridKey.longValue()==selectedGridKey.longValue()) {
+                    gameState.setSelectedGridKey(null);
+                } else {
+                    gameState.setSelectedGridKey(selectedGridKey);
+                }
+            } else {
+                gameState.setSelectedGridKey(null);
+            }
+        } catch (InvalidPositionException e) {
+            gameState.setSelectedGridKey(null);
+        }
+
+        return gameState.getSelectedGridKey() != oldSelectedGridKey;
     }
 
     public boolean Discover(final Point<Double> pos) throws InvalidPositionException {
@@ -98,6 +138,10 @@ public class Grid {
             RecursiveCheck(p, (byte) 0);
         }
 
+        Long selectedGridKey = GameState.getInstance().getSelectedGridKey();
+        if (selectedGridKey != null) { //Check if selection should be removed
+            SelectGridIfValid(FromKey(selectedGridKey), false);
+        }
         return true;
     }
 

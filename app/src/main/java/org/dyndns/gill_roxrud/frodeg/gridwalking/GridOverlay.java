@@ -88,14 +88,27 @@ public class GridOverlay extends Overlay {
     }
 
     private void drawSquares(Canvas canvas, Projection projection, IGeoPoint sw, IGeoPoint ne, byte gridLevel) {
-        Grid grid = GameState.getInstance().getGrid();
+        GameState gameState = GameState.getInstance();
+        Grid grid = gameState.getGrid();
         byte fromLevel = (byte) Math.max(gridLevel-DRAW_LEVEL_DEPTH, Grid.LEVEL_0);
+        Integer selectedGridX = null;
+        Integer selectedGridY = null;
+        Long selectedGridKey = gameState.getSelectedGridKey();
+        if (null != selectedGridKey) {
+            try {
+                selectedGridX = grid.XFromKey(selectedGridKey);
+                selectedGridY = grid.YFromKey(selectedGridKey);
+            } catch (InvalidPositionException e) {
+                selectedGridX = selectedGridY = null;
+                selectedGridKey = null;
+            }
+        }
 
         byte currentLevel;
         int y;
         synchronized (Grid.gridsLock) {
             for (currentLevel = fromLevel; currentLevel < Grid.LEVEL_COUNT; currentLevel++) {
-                if (Grid.grids[currentLevel].isEmpty()) {
+                if (Grid.grids[currentLevel].isEmpty() && !(0==currentLevel && null!=selectedGridKey)) {
                     continue;
                 }
 
@@ -125,6 +138,13 @@ public class GridOverlay extends Overlay {
                                    grid.gridColours[currentLevel],
                                    tmpPoint1, tmpPoint2);
                     }
+                }
+
+                if (0==currentLevel && null!=selectedGridX && null!=selectedGridY &&
+                    selectedGridX>=currentLeftGrid && selectedGridX<=currentRightGrid &&
+                    selectedGridY>=currentBottomGrid && selectedGridY<=currentTopGrid) {
+
+                    drawSquare(canvas, projection, grid, selectedGridKey, 0, grid.getSelectedGridColour(), tmpPoint1, tmpPoint2);
                 }
             }
         }

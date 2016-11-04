@@ -13,87 +13,91 @@ public class BonusUnitTest {
 
     @Test(expected = InvalidPositionException.class)
     public void verticalInvalidSouthTest() throws Exception {
-        Bonus.ToVerticalBonusGrid(Grid.SOUTH);
+        GameState.getInstance().getBonus().ToVerticalBonusGrid(Grid.SOUTH);
     }
 
     @Test(expected = InvalidPositionException.class)
     public void verticalInvalidNorthTest() throws Exception {
-        Bonus.ToVerticalBonusGrid(Grid.NORTH);
+        GameState.getInstance().getBonus().ToVerticalBonusGrid(Grid.NORTH);
     }
 
     @Test
     public void verticalTest() throws Exception {
-        int testGrid = Bonus.ToVerticalBonusGrid(Grid.GRID_MAX_SOUTH);
+        Bonus bonus = GameState.getInstance().getBonus();
+        int testGrid = bonus.ToVerticalBonusGrid(Grid.GRID_MAX_SOUTH);
         assertEquals(0, testGrid);
 
-        testGrid = Bonus.ToVerticalBonusGrid(Grid.GRID_MAX_NORTH - LESS_THAN_HALF_VER_BONUS_DEGREE);
+        testGrid = bonus.ToVerticalBonusGrid(Grid.GRID_MAX_NORTH - LESS_THAN_HALF_VER_BONUS_DEGREE);
         assertEquals(Bonus.VER_BONUS_COUNT-1, testGrid);
 
-        testGrid = Bonus.ToVerticalBonusGrid(0.0);
+        testGrid = bonus.ToVerticalBonusGrid(0.0);
         assertEquals(Bonus.VER_BONUS_COUNT/2, testGrid);
 
-        testGrid = Bonus.ToVerticalBonusGrid(0.0 + LESS_THAN_HALF_VER_BONUS_DEGREE);
+        testGrid = bonus.ToVerticalBonusGrid(0.0 + LESS_THAN_HALF_VER_BONUS_DEGREE);
         assertEquals(Bonus.VER_BONUS_COUNT/2, testGrid);
 
-        testGrid = Bonus.ToVerticalBonusGrid(0.0 + Bonus.HALF_VER_BONUS_DEGREE);
+        testGrid = bonus.ToVerticalBonusGrid(0.0 + Bonus.HALF_VER_BONUS_DEGREE);
         assertEquals(Bonus.VER_BONUS_COUNT/2, testGrid);
 
-        testGrid = Bonus.ToVerticalBonusGrid(0.0 + 2*Bonus.HALF_VER_BONUS_DEGREE);
+        testGrid = bonus.ToVerticalBonusGrid(0.0 + 2*Bonus.HALF_VER_BONUS_DEGREE);
         assertEquals(Bonus.VER_BONUS_COUNT/2 + 1, testGrid);
 
-        testGrid = Bonus.ToVerticalBonusGrid(0.0 - LESS_THAN_HALF_VER_BONUS_DEGREE);
+        testGrid = bonus.ToVerticalBonusGrid(0.0 - LESS_THAN_HALF_VER_BONUS_DEGREE);
         assertEquals(Bonus.VER_BONUS_COUNT/2 - 1, testGrid);
 
-        testGrid = Bonus.ToVerticalBonusGrid(0.0 - Bonus.HALF_VER_BONUS_DEGREE);
+        testGrid = bonus.ToVerticalBonusGrid(0.0 - Bonus.HALF_VER_BONUS_DEGREE);
         assertEquals(Bonus.VER_BONUS_COUNT/2 - 1, testGrid);
 
-        testGrid = Bonus.ToVerticalBonusGrid(0.0 - 2*Bonus.HALF_VER_BONUS_DEGREE - LESS_THAN_HALF_VER_BONUS_DEGREE);
+        testGrid = bonus.ToVerticalBonusGrid(0.0 - 2*Bonus.HALF_VER_BONUS_DEGREE - LESS_THAN_HALF_VER_BONUS_DEGREE);
         assertEquals(Bonus.VER_BONUS_COUNT/2 - 2, testGrid);
     }
 
     @Test
     public void horizontalTest() throws Exception {
-        int testGrid = Bonus.ToHorizontalBonusGrid(Grid.WEST);
+        Bonus bonus = GameState.getInstance().getBonus();
+        int testGrid = bonus.ToHorizontalBonusGrid(Grid.WEST);
         assertEquals(0, testGrid);
 
-        testGrid = Bonus.ToHorizontalBonusGrid(Grid.EAST);
+        testGrid = bonus.ToHorizontalBonusGrid(Grid.EAST);
         assertEquals(Bonus.HOR_BONUS_COUNT - 1, testGrid);
 
-        testGrid = Bonus.ToHorizontalBonusGrid(0.0);
+        testGrid = bonus.ToHorizontalBonusGrid(0.0);
         assertEquals(Bonus.HOR_BONUS_COUNT/2, testGrid);
 
-        testGrid = Bonus.ToHorizontalBonusGrid(0.0 + LESS_THAN_HALF_HOR_BONUS_DEGREE);
+        testGrid = bonus.ToHorizontalBonusGrid(0.0 + LESS_THAN_HALF_HOR_BONUS_DEGREE);
         assertEquals(Bonus.HOR_BONUS_COUNT/2, testGrid);
 
-        testGrid = Bonus.ToHorizontalBonusGrid(0.0 + Bonus.HALF_HOR_BONUS_DEGREE);
+        testGrid = bonus.ToHorizontalBonusGrid(0.0 + Bonus.HALF_HOR_BONUS_DEGREE);
         assertEquals(Bonus.HOR_BONUS_COUNT/2, testGrid);
 
-        testGrid = Bonus.ToHorizontalBonusGrid(0.0 + 2*Bonus.HALF_HOR_BONUS_DEGREE);
+        testGrid = bonus.ToHorizontalBonusGrid(0.0 + 2*Bonus.HALF_HOR_BONUS_DEGREE);
         assertEquals(Bonus.HOR_BONUS_COUNT/2 + 1, testGrid);
 
-        testGrid = Bonus.ToHorizontalBonusGrid(0.0 - LESS_THAN_HALF_HOR_BONUS_DEGREE);
+        testGrid = bonus.ToHorizontalBonusGrid(0.0 - LESS_THAN_HALF_HOR_BONUS_DEGREE);
         assertEquals(Bonus.HOR_BONUS_COUNT/2 - 1, testGrid);
 
-        testGrid = Bonus.ToHorizontalBonusGrid(0.0 - Bonus.HALF_HOR_BONUS_DEGREE);
+        testGrid = bonus.ToHorizontalBonusGrid(0.0 - Bonus.HALF_HOR_BONUS_DEGREE);
         assertEquals(Bonus.HOR_BONUS_COUNT/2 - 1, testGrid);
 
-        testGrid = Bonus.ToHorizontalBonusGrid(0.0 - 2*Bonus.HALF_HOR_BONUS_DEGREE - LESS_THAN_HALF_HOR_BONUS_DEGREE);
+        testGrid = bonus.ToHorizontalBonusGrid(0.0 - 2*Bonus.HALF_HOR_BONUS_DEGREE - LESS_THAN_HALF_HOR_BONUS_DEGREE);
         assertEquals(Bonus.HOR_BONUS_COUNT/2 - 2, testGrid);
     }
 
     @Test
     public void toBonusKeyTest() throws InvalidPositionException {
-        assertEquals(0, Bonus.ToBonusKey(new Point(0, 0)));
-        assertEquals("5000a", Long.toHexString(Bonus.ToBonusKey(new Point(10, 5))));
+        Bonus bonus = GameState.getInstance().getBonus();
+        assertEquals(0, bonus.ToBonusKey(new Point(0, 0)));
+        assertEquals("5000a", Long.toHexString(bonus.ToBonusKey(new Point(10, 5))));
     }
 
     @Test
     public void fromBonusKeyTest() throws InvalidPositionException {
+        Bonus bonus = GameState.getInstance().getBonus();
         Point<Integer> p;
-        p = Bonus.FromBonusKey(0);
+        p = bonus.FromBonusKey(0);
         assertTrue(p.getX()==0 && p.getY()==0);
 
-        p = Bonus.FromBonusKey(0x5000a);
+        p = bonus.FromBonusKey(0x5000a);
         assertTrue(p.getX()==10 && p.getY()==5);
     }
 

@@ -7,7 +7,9 @@ public class GameState {
     private Grid grid;
     private Bonus bonus;
     private Persist persist;
-    boolean showMap;
+
+    private boolean useDataConnection = true;
+    private Long selectedGridKey = null;
 
     Point<Double> currentPos = new Point<>(Grid.EAST+1.0, Grid.NORTH+1.0);
 
@@ -17,8 +19,6 @@ public class GameState {
         grid = new Grid();
         bonus = new Bonus();
         persist = new Persist();
-        showMap = true;
-
 //        persist.Load();
     }
 
@@ -35,6 +35,22 @@ public class GameState {
 
     public Bonus getBonus() {
         return bonus;
+    }
+
+    public boolean getUseDataConnection() {
+        return useDataConnection;
+    }
+
+    public void setUseDataConnection(boolean useDataConnection) {
+        this.useDataConnection = useDataConnection;
+    }
+
+    public Long getSelectedGridKey() {
+        return selectedGridKey;
+    }
+
+    public void setSelectedGridKey(Long selectedGridKey) {
+        this.selectedGridKey = selectedGridKey;
     }
 
     public Point<Double> getCurrentPos() {
