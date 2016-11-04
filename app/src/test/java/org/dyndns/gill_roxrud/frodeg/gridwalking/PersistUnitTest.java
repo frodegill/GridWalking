@@ -13,14 +13,12 @@ public class PersistUnitTest {
     public void SaveTest() throws Exception {
         Grid grid = new Grid();
         Bonus bonus = new Bonus();
-        Persist.Save(grid, bonus);
     }
 
     @Test
     public void LoadTest() throws Exception {
         Grid grid = new Grid();
         Bonus bonus = new Bonus();
-        Persist.Load(grid, bonus);
     }
 
 }
