@@ -92,6 +92,8 @@ public class MapFragment extends Fragment implements LocationListener {
         mapView.setUseDataConnection(preferences.getBoolean(PREFS_USE_DATA_CONNECTION, true));
 
         setHasOptionsMenu(true);
+
+        onScoreUpdated();
     }
 
     @Override
