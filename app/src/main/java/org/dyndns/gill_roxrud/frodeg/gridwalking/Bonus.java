@@ -1,7 +1,7 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 
-public class Bonus {
+class Bonus {
     static final int HOR_BONUS_COUNT = 5000;             //Less than 2^16
     static final int VER_BONUS_COUNT = HOR_BONUS_COUNT/2; //Less than 2^15
     static final float BONUS_SIZE_RADIUS = 100.0f; //meters
@@ -10,21 +10,21 @@ public class Bonus {
     static final double HALF_VER_BONUS_DEGREE = (Grid.VER_DEGREES/VER_BONUS_COUNT)/2; //Used for rounding
 
 
-    public Bonus() {
+    Bonus() {
     }
 
-    public int GetUnusedBonusCount() {
+    int GetUnusedBonusCount() {
         return GameState.getInstance().getDB().getUnusedBonusCount();
     }
 
-    public void ConsumeBonus() {
+    void ConsumeBonus() {
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         if (db.getUnusedBonusCount() > 0) {
             db.consumeBonus();
         }
     }
 
-    public Integer ValidBonusKeyFromPos(final Point<Double> pos) throws InvalidPositionException {
+    Integer ValidBonusKeyFromPos(final Point<Double> pos) throws InvalidPositionException {
         double horizontal_pos_rounding = pos.getX()+HALF_HOR_BONUS_DEGREE;
         if (Grid.EAST<=horizontal_pos_rounding) {
             horizontal_pos_rounding -= Grid.HOR_DEGREES;
@@ -41,7 +41,7 @@ public class Bonus {
         return null;
     }
 
-    public int ToHorizontalBonusGrid(double x_pos) {
+    int ToHorizontalBonusGrid(double x_pos) {
         if (Grid.WEST>x_pos) {
             x_pos += Grid.HOR_DEGREES;
         } else if (Grid.EAST<=x_pos) {
@@ -69,14 +69,14 @@ public class Bonus {
         return value;
     }
 
-    public int ToVerticalBonusGrid(final double y_pos) throws InvalidPositionException {
+    int ToVerticalBonusGrid(final double y_pos) throws InvalidPositionException {
         if (Grid.GRID_MAX_SOUTH>y_pos || Grid.GRID_MAX_NORTH<=y_pos)
             throw new InvalidPositionException();
 
         return Double.valueOf(VER_BONUS_COUNT * ((y_pos-Grid.GRID_MAX_SOUTH)/(Grid.VER_GRID_DEGREES))).intValue();
     }
 
-    public int ToVerticalBonusGridBounded(final double y_pos) {
+    int ToVerticalBonusGridBounded(final double y_pos) {
         if (Grid.GRID_MAX_SOUTH>y_pos) {
             return ToVerticalBonusGridBounded(Grid.GRID_MAX_SOUTH);
         } else if (Grid.GRID_MAX_NORTH<=y_pos) {
@@ -90,30 +90,30 @@ public class Bonus {
         return value;
     }
 
-    public double FromHorizontalBonusGrid(final int x_grid) {
+    double FromHorizontalBonusGrid(final int x_grid) {
         return Grid.WEST + ((double)x_grid/(double)HOR_BONUS_COUNT) * (Grid.HOR_DEGREES);
     }
 
-    public double FromVerticalBonusGrid(final int y_grid) {
+    double FromVerticalBonusGrid(final int y_grid) {
         return Grid.GRID_MAX_SOUTH + ((double)y_grid/(double)VER_BONUS_COUNT) * (Grid.VER_GRID_DEGREES);
     }
 
-    public boolean Contains(final int key) {
+    boolean Contains(final int key) {
         return GameState.getInstance().getDB().containsBonus(key);
     }
 
-    public int ToBonusKey(final Point<Integer> p) throws InvalidPositionException {
+    int ToBonusKey(final Point<Integer> p) throws InvalidPositionException {
         return ToBonusKey(p.getX(), p.getY());
     }
 
-    public int ToBonusKey(final int x, final int y) throws InvalidPositionException {
+    int ToBonusKey(final int x, final int y) throws InvalidPositionException {
         if (VER_BONUS_COUNT<=y || HOR_BONUS_COUNT<=x)
             throw new InvalidPositionException();
 
         return (y<<16) | x;
     }
 
-    public Point<Integer> FromBonusKey(final int key) throws InvalidPositionException {
+    Point<Integer> FromBonusKey(final int key) throws InvalidPositionException {
         Point<Integer> p = new Point<>(key&0xFFFF, (key>>16)&0xFFFF);
         if (VER_BONUS_COUNT<=p.getY() || HOR_BONUS_COUNT<=p.getX())
             throw new InvalidPositionException();
@@ -136,7 +136,7 @@ public class Bonus {
         return Grid.AVERAGE_RADIUS_OF_EARTH * c;
     }
 
-    public String getBonusString() {
+    String getBonusString() {
         return Integer.toString(GetUnusedBonusCount());
     }
 }

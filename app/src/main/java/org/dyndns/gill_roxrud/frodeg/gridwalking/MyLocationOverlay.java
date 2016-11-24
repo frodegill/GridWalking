@@ -12,12 +12,12 @@ import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.Overlay;
 
 
-public class MyLocationOverlay extends Overlay {
+class MyLocationOverlay extends Overlay {
 
-    static Paint red = new Paint();
-    static Paint black = new Paint();
+    static private Paint red = new Paint();
+    static private Paint black = new Paint();
 
-    public MyLocationOverlay(Context ctx) {
+    MyLocationOverlay(Context ctx) {
         super(ctx);
 
         red.setColor(Color.argb(0x80, 0xC0, 0x00, 0x00));

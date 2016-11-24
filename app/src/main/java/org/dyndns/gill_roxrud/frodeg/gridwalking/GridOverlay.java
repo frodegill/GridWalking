@@ -16,14 +16,14 @@ import java.util.Iterator;
 import java.util.Set;
 
 
-public class GridOverlay extends Overlay {
+class GridOverlay extends Overlay {
 
     static final private int DRAW_LEVEL_DEPTH = 5;
 
     private MapFragment mapFragment;
 
 
-    public GridOverlay(Context ctx, MapFragment mapFragment) {
+    GridOverlay(Context ctx, MapFragment mapFragment) {
         super(ctx);
         this.mapFragment = mapFragment;
     }

@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 
-public class Grid {
+class Grid {
     static final double AVERAGE_RADIUS_OF_EARTH = 6371000; //meters
     static final double AVERAGE_CIRCUMFENCE_OF_EARTH = AVERAGE_RADIUS_OF_EARTH*2*Math.PI; //meters
 
@@ -32,13 +32,13 @@ public class Grid {
     static final double VER_GRID_DEGREES = GRID_MAX_NORTH-GRID_MAX_SOUTH;
 
     private static final byte MAX_MRU_COUNT = 10;
-    List<Long> mru_list = new ArrayList<>();
+    private List<Long> mru_list = new ArrayList<>();
 
     Paint gridColours[] = null;
-    Paint selectedGridColour = null;
+    private Paint selectedGridColour = null;
 
 
-    public Grid() {
+    Grid() {
         if (gridColours == null) {
             gridColours = new Paint[LEVEL_COUNT];
             byte i;
@@ -71,11 +71,11 @@ public class Grid {
         }
     }
 
-    public Paint getSelectedGridColour() {
+    Paint getSelectedGridColour() {
         return selectedGridColour;
     }
 
-    public boolean SelectGridIfValid(IGeoPoint geoPoint, boolean unselectIfSelected) {
+    boolean SelectGridIfValid(IGeoPoint geoPoint, boolean unselectIfSelected) {
         try {
             return SelectGridIfValid(ToGrid(geoPoint), unselectIfSelected);
         } catch (InvalidPositionException e) {
@@ -86,7 +86,7 @@ public class Grid {
         }
     }
 
-    public boolean SelectGridIfValid(Point<Integer> gridPoint, boolean unselectIfSelected) {
+    private boolean SelectGridIfValid(Point<Integer> gridPoint, boolean unselectIfSelected) {
         GameState gameState = GameState.getInstance();
         Long oldSelectedGridKey = gameState.getSelectedGridKey();
         try {
@@ -107,7 +107,7 @@ public class Grid {
         return !gameState.getSelectedGridKey().equals(oldSelectedGridKey);
     }
 
-    public boolean DiscoverSelectedGrid() {
+    boolean DiscoverSelectedGrid() {
         GameState gameState = GameState.getInstance();
         Long selectedGridKey = gameState.getSelectedGridKey();
         if (selectedGridKey == null) {
@@ -125,7 +125,7 @@ public class Grid {
         return false;
     }
 
-    public boolean Discover(final Point<Double> pos) throws InvalidPositionException {
+    boolean Discover(final Point<Double> pos) throws InvalidPositionException {
         return DiscoverGrid(new Point<>(ToHorizontalGrid(pos.getX(), LEVEL_0), ToVerticalGrid(pos.getY(), LEVEL_0)));
     }
 
@@ -150,7 +150,7 @@ public class Grid {
         return true;
     }
 
-    public byte DiscoveredLevel(final Point<Integer> p) throws InvalidPositionException {
+    private byte DiscoveredLevel(final Point<Integer> p) throws InvalidPositionException {
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         Point<Integer> lowerLeft;
         long key;
@@ -194,7 +194,7 @@ public class Grid {
         RecursiveCheck(r.getLowerLeft(), (byte) (level + 1));
     }
 
-    public int ToHorizontalGrid(double x_pos, final byte level) {
+    int ToHorizontalGrid(double x_pos, final byte level) {
         if (WEST>x_pos) {
             x_pos += HOR_DEGREES;
         } else if (EAST<=x_pos) {
@@ -234,7 +234,7 @@ public class Grid {
         return value;
     }
 
-    public int ToVerticalGridBounded(final double y_pos, final byte level) {
+    int ToVerticalGridBounded(final double y_pos, final byte level) {
         if (Grid.GRID_MAX_SOUTH>y_pos) {
             return ToVerticalGridBounded(Grid.GRID_MAX_SOUTH, level);
         } else if (Grid.GRID_MAX_NORTH<y_pos) {
@@ -249,11 +249,11 @@ public class Grid {
         return value;
     }
 
-    public double FromHorizontalGrid(final int x_grid) {
+    double FromHorizontalGrid(final int x_grid) {
         return WEST + ((double)x_grid/(double)HOR_GRID_COUNT) * (HOR_DEGREES);
     }
 
-    public double FromVerticalGrid(final int y_grid) {
+    double FromVerticalGrid(final int y_grid) {
         return GRID_MAX_SOUTH + ((double)y_grid/(double)VER_GRID_COUNT) * (VER_GRID_DEGREES);
     }
 
@@ -278,11 +278,11 @@ public class Grid {
         return r;
     }
 
-    public long ToKey(final Point<Integer> p) throws InvalidPositionException {
+    private long ToKey(final Point<Integer> p) throws InvalidPositionException {
         return ToKey(p.getX(), p.getY());
     }
 
-    public long ToKey(final int x, final int y) throws InvalidPositionException {
+    long ToKey(final int x, final int y) throws InvalidPositionException {
         if (VER_GRID_COUNT<=y || HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
 
@@ -297,7 +297,7 @@ public class Grid {
         return p;
     }
 
-    public int XFromKey(final long key) throws InvalidPositionException {
+    int XFromKey(final long key) throws InvalidPositionException {
         int x = (int)key;
         if (HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
@@ -305,7 +305,7 @@ public class Grid {
         return x;
     }
 
-    public int YFromKey(final long key) throws InvalidPositionException {
+    int YFromKey(final long key) throws InvalidPositionException {
         int y = (int)(key>>32);
         if (VER_GRID_COUNT<=y)
             throw new InvalidPositionException();
@@ -313,7 +313,7 @@ public class Grid {
         return y;
     }
 
-    public Point<Integer> ToGrid(final IGeoPoint geoPoint) throws InvalidPositionException {
+    private Point<Integer> ToGrid(final IGeoPoint geoPoint) throws InvalidPositionException {
         return new Point<>(ToHorizontalGrid(geoPoint.getLongitude(), LEVEL_0), ToVerticalGrid(geoPoint.getLatitude(), LEVEL_0));
     }
 
@@ -329,7 +329,7 @@ public class Grid {
         }
     }
 
-    public byte OsmToGridLevel(final int osmZoomLevel) {
+    byte OsmToGridLevel(final int osmZoomLevel) {
         int gridLevel = 15 - osmZoomLevel;
         if (0>gridLevel) {
             gridLevel = 0;
@@ -339,7 +339,7 @@ public class Grid {
         return (byte)gridLevel;
     }
 
-    public String getScoreString() {
+    String getScoreString() {
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         StringBuilder sb = new StringBuilder();
         long score = 0;

@@ -13,14 +13,14 @@ import org.osmdroid.views.overlay.Overlay;
 import java.util.HashSet;
 
 
-public class BonusOverlay extends Overlay {
+class BonusOverlay extends Overlay {
 
     static final private int MAX_DRAW_LEVEL = 4;
 
-    static Paint white = new Paint();
-    static Paint black = new Paint();
+    static private Paint white = new Paint();
+    static private Paint black = new Paint();
 
-    public BonusOverlay(Context ctx) {
+    BonusOverlay(Context ctx) {
         super(ctx);
 
         white.setColor(Color.argb(0x80, 0xFF, 0xFF, 0xFF));

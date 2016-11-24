@@ -1,13 +1,13 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 
-public class Rect<T> {
+class Rect<T> {
     private T top;
     private T left;
     private T bottom;
     private T right;
 
-    public Rect() {
+    Rect() {
     }
 
     public Rect(T top, T left, T bottom, T right) {
@@ -24,19 +24,19 @@ public class Rect<T> {
         this.right = r.getRight();
     }
 
-    public void setTop(T top) {
+    void setTop(T top) {
         this.top = top;
     }
 
-    public void setLeft(T left) {
+    void setLeft(T left) {
         this.left = left;
     }
 
-    public void setBottom(T bottom) {
+    void setBottom(T bottom) {
         this.bottom = bottom;
     }
 
-    public void setRight(T right) {
+    void setRight(T right) {
         this.right = right;
     }
 
@@ -50,35 +50,35 @@ public class Rect<T> {
         this.right = lowerRight.getX();
     }
 
-    public T getTop() {
+    private T getTop() {
         return top;
     }
 
-    public T getLeft() {
+    T getLeft() {
         return left;
     }
 
-    public T getBottom() {
+    T getBottom() {
         return bottom;
     }
 
-    public T getRight() {
+    private T getRight() {
         return right;
     }
 
-    public Point<T> getUpperLeft() {
-        return new Point<T>(left, top);
+    Point<T> getUpperLeft() {
+        return new Point<>(left, top);
     }
 
-    public Point<T> getUpperRight() {
-        return new Point<T>(right, top);
+    Point<T> getUpperRight() {
+        return new Point<>(right, top);
     }
 
-    public Point<T> getLowerLeft() {
-        return new Point<T>(left, bottom);
+    Point<T> getLowerLeft() {
+        return new Point<>(left, bottom);
     }
 
-    public Point<T> getLowerRight() {
-        return new Point<T>(right, bottom);
+    Point<T> getLowerRight() {
+        return new Point<>(right, bottom);
     }
 }

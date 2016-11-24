@@ -10,26 +10,26 @@ import java.util.Set;
 import java.util.TreeSet;
 
 
-public final class GridWalkingDBHelper extends SQLiteOpenHelper {
+final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
-    public static final String DATABASE_NAME = "GridWalking.db";
+    private static final String DATABASE_NAME = "GridWalking.db";
 
-    public static final String GRID_TABLE_NAME = "grid";
-    public static final String GRID_COLUMN_KEY = "key";
-    public static final String GRID_COLUMN_LEVEL = "level";
+    private static final String GRID_TABLE_NAME = "grid";
+    private static final String GRID_COLUMN_KEY = "key";
+    private static final String GRID_COLUMN_LEVEL = "level";
 
-    public static final String BONUS_TABLE_NAME = "bonus";
-    public static final String BONUS_COLUMN_KEY = "key";
+    private static final String BONUS_TABLE_NAME = "bonus";
+    private static final String BONUS_COLUMN_KEY = "key";
 
-    public static final String PROPERTY_TABLE_NAME = "properties";
-    public static final String PROPERTY_COLUMN_KEY = "key";
-    public static final String PROPERTY_COLUMN_VALUE = "value";
+    private static final String PROPERTY_TABLE_NAME = "properties";
+    private static final String PROPERTY_COLUMN_KEY = "key";
+    private static final String PROPERTY_COLUMN_VALUE = "value";
 
-    public static final String PROPERTY_LEVELCOUNT_PREFIX = "levelcount_";
-    public static final String PROPERTY_BONUSES_USED = "bonuses_used";
+    private static final String PROPERTY_LEVELCOUNT_PREFIX = "levelcount_";
+    private static final String PROPERTY_BONUSES_USED = "bonuses_used";
 
 
-    public GridWalkingDBHelper(Context context) {
+    GridWalkingDBHelper(Context context) {
         super(context, DATABASE_NAME, null, 1);
     }
 
@@ -62,7 +62,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    public boolean containsGrid(final long gridKey, final byte level) {
+    boolean containsGrid(final long gridKey, final byte level) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -71,13 +71,8 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                                     + " WHERE " + GRID_COLUMN_KEY + "=?"
                                     + " AND " + GRID_COLUMN_LEVEL + "=?",
                             new String[]{Long.toString(gridKey), Byte.toString(level)});
-            if (!cursor.moveToFirst()) {
-                return false;
-            }
-            return cursor.isAfterLast() ? false : 1 == cursor.getInt(0);
-        }
-        catch (Exception e) {
-            throw e;
+
+            return cursor.moveToFirst() && !cursor.isAfterLast() && 1 == cursor.getInt(0);
         }
         finally {
             if (cursor != null) {
@@ -86,7 +81,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public Set<Long> containsGrid(final Set<Long> gridKeys, final byte level) {
+    Set<Long> containsGrid(final Set<Long> gridKeys, final byte level) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -104,9 +99,6 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             }
             return result;
         }
-        catch (Exception e) {
-            throw e;
-        }
         finally {
             if (cursor != null) {
                 cursor.close();
@@ -114,7 +106,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public Set<Long> containsGrid(final long fromGridKey, final long toGridKey, final byte level) {
+    Set<Long> containsGrid(final long fromGridKey, final long toGridKey, final byte level) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -133,9 +125,6 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             }
             return result;
         }
-        catch (Exception e) {
-            throw e;
-        }
         finally {
             if (cursor != null) {
                 cursor.close();
@@ -143,7 +132,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public boolean containsBonus(final int bonusKey) {
+    boolean containsBonus(final int bonusKey) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -151,13 +140,8 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                                     + " FROM " + BONUS_TABLE_NAME
                                     + " WHERE " + BONUS_COLUMN_KEY + "=?",
                             new String[]{Long.toString(bonusKey)});
-            if (!cursor.moveToFirst()) {
-                return false;
-            }
-            return cursor.isAfterLast() ? false : 1 == cursor.getInt(0);
-        }
-        catch (Exception e) {
-            throw e;
+
+            return cursor.moveToFirst() && !cursor.isAfterLast() && 1 == cursor.getInt(0);
         }
         finally {
             if (cursor != null) {
@@ -166,7 +150,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void persistGrid(final long gridKey, final byte level) {
+    void persistGrid(final long gridKey, final byte level) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         ContentValues contentValues = new ContentValues();
@@ -180,7 +164,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         db.endTransaction();
     }
 
-    public void persistGrid(final Set<Long> oldGridKeys, final long newGridKey, final byte newLevel) {
+    void persistGrid(final Set<Long> oldGridKeys, final long newGridKey, final byte newLevel) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         db.execSQL("DELETE FROM "+GRID_TABLE_NAME
@@ -199,7 +183,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         db.endTransaction();
     }
 
-    public void persistBonus(final int bonusKey) {
+    void persistBonus(final int bonusKey) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
 
@@ -211,7 +195,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         db.endTransaction();
     }
 
-    public int getUnusedBonusCount() {
+    int getUnusedBonusCount() {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM " + BONUS_TABLE_NAME, null);
@@ -221,9 +205,6 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             int bonusesFound = cursor.isAfterLast() ? 0 : cursor.getInt(0);
             return bonusesFound - (int) getProperty(PROPERTY_BONUSES_USED);
         }
-        catch (Exception e) {
-            throw e;
-        }
         finally {
             if (cursor != null) {
                 cursor.close();
@@ -231,7 +212,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void consumeBonus() {
+    void consumeBonus() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
 
@@ -241,7 +222,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         db.endTransaction();
     }
 
-    public long getLevelCount(final byte level) {
+    long getLevelCount(final byte level) {
         return getProperty(toLevelKey(level));
     }
 
@@ -257,9 +238,6 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 return 0L;
             }
             return cursor.isAfterLast() ? 0L : cursor.getLong(0);
-        }
-        catch (Exception e) {
-            throw e;
         }
         finally {
             if (cursor != null) {
