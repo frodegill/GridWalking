@@ -28,7 +28,7 @@ import org.osmdroid.views.MapView;
 
 
 public class MapFragment extends Fragment implements LocationListener {
-    static final long  LOCATION_UPDATE_INTERVAL = 30l;
+    static final long  LOCATION_UPDATE_INTERVAL = 30L;
     static final float LOCATION_UPDATE_DISTANCE = 25.0f;
 
     static final String PREFS_NAME = "org.dyndns.gill_roxrud.frodeg.gridwalking.prefs";

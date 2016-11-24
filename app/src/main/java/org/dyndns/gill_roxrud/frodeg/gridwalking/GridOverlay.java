@@ -13,7 +13,7 @@ import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.Overlay;
 
 import java.util.Iterator;
-import java.util.SortedSet;
+import java.util.Set;
 
 
 public class GridOverlay extends Overlay {
@@ -106,46 +106,45 @@ public class GridOverlay extends Overlay {
 
         byte currentLevel;
         int y;
-        synchronized (Grid.gridsLock) {
-            for (currentLevel = fromLevel; currentLevel < Grid.LEVEL_COUNT; currentLevel++) {
-                if (Grid.grids[currentLevel].isEmpty() && !(0==currentLevel && null!=selectedGridKey)) {
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        for (currentLevel = fromLevel; currentLevel < Grid.LEVEL_COUNT; currentLevel++) {
+            if (db.getLevelCount(currentLevel)==0 && !(0==currentLevel && null!=selectedGridKey)) {
+                continue;
+            }
+
+            int currentStepping = 1<<currentLevel;
+            int currentTopGrid = grid.ToVerticalGridBounded(ne.getLatitude(), currentLevel);
+            int currentLeftGrid = grid.ToHorizontalGrid(sw.getLongitude(), currentLevel);
+            int currentBottomGrid = grid.ToVerticalGridBounded(sw.getLatitude(), currentLevel);
+            int currentRightGrid = grid.ToHorizontalGrid(ne.getLongitude(), currentLevel);
+
+            android.graphics.Point tmpPoint1 = new android.graphics.Point();
+            android.graphics.Point tmpPoint2 = new android.graphics.Point();
+
+            Set<Long> currentSet;
+            Iterator<Long> currentKeyIterator;
+            for (y=currentBottomGrid; y<=(currentTopGrid+currentStepping); y+=currentStepping) {
+                try {
+                    Long gridLeftKey = grid.ToKey(currentLeftGrid, y);
+                    Long gridRightKey = grid.ToKey(currentRightGrid, y);
+                    currentSet = db.containsGrid(gridLeftKey, gridRightKey+currentStepping, currentLevel);
+                } catch (InvalidPositionException e) {
                     continue;
                 }
 
-                int currentStepping = 1<<currentLevel;
-                int currentTopGrid = grid.ToVerticalGridBounded(ne.getLatitude(), currentLevel);
-                int currentLeftGrid = grid.ToHorizontalGrid(sw.getLongitude(), currentLevel);
-                int currentBottomGrid = grid.ToVerticalGridBounded(sw.getLatitude(), currentLevel);
-                int currentRightGrid = grid.ToHorizontalGrid(ne.getLongitude(), currentLevel);
-
-                android.graphics.Point tmpPoint1 = new android.graphics.Point();
-                android.graphics.Point tmpPoint2 = new android.graphics.Point();
-
-                SortedSet<Long> currentSet;
-                Iterator<Long> currentKeyIterator;
-                for (y=currentBottomGrid; y<=(currentTopGrid+currentStepping); y+=currentStepping) {
-                    try {
-                        Long gridLeftKey = grid.ToKey(currentLeftGrid, y);
-                        Long gridRightKey = grid.ToKey(currentRightGrid, y);
-                        currentSet = Grid.grids[currentLevel].subSet(gridLeftKey, gridRightKey+currentStepping);
-                    } catch (InvalidPositionException e) {
-                        continue;
-                    }
-
-                    currentKeyIterator = currentSet.iterator();
-                    while (currentKeyIterator.hasNext()) {
-                        drawSquare(canvas, projection, grid, currentKeyIterator.next(), currentLevel,
-                                   grid.gridColours[currentLevel],
-                                   tmpPoint1, tmpPoint2);
-                    }
+                currentKeyIterator = currentSet.iterator();
+                while (currentKeyIterator.hasNext()) {
+                    drawSquare(canvas, projection, grid, currentKeyIterator.next(), currentLevel,
+                               grid.gridColours[currentLevel],
+                               tmpPoint1, tmpPoint2);
                 }
+            }
 
-                if (0==currentLevel && null!=selectedGridX && null!=selectedGridY &&
-                    selectedGridX>=currentLeftGrid && selectedGridX<=currentRightGrid &&
-                    selectedGridY>=currentBottomGrid && selectedGridY<=currentTopGrid) {
+            if (0==currentLevel && null!=selectedGridX && null!=selectedGridY &&
+                selectedGridX>=currentLeftGrid && selectedGridX<=currentRightGrid &&
+                selectedGridY>=currentBottomGrid && selectedGridY<=currentTopGrid) {
 
-                    drawSquare(canvas, projection, grid, selectedGridKey, 0, grid.getSelectedGridColour(), tmpPoint1, tmpPoint2);
-                }
+                drawSquare(canvas, projection, grid, selectedGridKey, 0, grid.getSelectedGridColour(), tmpPoint1, tmpPoint2);
             }
         }
     }

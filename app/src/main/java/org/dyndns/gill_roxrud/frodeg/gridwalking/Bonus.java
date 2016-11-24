@@ -1,7 +1,5 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
-import java.util.HashSet;
-
 
 public class Bonus {
     static final int HOR_BONUS_COUNT = 5000;             //Less than 2^16
@@ -11,23 +9,18 @@ public class Bonus {
     static final double HALF_HOR_BONUS_DEGREE = (Grid.HOR_DEGREES/HOR_BONUS_COUNT)/2; //Used for rounding
     static final double HALF_VER_BONUS_DEGREE = (Grid.VER_DEGREES/VER_BONUS_COUNT)/2; //Used for rounding
 
-    static HashSet<Integer> bonuses;
-    static int usedBonuses = 0;
-
 
     public Bonus() {
-        if (bonuses == null) {
-            bonuses = new HashSet();
-        }
     }
 
     public int GetUnusedBonusCount() {
-        return bonuses.size() - usedBonuses;
+        return GameState.getInstance().getDB().getUnusedBonusCount();
     }
 
     public void ConsumeBonus() {
-        if (bonuses.size() > usedBonuses) {
-            usedBonuses++;
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        if (db.getUnusedBonusCount() > 0) {
+            db.consumeBonus();
         }
     }
 
@@ -37,12 +30,12 @@ public class Bonus {
             horizontal_pos_rounding -= Grid.HOR_DEGREES;
         }
 
-        Point<Integer> p = new Point(ToHorizontalBonusGrid(horizontal_pos_rounding), ToVerticalBonusGrid(pos.getY()+HALF_VER_BONUS_DEGREE));
-        Point<Double> bonus_pos = new Point(FromHorizontalBonusGrid(p.getX()), FromVerticalBonusGrid(p.getY()));
+        Point<Integer> p = new Point<>(ToHorizontalBonusGrid(horizontal_pos_rounding), ToVerticalBonusGrid(pos.getY()+HALF_VER_BONUS_DEGREE));
+        Point<Double> bonus_pos = new Point<>(FromHorizontalBonusGrid(p.getX()), FromVerticalBonusGrid(p.getY()));
 
         if (BONUS_SIZE_RADIUS >= CalculateDistance(pos, bonus_pos)) {
             int key = ToBonusKey(p);
-            bonuses.add(key);
+            GameState.getInstance().getDB().persistBonus(key);
             return key;
         }
         return null;
@@ -55,7 +48,7 @@ public class Bonus {
             x_pos -= Grid.HOR_DEGREES;
         }
 
-        int value = new Double(HOR_BONUS_COUNT * ((x_pos-Grid.WEST)/(Grid.HOR_DEGREES))).intValue();
+        int value = Double.valueOf(HOR_BONUS_COUNT * ((x_pos-Grid.WEST)/(Grid.HOR_DEGREES))).intValue();
         if (HOR_BONUS_COUNT==value)
             value = HOR_BONUS_COUNT-1;
 
@@ -69,7 +62,7 @@ public class Bonus {
             return ToHorizontalBonusGridBounded(Grid.EAST);
         }
 
-        int value = new Double(HOR_BONUS_COUNT * ((x_pos-Grid.WEST)/(Grid.HOR_DEGREES))).intValue();
+        int value = Double.valueOf(HOR_BONUS_COUNT * ((x_pos-Grid.WEST)/(Grid.HOR_DEGREES))).intValue();
         if (HOR_BONUS_COUNT==value)
             value = HOR_BONUS_COUNT-1;
 
@@ -80,7 +73,7 @@ public class Bonus {
         if (Grid.GRID_MAX_SOUTH>y_pos || Grid.GRID_MAX_NORTH<=y_pos)
             throw new InvalidPositionException();
 
-        return new Double(VER_BONUS_COUNT * ((y_pos-Grid.GRID_MAX_SOUTH)/(Grid.VER_GRID_DEGREES))).intValue();
+        return Double.valueOf(VER_BONUS_COUNT * ((y_pos-Grid.GRID_MAX_SOUTH)/(Grid.VER_GRID_DEGREES))).intValue();
     }
 
     public int ToVerticalBonusGridBounded(final double y_pos) {
@@ -90,7 +83,7 @@ public class Bonus {
             return ToVerticalBonusGridBounded(Grid.GRID_MAX_NORTH);
         }
 
-        int value = new Double(VER_BONUS_COUNT * ((y_pos-Grid.GRID_MAX_SOUTH)/(Grid.VER_GRID_DEGREES))).intValue();
+        int value = Double.valueOf(VER_BONUS_COUNT * ((y_pos-Grid.GRID_MAX_SOUTH)/(Grid.VER_GRID_DEGREES))).intValue();
         if (VER_BONUS_COUNT==value)
             value = VER_BONUS_COUNT-1;
 
@@ -106,7 +99,7 @@ public class Bonus {
     }
 
     public boolean Contains(final int key) {
-        return bonuses.contains(key);
+        return GameState.getInstance().getDB().containsBonus(key);
     }
 
     public int ToBonusKey(final Point<Integer> p) throws InvalidPositionException {
@@ -121,7 +114,7 @@ public class Bonus {
     }
 
     public Point<Integer> FromBonusKey(final int key) throws InvalidPositionException {
-        Point<Integer> p = new Point(key&0xFFFF, (key>>16)&0xFFFF);
+        Point<Integer> p = new Point<>(key&0xFFFF, (key>>16)&0xFFFF);
         if (VER_BONUS_COUNT<=p.getY() || HOR_BONUS_COUNT<=p.getX())
             throw new InvalidPositionException();
 
@@ -144,6 +137,6 @@ public class Bonus {
     }
 
     public String getBonusString() {
-        return Integer.toString(bonuses.size());
+        return Integer.toString(GetUnusedBonusCount());
     }
 }

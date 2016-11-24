@@ -7,7 +7,15 @@ import android.util.Log;
 
 public class GridWalkingApplication extends Application{
 
-    public static boolean DEBUGMODE = true;
+    private static GridWalkingApplication instance;
+
+    public GridWalkingApplication() {
+        instance = this;
+    }
+
+    public static Context getContext() {
+        return instance;
+    }
 
     @Override
     public void onCreate(){

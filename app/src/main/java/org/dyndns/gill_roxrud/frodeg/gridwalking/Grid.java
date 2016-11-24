@@ -7,7 +7,7 @@ import org.osmdroid.api.IGeoPoint;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
+import java.util.Set;
 import java.util.TreeSet;
 
 
@@ -32,23 +32,13 @@ public class Grid {
     static final double VER_GRID_DEGREES = GRID_MAX_NORTH-GRID_MAX_SOUTH;
 
     private static final byte MAX_MRU_COUNT = 10;
-
     List<Long> mru_list = new ArrayList<>();
-
-    static SortedSet<Long> grids[];
-    static final Object gridsLock = new Object();
 
     Paint gridColours[] = null;
     Paint selectedGridColour = null;
 
 
     public Grid() {
-        if (grids == null) {
-            grids = new SortedSet[LEVEL_COUNT];
-            for (byte i = 0; i<LEVEL_COUNT; i++) {
-                grids[i] = new TreeSet<>();
-            }
-        }
         if (gridColours == null) {
             gridColours = new Paint[LEVEL_COUNT];
             byte i;
@@ -92,7 +82,7 @@ public class Grid {
             GameState gameState = GameState.getInstance();
             Long oldSelectedGridKey = gameState.getSelectedGridKey();
             gameState.setSelectedGridKey(null);
-            return gameState.getSelectedGridKey() != oldSelectedGridKey;
+            return !gameState.getSelectedGridKey().equals(oldSelectedGridKey);
         }
     }
 
@@ -114,7 +104,7 @@ public class Grid {
             gameState.setSelectedGridKey(null);
         }
 
-        return gameState.getSelectedGridKey() != oldSelectedGridKey;
+        return !gameState.getSelectedGridKey().equals(oldSelectedGridKey);
     }
 
     public boolean DiscoverSelectedGrid() {
@@ -149,12 +139,9 @@ public class Grid {
             return false;
         }
 
-        synchronized(gridsLock) {
-            AddToMRU(key);
-            grids[0].add(key);
-
-            RecursiveCheck(p, (byte) 0);
-        }
+        AddToMRU(key);
+        GameState.getInstance().getDB().persistGrid(key, (byte) 0);
+        RecursiveCheck(p, (byte) 0);
 
         Long selectedGridKey = GameState.getInstance().getSelectedGridKey();
         if (selectedGridKey != null) { //Check if selection should be removed
@@ -164,20 +151,18 @@ public class Grid {
     }
 
     public byte DiscoveredLevel(final Point<Integer> p) throws InvalidPositionException {
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
         Point<Integer> lowerLeft;
         long key;
         byte level;
-        synchronized(gridsLock) {
-            for (level = LEVEL_COUNT-1; 0<=level; level--) {
-                if (grids[level].isEmpty()) {
-                    continue;
-                }
-
-                lowerLeft = GetLowerLeft(p, level);
-                key = ToKey(lowerLeft);
-                if (grids[level].contains(key)) {
-                    return level;
-                }
+        for (level = LEVEL_COUNT-1; 0<=level; level--) {
+            if (0 == db.getLevelCount(level)) {
+                continue;
+            }
+            lowerLeft = GetLowerLeft(p, level);
+            key = ToKey(lowerLeft);
+            if (db.containsGrid(key, level)) {
+                return level;
             }
         }
         return -1;
@@ -192,39 +177,21 @@ public class Grid {
 
         Rect<Integer> r = GetBoundingBox(p, (byte)(level+1));
 
-        long keys[] = new long[4];
-        keys[0] = ToKey(r.getLowerLeft());
-        keys[1] = ToKey(r.getLowerRight());
-        keys[2] = ToKey(r.getUpperLeft());
-        keys[3] = ToKey(r.getUpperRight());
+        Set<Long> keys = new TreeSet<>();
+        Long lowerLeftKey = ToKey(r.getLowerLeft());
+        keys.add(lowerLeftKey);
+        keys.add(ToKey(r.getLowerRight()));
+        keys.add(ToKey(r.getUpperLeft()));
+        keys.add(ToKey(r.getUpperRight()));
 
-        byte i;
-        byte matches = 0;
-        synchronized(gridsLock) {
-            for (i = 0; 4 > i; i++) {
-                if (grids[level].contains(keys[i]))
-                    matches++;
-            }
-            if (3 > matches) //Not enough. Bail out
-                return;
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        Set<Long> keyMatches = db.containsGrid(keys, level);
+        if (3 > keyMatches.size()) //Not enough. Bail out
+            return;
 
-            for (i = 0; 4 > i; i++) {
-                grids[level].remove(keys[i]);
-            }
+        db.persistGrid(keyMatches, lowerLeftKey, (byte) (level + 1));
 
-            if (GridWalkingApplication.DEBUGMODE) {
-                Point<Integer> debugPoint = FromKey(keys[0]);
-                int debugMask = 1<<(level+1)-1;
-                if ((debugPoint.getX()&debugMask) != 0) {
-                    throw new AssertionError("X is " + debugPoint.getX() + ", Level=" + (level+1));
-                }
-                if ((debugPoint.getY()&debugMask) != 0) {
-                    throw new AssertionError("Y is " + debugPoint.getY() + ", Level=" + (level+1));
-                }
-            }
-            grids[level + 1].add(keys[0]);
-            RecursiveCheck(r.getLowerLeft(), (byte) (level + 1));
-        }
+        RecursiveCheck(r.getLowerLeft(), (byte) (level + 1));
     }
 
     public int ToHorizontalGrid(double x_pos, final byte level) {
@@ -308,15 +275,6 @@ public class Grid {
         r.setBottom(p.getY() & ~mask);
         r.setRight(r.getLeft() + mask);
         r.setTop(r.getBottom() + mask);
-        if (GridWalkingApplication.DEBUGMODE) {
-            if (r.getLeft()>r.getRight()) {
-                throw new AssertionError("Left is " + r.getLeft() + ", Right is " + r.getRight());
-            }
-            if (r.getTop()<r.getBottom()) {
-                throw new AssertionError("Top is " + r.getTop() + ", Bottom is " + r.getBottom());
-            }
-        }
-
         return r;
     }
 
@@ -364,11 +322,9 @@ public class Grid {
         return mru_list.contains(key);
     }
 
-    private void AddToMRU(final long key)
-    {
+    private void AddToMRU(final long key) {
         mru_list.add(0, key);
-        if (MAX_MRU_COUNT<mru_list.size())
-        {
+        if (MAX_MRU_COUNT<mru_list.size()) {
             mru_list.remove(MAX_MRU_COUNT-1);
         }
     }
@@ -384,20 +340,19 @@ public class Grid {
     }
 
     public String getScoreString() {
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
         StringBuilder sb = new StringBuilder();
         long score = 0;
-        int levelCount;
-        int i;
-        synchronized(gridsLock) {
-            for (i = LEVEL_COUNT - 1; i >= 0; i--) {
-                levelCount = grids[i].size();
-                if (levelCount > 0) {
-                    if (sb.length() != 0) {
-                        sb.append(':');
-                    }
-                    sb.append(Integer.toString(levelCount));
-                    score += levelCount<<(2*i); //Each level up represents 4 squares
+        long levelCount;
+        byte i;
+        for (i = LEVEL_COUNT - 1; i >= 0; i--) {
+            levelCount = db.getLevelCount(i);
+            if (levelCount > 0) {
+                if (sb.length() != 0) {
+                    sb.append(':');
                 }
+                sb.append(Long.toString(levelCount));
+                score += levelCount<<(2*i); //Each level up represents 4 squares
             }
         }
 

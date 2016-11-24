@@ -6,7 +6,7 @@ public class GameState {
     private static GameState instance = null;
     private Grid grid;
     private Bonus bonus;
-    private Persist persist;
+    private GridWalkingDBHelper db;
 
     private boolean useDataConnection = true;
     private Long selectedGridKey = null;
@@ -15,11 +15,9 @@ public class GameState {
 
 
     public GameState() {
-
         grid = new Grid();
         bonus = new Bonus();
-        persist = new Persist();
-//        persist.Load();
+        db = new GridWalkingDBHelper(GridWalkingApplication.getContext());
     }
 
     public static GameState getInstance() {
@@ -36,6 +34,8 @@ public class GameState {
     public Bonus getBonus() {
         return bonus;
     }
+
+    public GridWalkingDBHelper getDB() {return db;}
 
     public boolean getUseDataConnection() {
         return useDataConnection;
@@ -61,10 +61,8 @@ public class GameState {
         currentPos.set(x_pos, y_pos);
         try {
             if (grid.Discover(currentPos) || null != bonus.ValidBonusKeyFromPos(currentPos)) {
-                persist.setIsModified();
                 mapFragment.onScoreUpdated();
             }
-            persist.saveIfModified();
         } catch (InvalidPositionException e) {
         }
     }
