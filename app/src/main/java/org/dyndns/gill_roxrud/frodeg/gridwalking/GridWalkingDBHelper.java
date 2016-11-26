@@ -71,8 +71,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                                     + " WHERE " + GRID_COLUMN_KEY + "=?"
                                     + " AND " + GRID_COLUMN_LEVEL + "=?",
                             new String[]{Long.toString(gridKey), Byte.toString(level)});
-
-            return cursor.moveToFirst() && !cursor.isAfterLast() && 1 == cursor.getInt(0);
+            return cursor.moveToFirst() && !cursor.isAfterLast() && (1 == cursor.getInt(0));
         }
         finally {
             if (cursor != null) {
@@ -85,10 +84,10 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
-                    .rawQuery("SELECT COUNT(*)"
-                                    + " FROM " + GRID_TABLE_NAME
-                                    + " WHERE " + GRID_COLUMN_LEVEL + "=?"
-                                    + " AND " + GRID_COLUMN_KEY + " IN (" + setTostring(gridKeys) + ")",
+                    .rawQuery("SELECT " + GRID_COLUMN_KEY
+                           + " FROM " + GRID_TABLE_NAME
+                           + " WHERE " + GRID_COLUMN_LEVEL + "=?"
+                           + " AND " + GRID_COLUMN_KEY + " IN (" + setTostring(gridKeys) + ")",
                             new String[]{Byte.toString(level)});
             Set<Long> result = new TreeSet<>();
             if (cursor.moveToFirst()) {
@@ -141,7 +140,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                                     + " WHERE " + BONUS_COLUMN_KEY + "=?",
                             new String[]{Long.toString(bonusKey)});
 
-            return cursor.moveToFirst() && !cursor.isAfterLast() && 1 == cursor.getInt(0);
+            return cursor.moveToFirst() && !cursor.isAfterLast() && (1 == cursor.getInt(0));
         }
         finally {
             if (cursor != null) {
