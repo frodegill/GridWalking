@@ -2,7 +2,7 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 
 class Bonus {
-    static final int HOR_BONUS_COUNT = 5000;             //Less than 2^16
+    static final int HOR_BONUS_COUNT = (int)((1<<Grid.LEVEL_COUNT)/6.5536f);  //Less than 2^16
     static final int VER_BONUS_COUNT = HOR_BONUS_COUNT/2; //Less than 2^15
     static final float BONUS_SIZE_RADIUS = 100.0f; //meters
 

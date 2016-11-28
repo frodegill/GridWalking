@@ -20,15 +20,15 @@ class GridOverlay extends Overlay {
 
     static final private int DRAW_LEVEL_DEPTH = 5;
 
-    private MapFragment mapFragment;
+    private final MapFragment mapFragment;
 
 
-    GridOverlay(Context ctx, MapFragment mapFragment) {
+    GridOverlay(Context ctx, final MapFragment mapFragment) {
         super(ctx);
         this.mapFragment = mapFragment;
     }
 
-    private void draw(Canvas canvas, MapView mapView, IGeoPoint ne, IGeoPoint sw) {
+    private void draw(final Canvas canvas, final MapView mapView, final IGeoPoint ne, final IGeoPoint sw) {
         Grid grid = GameState.getInstance().getGrid();
         Projection projection = mapView.getProjection();
         byte gridLevel = grid.OsmToGridLevel(mapView.getZoomLevel());
@@ -60,9 +60,10 @@ class GridOverlay extends Overlay {
         }
     }
 
-    private void drawGrid(Canvas canvas, Projection projection, IGeoPoint sw, IGeoPoint ne, byte gridLevel) {
+    private void drawGrid(final Canvas canvas, final Projection projection, final IGeoPoint sw, final IGeoPoint ne, final byte gridLevel) {
         Grid grid = GameState.getInstance().getGrid();
-        Paint gridColour = grid.gridColours[gridLevel];
+
+        Paint gridColour = new Paint(grid.gridColours[gridLevel]);
         gridColour.setAlpha(0xFF);
 
         int canvasWidth = canvas.getWidth();
@@ -87,7 +88,7 @@ class GridOverlay extends Overlay {
         }
     }
 
-    private void drawSquares(Canvas canvas, Projection projection, IGeoPoint sw, IGeoPoint ne, byte gridLevel) {
+    private void drawSquares(final Canvas canvas, final Projection projection, final IGeoPoint sw, final IGeoPoint ne, final byte gridLevel) {
         GameState gameState = GameState.getInstance();
         Grid grid = gameState.getGrid();
         byte fromLevel = (byte) Math.max(gridLevel-DRAW_LEVEL_DEPTH, Grid.LEVEL_0);
@@ -149,10 +150,10 @@ class GridOverlay extends Overlay {
         }
     }
 
-    private void drawSquare(Canvas canvas, Projection projection,
-                            Grid grid, long gridKey, int gridLevel,
-                            Paint squareColour,
-                            android.graphics.Point reusePoint1, android.graphics.Point reusePoint2) {
+    private void drawSquare(final Canvas canvas, final Projection projection,
+                            final Grid grid, final long gridKey, final int gridLevel,
+                            final Paint squareColour,
+                            final android.graphics.Point reusePoint1, final android.graphics.Point reusePoint2) {
         int gridStepping = 1<<gridLevel;
 
         int gridX;
@@ -172,7 +173,8 @@ class GridOverlay extends Overlay {
     }
 
 
-    private android.graphics.Point GridToPixel(Grid grid, int x, int y, Projection projection, android.graphics.Point reusePoint) {
+    private android.graphics.Point GridToPixel(final Grid grid, final int x, final int y, final Projection projection,
+                                               android.graphics.Point reusePoint) {
         GeoPoint geoPoint = new GeoPoint(grid.FromVerticalGrid(y), grid.FromHorizontalGrid(x));
         reusePoint = projection.toProjectedPixels(geoPoint, reusePoint);
         return projection.toPixelsFromProjected(reusePoint, reusePoint);
