@@ -94,7 +94,7 @@ class GridOverlay extends Overlay {
         byte fromLevel = (byte) Math.max(gridLevel-DRAW_LEVEL_DEPTH, Grid.LEVEL_0);
         Integer selectedGridX = null;
         Integer selectedGridY = null;
-        Long selectedGridKey = gameState.getSelectedGridKey();
+        Integer selectedGridKey = gameState.getSelectedGridKey();
         if (null != selectedGridKey) {
             try {
                 selectedGridX = grid.XFromKey(selectedGridKey);
@@ -122,12 +122,12 @@ class GridOverlay extends Overlay {
             android.graphics.Point tmpPoint1 = new android.graphics.Point();
             android.graphics.Point tmpPoint2 = new android.graphics.Point();
 
-            Set<Long> currentSet;
-            Iterator<Long> currentKeyIterator;
+            Set<Integer> currentSet;
+            Iterator<Integer> currentKeyIterator;
             for (y=currentBottomGrid; y<=(currentTopGrid+currentStepping); y+=currentStepping) {
                 try {
-                    Long gridLeftKey = grid.ToKey(currentLeftGrid, y);
-                    Long gridRightKey = grid.ToKey(currentRightGrid, y);
+                    Integer gridLeftKey = grid.ToKey(currentLeftGrid, y);
+                    Integer gridRightKey = grid.ToKey(currentRightGrid, y);
                     currentSet = db.containsGrid(gridLeftKey, gridRightKey+currentStepping, currentLevel);
                 } catch (InvalidPositionException e) {
                     continue;
@@ -151,7 +151,7 @@ class GridOverlay extends Overlay {
     }
 
     private void drawSquare(final Canvas canvas, final Projection projection,
-                            final Grid grid, final long gridKey, final int gridLevel,
+                            final Grid grid, final int gridKey, final int gridLevel,
                             final Paint squareColour,
                             final android.graphics.Point reusePoint1, final android.graphics.Point reusePoint2) {
         int gridStepping = 1<<gridLevel;

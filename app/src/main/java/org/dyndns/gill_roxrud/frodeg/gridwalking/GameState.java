@@ -9,7 +9,7 @@ class GameState {
     private GridWalkingDBHelper db;
 
     private boolean useDataConnection = true;
-    private Long selectedGridKey = null;
+    private Integer selectedGridKey = null;
 
     private Point<Double> currentPos = new Point<>(Grid.EAST+1.0, Grid.NORTH+1.0);
 
@@ -45,11 +45,11 @@ class GameState {
         this.useDataConnection = useDataConnection;
     }
 
-    Long getSelectedGridKey() {
+    Integer getSelectedGridKey() {
         return selectedGridKey;
     }
 
-    void setSelectedGridKey(Long selectedGridKey) {
+    void setSelectedGridKey(Integer selectedGridKey) {
         this.selectedGridKey = selectedGridKey;
     }
 

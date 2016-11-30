@@ -19,10 +19,13 @@
             <TextView android:id="@+id/scoretext"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:textStyle="bold"
                 android:text="Score:" />
             <TextView android:id="@+id/score"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
@@ -34,10 +37,13 @@
             <TextView android:id="@+id/bonustext"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textStyle="bold"
                 android:text="Bonus:" />
             <TextView android:id="@+id/bonus"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                android:layout_marginRight="16dp"
+                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 

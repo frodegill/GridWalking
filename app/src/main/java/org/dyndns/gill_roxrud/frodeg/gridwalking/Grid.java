@@ -17,8 +17,8 @@ class Grid {
 
     static final byte LEVEL_COUNT = 14;
     static final byte LEVEL_0 = 0;
-    private static final int HOR_GRID_COUNT = (1<<(LEVEL_COUNT-1))*2; //Less than 2^32. Times two because East and West
-    private static final int VER_GRID_COUNT = HOR_GRID_COUNT/2; //Less than 2^31
+    private static final int HOR_GRID_COUNT = (1<<(LEVEL_COUNT-1))*2; //Less than 2^16. Times two because East and West
+    private static final int VER_GRID_COUNT = HOR_GRID_COUNT/2; //Less than 2^15
 
     static final double NORTH = 90.0; //degrees
     static final double EAST = 180.0; //degrees
@@ -32,7 +32,7 @@ class Grid {
     static final double VER_GRID_DEGREES = GRID_MAX_NORTH-GRID_MAX_SOUTH;
 
     private static final byte MAX_MRU_COUNT = 10;
-    private List<Long> mru_list = new ArrayList<>();
+    private List<Integer> mru_list = new ArrayList<>();
 
     Paint gridColours[] = null;
     private Paint selectedGridColour = null;
@@ -80,7 +80,7 @@ class Grid {
             return SelectGridIfValid(ToGrid(geoPoint), unselectIfSelected);
         } catch (InvalidPositionException e) {
             GameState gameState = GameState.getInstance();
-            Long oldSelectedGridKey = gameState.getSelectedGridKey();
+            Integer oldSelectedGridKey = gameState.getSelectedGridKey();
             gameState.setSelectedGridKey(null);
             return !gameState.getSelectedGridKey().equals(oldSelectedGridKey);
         }
@@ -88,11 +88,11 @@ class Grid {
 
     private boolean SelectGridIfValid(Point<Integer> gridPoint, boolean unselectIfSelected) {
         GameState gameState = GameState.getInstance();
-        Long oldSelectedGridKey = gameState.getSelectedGridKey();
+        Integer oldSelectedGridKey = gameState.getSelectedGridKey();
         try {
             if (-1 == DiscoveredLevel(gridPoint)) {
-                Long selectedGridKey = ToKey(gridPoint);
-                if (unselectIfSelected && oldSelectedGridKey!=null && oldSelectedGridKey.longValue()==selectedGridKey.longValue()) {
+                Integer selectedGridKey = ToKey(gridPoint);
+                if (unselectIfSelected && oldSelectedGridKey!=null && oldSelectedGridKey.intValue()==selectedGridKey.intValue()) {
                     gameState.setSelectedGridKey(null);
                 } else {
                     gameState.setSelectedGridKey(selectedGridKey);
@@ -109,7 +109,7 @@ class Grid {
 
     boolean DiscoverSelectedGrid() {
         GameState gameState = GameState.getInstance();
-        Long selectedGridKey = gameState.getSelectedGridKey();
+        Integer selectedGridKey = gameState.getSelectedGridKey();
         if (selectedGridKey == null) {
             return false;
         }
@@ -130,7 +130,7 @@ class Grid {
     }
 
     private boolean DiscoverGrid(final Point<Integer> p) throws InvalidPositionException {
-        long key = ToKey(p);
+        int key = ToKey(p);
         if (IsInMRU(key)) {
             return false;
         }
@@ -143,7 +143,7 @@ class Grid {
         GameState.getInstance().getDB().persistGrid(key, (byte) 0);
         RecursiveCheck(p, (byte) 0);
 
-        Long selectedGridKey = GameState.getInstance().getSelectedGridKey();
+        Integer selectedGridKey = GameState.getInstance().getSelectedGridKey();
         if (selectedGridKey != null) { //Check if selection should be removed
             SelectGridIfValid(FromKey(selectedGridKey), false);
         }
@@ -153,7 +153,7 @@ class Grid {
     private byte DiscoveredLevel(final Point<Integer> p) throws InvalidPositionException {
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         Point<Integer> lowerLeft;
-        long key;
+        int key;
         byte level;
         for (level = LEVEL_COUNT-1; 0<=level; level--) {
             if (0 == db.getLevelCount(level)) {
@@ -177,15 +177,15 @@ class Grid {
 
         Rect<Integer> r = GetBoundingBox(p, (byte)(level+1));
 
-        Set<Long> keys = new TreeSet<>();
-        Long lowerLeftKey = ToKey(r.getLowerLeft());
+        Set<Integer> keys = new TreeSet<>();
+        Integer lowerLeftKey = ToKey(r.getLowerLeft());
         keys.add(lowerLeftKey);
         keys.add(ToKey(r.getLowerRight()));
         keys.add(ToKey(r.getUpperLeft()));
         keys.add(ToKey(r.getUpperRight()));
 
         GridWalkingDBHelper db = GameState.getInstance().getDB();
-        Set<Long> keyMatches = db.containsGrid(keys, level);
+        Set<Integer> keyMatches = db.containsGrid(keys, level);
         if (3 > keyMatches.size()) //Not enough. Bail out
             return;
 
@@ -278,35 +278,35 @@ class Grid {
         return r;
     }
 
-    private long ToKey(final Point<Integer> p) throws InvalidPositionException {
+    private int ToKey(final Point<Integer> p) throws InvalidPositionException {
         return ToKey(p.getX(), p.getY());
     }
 
-    long ToKey(final int x, final int y) throws InvalidPositionException {
+    int ToKey(final int x, final int y) throws InvalidPositionException {
         if (VER_GRID_COUNT<=y || HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
 
-        return (((long)y)<<32) | x;
+        return (y<<16) | x;
     }
 
-    private Point<Integer> FromKey(final long key) throws InvalidPositionException {
-        Point<Integer> p = new Point<>((int)key, (int)(key>>32));
+    private Point<Integer> FromKey(final int key) throws InvalidPositionException {
+        Point<Integer> p = new Point<>(key & 0xFFFF, key>>16);
         if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX())
             throw new InvalidPositionException();
 
         return p;
     }
 
-    int XFromKey(final long key) throws InvalidPositionException {
-        int x = (int)key;
+    int XFromKey(final int key) throws InvalidPositionException {
+        int x = key & 0xFFFF;
         if (HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
 
         return x;
     }
 
-    int YFromKey(final long key) throws InvalidPositionException {
-        int y = (int)(key>>32);
+    int YFromKey(final int key) throws InvalidPositionException {
+        int y = key>>16;
         if (VER_GRID_COUNT<=y)
             throw new InvalidPositionException();
 
@@ -317,12 +317,12 @@ class Grid {
         return new Point<>(ToHorizontalGrid(geoPoint.getLongitude(), LEVEL_0), ToVerticalGrid(geoPoint.getLatitude(), LEVEL_0));
     }
 
-    private boolean IsInMRU(final long key)
+    private boolean IsInMRU(final int key)
     {
         return mru_list.contains(key);
     }
 
-    private void AddToMRU(final long key) {
+    private void AddToMRU(final int key) {
         mru_list.add(0, key);
         if (MAX_MRU_COUNT<mru_list.size()) {
             mru_list.remove(MAX_MRU_COUNT-1);
@@ -343,22 +343,22 @@ class Grid {
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         StringBuilder sb = new StringBuilder();
         long score = 0;
-        long levelCount;
+        boolean first = true;
+        int levelCount;
         byte i;
+        sb.append(" (");
         for (i = LEVEL_COUNT - 1; i >= 0; i--) {
             levelCount = db.getLevelCount(i);
             if (levelCount > 0) {
-                if (sb.length() != 0) {
+                if (!first) {
                     sb.append(':');
                 }
-                sb.append(Long.toString(levelCount));
+                sb.append(Integer.toString(levelCount));
                 score += levelCount<<(2*i); //Each level up represents 4 squares
+                first = false;
             }
         }
-
-        sb.append(" (");
-        sb.append(Long.toString(score));
         sb.append(')');
-        return sb.toString();
+        return Long.toString(score) + sb.toString();
     }
 }

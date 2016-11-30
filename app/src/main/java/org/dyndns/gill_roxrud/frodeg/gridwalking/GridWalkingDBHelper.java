@@ -62,7 +62,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     }
 
-    boolean containsGrid(final long gridKey, final byte level) {
+    boolean containsGrid(final int gridKey, final byte level) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -70,7 +70,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                                     + " FROM " + GRID_TABLE_NAME
                                     + " WHERE " + GRID_COLUMN_KEY + "=?"
                                     + " AND " + GRID_COLUMN_LEVEL + "=?",
-                            new String[]{Long.toString(gridKey), Byte.toString(level)});
+                            new String[]{Integer.toString(gridKey), Byte.toString(level)});
             return cursor.moveToFirst() && !cursor.isAfterLast() && (1 == cursor.getInt(0));
         }
         finally {
@@ -80,7 +80,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    Set<Long> containsGrid(final Set<Long> gridKeys, final byte level) {
+    Set<Integer> containsGrid(final Set<Integer> gridKeys, final byte level) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -89,10 +89,10 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                            + " WHERE " + GRID_COLUMN_LEVEL + "=?"
                            + " AND " + GRID_COLUMN_KEY + " IN (" + setTostring(gridKeys) + ")",
                             new String[]{Byte.toString(level)});
-            Set<Long> result = new TreeSet<>();
+            Set<Integer> result = new TreeSet<>();
             if (cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
-                    result.add(cursor.getLong(0));
+                    result.add(cursor.getInt(0));
                     cursor.moveToNext();
                 }
             }
@@ -105,7 +105,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    Set<Long> containsGrid(final long fromGridKey, final long toGridKey, final byte level) {
+    Set<Integer> containsGrid(final int fromGridKey, final int toGridKey, final byte level) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -114,11 +114,11 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                                     + " WHERE " + GRID_COLUMN_LEVEL + "=? "
                                     + " AND " + GRID_COLUMN_KEY + ">=?"
                                     + " AND " + GRID_COLUMN_KEY + "<=?",
-                            new String[]{Byte.toString(level), Long.toString(fromGridKey), Long.toString(toGridKey)});
-            Set<Long> result = new TreeSet<>();
+                            new String[]{Byte.toString(level), Integer.toString(fromGridKey), Integer.toString(toGridKey)});
+            Set<Integer> result = new TreeSet<>();
             if (cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
-                    result.add(cursor.getLong(0));
+                    result.add(cursor.getInt(0));
                     cursor.moveToNext();
                 }
             }
@@ -138,7 +138,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                     .rawQuery("SELECT COUNT(*)"
                                     + " FROM " + BONUS_TABLE_NAME
                                     + " WHERE " + BONUS_COLUMN_KEY + "=?",
-                            new String[]{Long.toString(bonusKey)});
+                            new String[]{Integer.toString(bonusKey)});
 
             return cursor.moveToFirst() && !cursor.isAfterLast() && (1 == cursor.getInt(0));
         }
@@ -149,7 +149,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void persistGrid(final long gridKey, final byte level) {
+    void persistGrid(final int gridKey, final byte level) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         ContentValues contentValues = new ContentValues();
@@ -163,7 +163,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         db.endTransaction();
     }
 
-    void persistGrid(final Set<Long> oldGridKeys, final long newGridKey, final byte newLevel) {
+    void persistGrid(final Set<Integer> oldGridKeys, final int newGridKey, final byte newLevel) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         db.execSQL("DELETE FROM "+GRID_TABLE_NAME
@@ -202,7 +202,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 return 0;
             }
             int bonusesFound = cursor.isAfterLast() ? 0 : cursor.getInt(0);
-            return bonusesFound - (int) getProperty(PROPERTY_BONUSES_USED);
+            return bonusesFound - getProperty(PROPERTY_BONUSES_USED);
         }
         finally {
             if (cursor != null) {
@@ -221,11 +221,11 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         db.endTransaction();
     }
 
-    long getLevelCount(final byte level) {
+    int getLevelCount(final byte level) {
         return getProperty(toLevelKey(level));
     }
 
-    private long getProperty(final String property) {
+    private int getProperty(final String property) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -234,9 +234,9 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                                     + " WHERE " + PROPERTY_COLUMN_KEY + "=?",
                             new String[]{property});
             if (!cursor.moveToFirst()) {
-                return 0L;
+                return 0;
             }
-            return cursor.isAfterLast() ? 0L : cursor.getLong(0);
+            return cursor.isAfterLast() ? 0 : cursor.getInt(0);
         }
         finally {
             if (cursor != null) {
@@ -256,13 +256,13 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 new String[] {Integer.toString(value), property});
     }
 
-    private String setTostring(final Set<Long> keys) {
+    private String setTostring(final Set<Integer> keys) {
         StringBuilder sb = new StringBuilder();
-        for (Long key : keys) {
+        for (Integer key : keys) {
             if (sb.length() > 0) {
                 sb.append(',');
             }
-            sb.append(Long.toString(key));
+            sb.append(Integer.toString(key));
         }
         return sb.toString();
     }
