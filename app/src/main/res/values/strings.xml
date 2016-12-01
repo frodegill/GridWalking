@@ -5,4 +5,5 @@
     <string name="osmdroid_attribution">Based on osmdroid</string>
     <string name="start_button">START</string>
     <string name="mark_visitted">Mark visitted</string>
+    <string name="created_by">Created by frodegill@gmail.com</string>
 </resources>

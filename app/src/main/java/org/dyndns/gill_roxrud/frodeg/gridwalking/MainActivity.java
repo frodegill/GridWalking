@@ -30,11 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
         OpenStreetMapTileProviderConstants.setUserAgentValue(BuildConfig.APPLICATION_ID);
 
-        // Request permissions to support Android Marshmallow and above devices
-        if (!needsPermissions())
-        {
-            onStartButtonClicked(null);
-        }
+        onStartButtonClicked(null);
     }
 
     @Override
@@ -48,7 +44,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onStartButtonClicked(View v) {
-        this.startActivity(new Intent(this, MapActivity.class));
+        // Request permissions to support Android Marshmallow and above devices
+        if (!needsPermissions()) {
+            this.startActivity(new Intent(this, MapActivity.class));
+        }
     }
 
     // START PERMISSION CHECK
@@ -67,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 message += "\nStorage access to store map tiles.";
             }
             if (!permissions.isEmpty()) {
-                Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
                 String[] params = permissions.toArray(new String[permissions.size()]);
                 requestPermissions(params, REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS);
                 return true;
@@ -94,9 +93,9 @@ public class MainActivity extends AppCompatActivity {
                     // All Permissions Granted
                     Toast.makeText(MainActivity.this, "All permissions granted", Toast.LENGTH_SHORT).show();
                 } else if (location) {
-                    Toast.makeText(this, "Storage permission is required to store map tiles to reduce data usage and for offline usage.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Storage permission is required to store map tiles to reduce data usage and for offline usage.", Toast.LENGTH_LONG).show();
                 } else if (storage) {
-                    Toast.makeText(this, "Location permission is required to show the user's location on map.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Location permission is required to show the user's location on map.", Toast.LENGTH_LONG).show();
                 } else { // !location && !storage case
                     // Permission Denied
                     Toast.makeText(MainActivity.this, "Storage permission is required to store map tiles to reduce data usage and for offline usage." +

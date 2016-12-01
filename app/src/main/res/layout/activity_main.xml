@@ -1,33 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main_layout"
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
+
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:text="@string/app_title"
-        android:layout_gravity="center_horizontal"
-        android:textSize="32dp" />
+        android:textSize="32sp"
+        android:gravity="bottom|center_horizontal"
+        android:layout_weight="1" />
+
     <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:text="@string/app_subtitle"
-        android:textSize="16dp"
-        android:layout_gravity="center_horizontal" />
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/osmdroid_attribution"
-        android:layout_gravity="center_horizontal" />
+        android:textSize="16sp"
+        android:gravity="top|center_horizontal"
+        android:layout_weight="1" />
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:text="@string/start_button"
         android:id="@+id/start_button"
-        android:layout_gravity="center_horizontal"
-        android:onClick="onStartButtonClicked" />
+        android:gravity="center"
+        android:onClick="onStartButtonClicked"
+        android:layout_weight="1"
+        android:layout_margin="25dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/created_by"
+        android:gravity="center_horizontal" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/osmdroid_attribution"
+        android:gravity="center_horizontal"
+        android:textStyle="bold" />
+
 </LinearLayout>
