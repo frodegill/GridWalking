@@ -40,9 +40,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public void onMenuItemClicked(MenuItem item) {
-    }
-
     public void onStartButtonClicked(View v) {
         // Request permissions to support Android Marshmallow and above devices
         if (!needsPermissions()) {
