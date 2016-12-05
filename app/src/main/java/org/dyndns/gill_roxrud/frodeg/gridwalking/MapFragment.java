@@ -169,6 +169,7 @@ public class MapFragment extends Fragment implements LocationListener {
     private void discoverSelectedGrid() {
         if (GameState.getInstance().getGrid().DiscoverSelectedGrid()) {
             mapView.postInvalidate();
+            onScoreUpdated();
         }
     }
 

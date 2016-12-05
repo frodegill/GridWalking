@@ -60,7 +60,7 @@ class GameState {
     void onPositionChanged(MapFragment mapFragment, double x_pos, double y_pos) {
         currentPos.set(x_pos, y_pos);
         try {
-            if (grid.Discover(currentPos) || null != bonus.ValidBonusKeyFromPos(currentPos)) {
+            if (grid.Discover(currentPos, false) || null!=bonus.ValidBonusKeyFromPos(currentPos)) {
                 mapFragment.onScoreUpdated();
             }
         } catch (InvalidPositionException e) {

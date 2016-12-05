@@ -149,7 +149,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void persistGrid(final int gridKey, final byte level) {
+    void persistGrid(final int gridKey, final byte level, final boolean consumeBonus) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         ContentValues contentValues = new ContentValues();
@@ -158,6 +158,10 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         db.insert(GRID_TABLE_NAME, null, contentValues);
 
         adjustLevelCount(db, level, 1);
+
+        if (consumeBonus) {
+            consumeBonus(db);
+        }
 
         db.setTransactionSuccessful();
         db.endTransaction();
@@ -202,7 +206,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 return 0;
             }
             int bonusesFound = cursor.isAfterLast() ? 0 : cursor.getInt(0);
-            return bonusesFound - getProperty(PROPERTY_BONUSES_USED);
+            return bonusesFound - getProperty(PROPERTY_BONUSES_USED) + Bonus.START_BONUS;
         }
         finally {
             if (cursor != null) {
@@ -215,10 +219,14 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
 
-        adjustProperty(db, PROPERTY_BONUSES_USED, 1);
+        consumeBonus(db);
 
         db.setTransactionSuccessful();
         db.endTransaction();
+    }
+
+    private void consumeBonus(final SQLiteDatabase dbInTransaction) {
+        adjustProperty(dbInTransaction, PROPERTY_BONUSES_USED, 1);
     }
 
     int getLevelCount(final byte level) {

@@ -89,22 +89,24 @@ class Grid {
     private boolean SelectGridIfValid(Point<Integer> gridPoint, boolean unselectIfSelected) {
         GameState gameState = GameState.getInstance();
         Integer oldSelectedGridKey = gameState.getSelectedGridKey();
+        Integer currentSelectedGridKey = null;
         try {
             if (-1 == DiscoveredLevel(gridPoint)) {
-                Integer selectedGridKey = ToKey(gridPoint);
-                if (unselectIfSelected && oldSelectedGridKey!=null && oldSelectedGridKey.intValue()==selectedGridKey.intValue()) {
-                    gameState.setSelectedGridKey(null);
-                } else {
-                    gameState.setSelectedGridKey(selectedGridKey);
+                currentSelectedGridKey = ToKey(gridPoint);
+                if (unselectIfSelected &&
+                    oldSelectedGridKey!=null && oldSelectedGridKey.intValue()==currentSelectedGridKey.intValue()) {
+                    currentSelectedGridKey = null;
                 }
-            } else {
-                gameState.setSelectedGridKey(null);
             }
         } catch (InvalidPositionException e) {
-            gameState.setSelectedGridKey(null);
+            currentSelectedGridKey = null;
         }
 
-        return !gameState.getSelectedGridKey().equals(oldSelectedGridKey);
+        gameState.setSelectedGridKey(currentSelectedGridKey);
+
+        return ((oldSelectedGridKey==null && currentSelectedGridKey!=null) ||
+                (oldSelectedGridKey!=null && currentSelectedGridKey==null) ||
+                (oldSelectedGridKey!=null && currentSelectedGridKey!=null && oldSelectedGridKey.intValue()!=currentSelectedGridKey.intValue()));
     }
 
     boolean DiscoverSelectedGrid() {
@@ -115,9 +117,8 @@ class Grid {
         }
         try {
             Bonus bonus = gameState.getBonus();
-            if (bonus.GetUnusedBonusCount()>0 &&
-                DiscoverGrid(FromKey(selectedGridKey))) {
-                gameState.getBonus().ConsumeBonus();
+            if (bonus.GetUnusedBonusCount() > 0) {
+                DiscoverGrid(FromKey(selectedGridKey), true);
                 return true;
             }
         } catch (InvalidPositionException e) {
@@ -125,11 +126,11 @@ class Grid {
         return false;
     }
 
-    boolean Discover(final Point<Double> pos) throws InvalidPositionException {
-        return DiscoverGrid(new Point<>(ToHorizontalGrid(pos.getX(), LEVEL_0), ToVerticalGrid(pos.getY(), LEVEL_0)));
+    boolean Discover(final Point<Double> pos, final boolean consumeBonus) throws InvalidPositionException {
+        return DiscoverGrid(new Point<>(ToHorizontalGrid(pos.getX(), LEVEL_0), ToVerticalGrid(pos.getY(), LEVEL_0)), consumeBonus);
     }
 
-    private boolean DiscoverGrid(final Point<Integer> p) throws InvalidPositionException {
+    private boolean DiscoverGrid(final Point<Integer> p, final boolean consumeBonus) throws InvalidPositionException {
         int key = ToKey(p);
         if (IsInMRU(key)) {
             return false;
@@ -140,7 +141,7 @@ class Grid {
         }
 
         AddToMRU(key);
-        GameState.getInstance().getDB().persistGrid(key, (byte) 0);
+        GameState.getInstance().getDB().persistGrid(key, (byte) 0, consumeBonus);
         RecursiveCheck(p, (byte) 0);
 
         Integer selectedGridKey = GameState.getInstance().getSelectedGridKey();
