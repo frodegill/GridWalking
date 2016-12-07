@@ -176,7 +176,7 @@ class Grid {
         if (LEVEL_COUNT==level)
             return;
 
-        Rect<Integer> r = GetBoundingBox(p, (byte)(level+1));
+        Rect<Integer> r = GetBoundingBoxKeys(p, (byte)(level+1));
 
         Set<Integer> keys = new TreeSet<>();
         Integer lowerLeftKey = ToKey(r.getLowerLeft());
@@ -266,16 +266,17 @@ class Grid {
         return new Point<>(p.getX() & ~mask, p.getY() & ~mask);
     }
 
-    private Rect<Integer> GetBoundingBox(final Point<Integer> p, final byte level) throws InvalidPositionException {
+    private Rect<Integer> GetBoundingBoxKeys(final Point<Integer> p, final byte level) throws InvalidPositionException {
         if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX() || LEVEL_COUNT<=level)
             throw new InvalidPositionException();
 
         int mask = (1<<level) - 1;
+        int offset = 1<<(level-1);
         Rect<Integer> r = new Rect<>();
         r.setLeft(p.getX() & ~mask);
         r.setBottom(p.getY() & ~mask);
-        r.setRight(r.getLeft() + mask);
-        r.setTop(r.getBottom() + mask);
+        r.setRight(r.getLeft() + offset);
+        r.setTop(r.getBottom() + offset);
         return r;
     }
 
@@ -350,7 +351,7 @@ class Grid {
         sb.append(" (");
         for (i = LEVEL_COUNT - 1; i >= 0; i--) {
             levelCount = db.getLevelCount(i);
-            if (levelCount > 0) {
+            if (!(levelCount==0 && first)) {
                 if (!first) {
                     sb.append(':');
                 }
