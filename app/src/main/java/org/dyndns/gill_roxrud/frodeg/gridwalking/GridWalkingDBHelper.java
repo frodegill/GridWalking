@@ -27,6 +27,10 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
     private static final String PROPERTY_LEVELCOUNT_PREFIX = "levelcount_";
     private static final String PROPERTY_BONUSES_USED = "bonuses_used";
+    static final String PROPERTY_X_POS = "x_pos";
+    static final String PROPERTY_Y_POS = "y_pos";
+    static final String PROPERTY_ZOOM_LEVEL = "zoom_level";
+    static final String PROPERTY_USE_DATA_CONNECTION = "use_data_connection";
 
 
     GridWalkingDBHelper(Context context) {
@@ -52,6 +56,26 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         contentValues = new ContentValues();
         contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_BONUSES_USED);
         contentValues.put(PROPERTY_COLUMN_VALUE, 0);
+        db.insert(PROPERTY_TABLE_NAME, null, contentValues);
+
+        contentValues = new ContentValues();
+        contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_X_POS);
+        contentValues.put(PROPERTY_COLUMN_VALUE, 0);
+        db.insert(PROPERTY_TABLE_NAME, null, contentValues);
+
+        contentValues = new ContentValues();
+        contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_Y_POS);
+        contentValues.put(PROPERTY_COLUMN_VALUE, 0);
+        db.insert(PROPERTY_TABLE_NAME, null, contentValues);
+
+        contentValues = new ContentValues();
+        contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_ZOOM_LEVEL);
+        contentValues.put(PROPERTY_COLUMN_VALUE, 11);
+        db.insert(PROPERTY_TABLE_NAME, null, contentValues);
+
+        contentValues = new ContentValues();
+        contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_USE_DATA_CONNECTION);
+        contentValues.put(PROPERTY_COLUMN_VALUE, 1);
         db.insert(PROPERTY_TABLE_NAME, null, contentValues);
 
         db.setTransactionSuccessful();
@@ -233,7 +257,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         return getProperty(toLevelKey(level));
     }
 
-    private int getProperty(final String property) {
+    int getProperty(final String property) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -251,6 +275,19 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 cursor.close();
             }
         }
+    }
+
+    void setProperty(final String property, final int value) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+
+        db.execSQL("UPDATE "+PROPERTY_TABLE_NAME
+                        +" SET "+PROPERTY_COLUMN_VALUE+" = ?"
+                        +" WHERE "+PROPERTY_COLUMN_KEY+"=?",
+                new String[] {Integer.toString(value), property});
+
+        db.setTransactionSuccessful();
+        db.endTransaction();
     }
 
     private void adjustLevelCount(final SQLiteDatabase db, final byte level, final int value) {

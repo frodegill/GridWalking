@@ -3,7 +3,6 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -31,13 +30,6 @@ public class MapFragment extends Fragment implements LocationListener {
     static final long  LOCATION_UPDATE_INTERVAL = 30L;
     static final float LOCATION_UPDATE_DISTANCE = 25.0f;
 
-    static final String PREFS_NAME = "org.dyndns.gill_roxrud.frodeg.gridwalking.prefs";
-    static final String PREFS_SCROLL_X = "scrollX";
-    static final String PREFS_SCROLL_Y = "scrollY";
-    static final String PREFS_ZOOM_LEVEL = "zoomLevel";
-    static final String PREFS_USE_DATA_CONNECTION = "useDataConnection";
-
-    private SharedPreferences preferences;
     private MapView mapView;
 
 
@@ -71,8 +63,7 @@ public class MapFragment extends Fragment implements LocationListener {
         super.onActivityCreated(savedInstanceState);
 
         final Context context = this.getActivity();
-
-        preferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
 
         //OpenStreetMapTileProviderConstants.DEBUG_TILE_PROVIDERS = true;
         OpenStreetMapTileProviderConstants.DEBUGMODE = true;
@@ -86,10 +77,10 @@ public class MapFragment extends Fragment implements LocationListener {
         mapView.getOverlays().add(new BonusOverlay(context));
         mapView.getOverlays().add(new MyLocationOverlay(context));
 
-        mapView.getController().setZoom(preferences.getInt(PREFS_ZOOM_LEVEL, 8));
-        mapView.scrollTo(preferences.getInt(PREFS_SCROLL_X, 0), preferences.getInt(PREFS_SCROLL_Y, 0));
+        mapView.getController().setZoom(db.getProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
+        mapView.scrollTo(db.getProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.getProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
 
-        mapView.setUseDataConnection(preferences.getBoolean(PREFS_USE_DATA_CONNECTION, true));
+        mapView.setUseDataConnection(1 == db.getProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION));
 
         setHasOptionsMenu(true);
 
@@ -98,12 +89,11 @@ public class MapFragment extends Fragment implements LocationListener {
 
     @Override
     public void onPause() {
-        final SharedPreferences.Editor edit = preferences.edit();
-        edit.putInt(PREFS_SCROLL_X, mapView.getScrollX());
-        edit.putInt(PREFS_SCROLL_Y, mapView.getScrollY());
-        edit.putInt(PREFS_ZOOM_LEVEL, mapView.getZoomLevel());
-        edit.putBoolean(PREFS_USE_DATA_CONNECTION, mapView.useDataConnection());
-        edit.apply();
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        db.setProperty(GridWalkingDBHelper.PROPERTY_X_POS, mapView.getScrollX());
+        db.setProperty(GridWalkingDBHelper.PROPERTY_Y_POS, mapView.getScrollY());
+        db.setProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL, mapView.getZoomLevel());
+        db.setProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION, mapView.useDataConnection()?1:0);
 
         super.onPause();
         DisableLocationUpdates();
@@ -183,7 +173,7 @@ public class MapFragment extends Fragment implements LocationListener {
         if (gameState.getGrid().SelectGridIfValid(geoPoint, true)) {
             mapView.postInvalidate();
             if (gameState.getSelectedGridKey() != null) {
-                //this.getActivity().openOptionsMenu();
+                this.getActivity().openOptionsMenu();
             }
         }
     }
