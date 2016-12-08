@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants;
@@ -225,6 +226,10 @@ public class MapFragment extends Fragment implements LocationListener {
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (!locationManager.getAllProviders().contains(LocationManager.GPS_PROVIDER)) {
+                Toast.makeText(GridWalkingApplication.getContext(), "Failed to find a Location Provider (GPS)", Toast.LENGTH_LONG).show();
+                return;
+            }
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_UPDATE_INTERVAL, LOCATION_UPDATE_DISTANCE, this);
         }
     }
