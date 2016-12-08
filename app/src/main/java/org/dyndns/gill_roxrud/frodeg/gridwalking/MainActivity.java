@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     public void onStartButtonClicked(View v) {
         // Request permissions to support Android Marshmallow and above devices
         if (!needsPermissions()) {
-            this.startActivity(new Intent(this, MapActivity.class));
+            ContextCompat.startActivity(this, new Intent(this, MapActivity.class), null);
         }
     }
 
