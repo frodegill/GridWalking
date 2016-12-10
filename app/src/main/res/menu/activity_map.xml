@@ -3,6 +3,6 @@
     <item android:id="@+id/offline"
           android:checkable="true"
           android:title="@string/offline"/>
-    <item android:id="@+id/mark_visitted"
-        android:title="@string/mark_visitted"/>
+    <item android:id="@+id/mark_visited"
+        android:title="@string/mark_visited"/>
 </menu>

@@ -127,7 +127,7 @@ public class MapFragment extends Fragment implements LocationListener {
             item.setChecked(!gameState.getUseDataConnection());
         }
 
-        item = menu.findItem(R.id.mark_visitted);
+        item = menu.findItem(R.id.mark_visited);
         if (item != null) {
             item.setVisible(gameState.getSelectedGridKey() !=null);
         }
@@ -139,7 +139,7 @@ public class MapFragment extends Fragment implements LocationListener {
             case R.id.offline:
                 toggleUseDataConnection(item);
                 return true;
-            case R.id.mark_visitted:
+            case R.id.mark_visited:
                 discoverSelectedGrid();
                 return true;
         }
