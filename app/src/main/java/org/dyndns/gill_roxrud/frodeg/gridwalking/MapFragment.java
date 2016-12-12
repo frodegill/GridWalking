@@ -28,8 +28,8 @@ import org.osmdroid.views.MapView;
 
 
 public class MapFragment extends Fragment implements LocationListener {
-    static final long  LOCATION_UPDATE_INTERVAL = 30L;
-    static final float LOCATION_UPDATE_DISTANCE = 25.0f;
+    private static final long  LOCATION_UPDATE_INTERVAL = 30L;
+    private static final float LOCATION_UPDATE_DISTANCE = 25.0f;
 
     private MapView mapView;
 

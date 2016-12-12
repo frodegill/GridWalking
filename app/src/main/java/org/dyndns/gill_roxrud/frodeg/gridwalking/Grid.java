@@ -32,7 +32,7 @@ class Grid {
     static final double VER_GRID_DEGREES = GRID_MAX_NORTH-GRID_MAX_SOUTH;
 
     private static final byte MAX_MRU_COUNT = 10;
-    private List<Integer> mru_list = new ArrayList<>();
+    private final List<Integer> mru_list = new ArrayList<>();
 
     Paint gridColours[] = null;
     private Paint selectedGridColour = null;

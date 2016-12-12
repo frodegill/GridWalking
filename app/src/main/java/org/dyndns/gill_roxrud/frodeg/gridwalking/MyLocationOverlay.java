@@ -14,8 +14,8 @@ import org.osmdroid.views.overlay.Overlay;
 
 class MyLocationOverlay extends Overlay {
 
-    static private Paint red = new Paint();
-    static private Paint black = new Paint();
+    private static final Paint red = new Paint();
+    private static final Paint black = new Paint();
 
     MyLocationOverlay(Context ctx) {
         super(ctx);

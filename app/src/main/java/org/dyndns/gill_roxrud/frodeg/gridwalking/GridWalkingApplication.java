@@ -28,7 +28,7 @@ public class GridWalkingApplication extends Application{
         super.attachBaseContext(base);
     }
 
-    public static class GridWalkingUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+    private static class GridWalkingUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Thread thread, Throwable ex) {
             Log.e("UncaughtException", "Got an uncaught exception: "+ex.toString());

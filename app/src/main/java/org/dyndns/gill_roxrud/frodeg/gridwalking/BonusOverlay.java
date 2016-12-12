@@ -17,8 +17,8 @@ class BonusOverlay extends Overlay {
 
     static final private int MAX_DRAW_LEVEL = 4;
 
-    static private Paint white = new Paint();
-    static private Paint black = new Paint();
+    private static final Paint white = new Paint();
+    private static final Paint black = new Paint();
 
     BonusOverlay(Context ctx) {
         super(ctx);

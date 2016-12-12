@@ -4,15 +4,15 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 class GameState {
 
     private static GameState instance = null;
-    private Grid grid;
-    private Bonus bonus;
-    private GridWalkingDBHelper db;
+    private final Grid grid;
+    private final Bonus bonus;
+    private final GridWalkingDBHelper db;
 
     private boolean useDataConnection = true;
     private boolean snapToCentre = true;
     private Integer selectedGridKey = null;
 
-    private Point<Double> currentPos = new Point<>(Grid.EAST+1.0, Grid.NORTH+1.0);
+    private final Point<Double> currentPos = new Point<>(Grid.EAST+1.0, Grid.NORTH+1.0);
 
 
     private GameState() {
