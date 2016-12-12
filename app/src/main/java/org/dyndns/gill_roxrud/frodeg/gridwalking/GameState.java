@@ -9,6 +9,7 @@ class GameState {
     private GridWalkingDBHelper db;
 
     private boolean useDataConnection = true;
+    private boolean snapToCentre = true;
     private Integer selectedGridKey = null;
 
     private Point<Double> currentPos = new Point<>(Grid.EAST+1.0, Grid.NORTH+1.0);
@@ -43,6 +44,14 @@ class GameState {
 
     void setUseDataConnection(boolean useDataConnection) {
         this.useDataConnection = useDataConnection;
+    }
+
+    boolean getSnapToCentre() {
+        return snapToCentre;
+    }
+
+    void setSnapToCentre(boolean snapToCentre) {
+        this.snapToCentre = snapToCentre;
     }
 
     Integer getSelectedGridKey() {

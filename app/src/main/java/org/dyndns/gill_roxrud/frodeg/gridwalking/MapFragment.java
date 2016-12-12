@@ -64,10 +64,11 @@ public class MapFragment extends Fragment implements LocationListener {
         super.onActivityCreated(savedInstanceState);
 
         final Context context = this.getActivity();
-        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        GameState gameState = GameState.getInstance();
+        GridWalkingDBHelper db = gameState.getDB();
 
         //OpenStreetMapTileProviderConstants.DEBUG_TILE_PROVIDERS = true;
-        OpenStreetMapTileProviderConstants.DEBUGMODE = true;
+        OpenStreetMapTileProviderConstants.DEBUGMODE = false;
 
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
@@ -78,10 +79,15 @@ public class MapFragment extends Fragment implements LocationListener {
         mapView.getOverlays().add(new BonusOverlay(context));
         mapView.getOverlays().add(new MyLocationOverlay(context));
 
-        mapView.getController().setZoom(db.getProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
-        mapView.scrollTo(db.getProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.getProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
+        gameState.setUseDataConnection(1 == db.getProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION));
+        mapView.setUseDataConnection(gameState.getUseDataConnection());
 
-        mapView.setUseDataConnection(1 == db.getProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION));
+        gameState.setSnapToCentre(1 == db.getProperty(GridWalkingDBHelper.PROPERTY_SNAP_TO_CENTRE));
+
+        mapView.getController().setZoom(db.getProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
+        if (!gameState.getSnapToCentre()) {
+            mapView.scrollTo(db.getProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.getProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
+        }
 
         setHasOptionsMenu(true);
 
@@ -90,11 +96,13 @@ public class MapFragment extends Fragment implements LocationListener {
 
     @Override
     public void onPause() {
-        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        GameState gameState = GameState.getInstance();
+        GridWalkingDBHelper db = gameState.getDB();
         db.setProperty(GridWalkingDBHelper.PROPERTY_X_POS, mapView.getScrollX());
         db.setProperty(GridWalkingDBHelper.PROPERTY_Y_POS, mapView.getScrollY());
         db.setProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL, mapView.getZoomLevel());
-        db.setProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION, mapView.useDataConnection()?1:0);
+        db.setProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION, gameState.getUseDataConnection()?1:0);
+        db.setProperty(GridWalkingDBHelper.PROPERTY_SNAP_TO_CENTRE, gameState.getSnapToCentre()?1:0);
 
         super.onPause();
         DisableLocationUpdates();
@@ -127,6 +135,11 @@ public class MapFragment extends Fragment implements LocationListener {
             item.setChecked(!gameState.getUseDataConnection());
         }
 
+        item = menu.findItem(R.id.snap_to_centre);
+        if (item != null) {
+            item.setChecked(gameState.getSnapToCentre());
+        }
+
         item = menu.findItem(R.id.mark_visited);
         if (item != null) {
             item.setVisible(gameState.getSelectedGridKey() !=null);
@@ -138,6 +151,9 @@ public class MapFragment extends Fragment implements LocationListener {
         switch (item.getItemId()) {
             case R.id.offline:
                 toggleUseDataConnection(item);
+                return true;
+            case R.id.snap_to_centre:
+                toggleSnapToCentre(item);
                 return true;
             case R.id.mark_visited:
                 discoverSelectedGrid();
@@ -154,6 +170,14 @@ public class MapFragment extends Fragment implements LocationListener {
         }
         if (this.mapView != null) {
             this.mapView.setUseDataConnection(gameState.getUseDataConnection());
+        }
+    }
+
+    private void toggleSnapToCentre(MenuItem item) {
+        GameState gameState = GameState.getInstance();
+        gameState.setSnapToCentre(!gameState.getSnapToCentre());
+        if (item != null) {
+            item.setChecked(gameState.getSnapToCentre());
         }
     }
 
@@ -195,11 +219,14 @@ public class MapFragment extends Fragment implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        GameState.getInstance().onPositionChanged(this, location.getLongitude(), location.getLatitude());
+        GameState gameState = GameState.getInstance();
+        gameState.onPositionChanged(this, location.getLongitude(), location.getLatitude());
 
-        GeoPoint position = new GeoPoint(location.getLatitude(), location.getLongitude());
-        mapView.getController().setCenter(position);
-        mapView.postInvalidate(); //Is this needed (after calling setCenter)?
+        if (gameState.getSnapToCentre()) {
+            GeoPoint position = new GeoPoint(location.getLatitude(), location.getLongitude());
+            mapView.getController().setCenter(position);
+        }
+        mapView.postInvalidate();
     }
 
     @Override

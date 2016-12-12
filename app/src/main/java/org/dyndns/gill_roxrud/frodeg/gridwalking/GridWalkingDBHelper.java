@@ -31,10 +31,11 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
     static final String PROPERTY_Y_POS = "y_pos";
     static final String PROPERTY_ZOOM_LEVEL = "zoom_level";
     static final String PROPERTY_USE_DATA_CONNECTION = "use_data_connection";
+    static final String PROPERTY_SNAP_TO_CENTRE = "snap_to_centre";
 
 
     GridWalkingDBHelper(Context context) {
-        super(context, DATABASE_NAME, null, 1);
+        super(context, DATABASE_NAME, null, 2);
     }
 
     @Override
@@ -84,6 +85,17 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if (2>oldVersion && 2<=newVersion) {
+            db.beginTransaction();
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_SNAP_TO_CENTRE);
+            contentValues.put(PROPERTY_COLUMN_VALUE, 1);
+            db.insert(PROPERTY_TABLE_NAME, null, contentValues);
+
+            db.setTransactionSuccessful();
+            db.endTransaction();
+        }
     }
 
     boolean containsGrid(final int gridKey, final byte level) {
