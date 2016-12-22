@@ -85,9 +85,7 @@ public class MapFragment extends Fragment implements LocationListener {
         gameState.setSnapToCentre(1 == db.getProperty(GridWalkingDBHelper.PROPERTY_SNAP_TO_CENTRE));
 
         mapView.getController().setZoom(db.getProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
-        if (!gameState.getSnapToCentre()) {
-            mapView.scrollTo(db.getProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.getProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
-        }
+        mapView.scrollTo(db.getProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.getProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
 
         setHasOptionsMenu(true);
 
