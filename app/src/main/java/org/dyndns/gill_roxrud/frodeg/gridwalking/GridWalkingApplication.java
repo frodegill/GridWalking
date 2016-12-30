@@ -7,6 +7,15 @@ import android.util.Log;
 
 public class GridWalkingApplication extends Application{
 
+    public enum RequestCode {
+        SYNC_HIGHSCORE
+    }
+
+    public enum NetworkResponseCode {
+        OK,
+        ERROR
+    }
+
     private static GridWalkingApplication instance;
 
     public GridWalkingApplication() {

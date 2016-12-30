@@ -2,7 +2,9 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -79,28 +81,32 @@ public class MapFragment extends Fragment implements LocationListener {
         mapView.getOverlays().add(new BonusOverlay(context));
         mapView.getOverlays().add(new MyLocationOverlay(context));
 
-        gameState.setUseDataConnection(1 == db.getProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION));
+        gameState.setUseDataConnection(1 == db.GetProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION));
         mapView.setUseDataConnection(gameState.getUseDataConnection());
 
-        gameState.setSnapToCentre(1 == db.getProperty(GridWalkingDBHelper.PROPERTY_SNAP_TO_CENTRE));
+        gameState.setSnapToCentre(1 == db.GetProperty(GridWalkingDBHelper.PROPERTY_SNAP_TO_CENTRE));
 
-        mapView.getController().setZoom(db.getProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
-        mapView.scrollTo(db.getProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.getProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
+        mapView.getController().setZoom(db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
+        mapView.scrollTo(db.GetProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.GetProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
 
         setHasOptionsMenu(true);
 
         onScoreUpdated();
+
+        if (db.GetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_PURGE_DUPLICATES) != 0) {
+            GameState.getInstance().getGrid().BugfixPurgeDuplicates();
+        }
     }
 
     @Override
     public void onPause() {
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
-        db.setProperty(GridWalkingDBHelper.PROPERTY_X_POS, mapView.getScrollX());
-        db.setProperty(GridWalkingDBHelper.PROPERTY_Y_POS, mapView.getScrollY());
-        db.setProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL, mapView.getZoomLevel());
-        db.setProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION, gameState.getUseDataConnection()?1:0);
-        db.setProperty(GridWalkingDBHelper.PROPERTY_SNAP_TO_CENTRE, gameState.getSnapToCentre()?1:0);
+        db.SetProperty(GridWalkingDBHelper.PROPERTY_X_POS, mapView.getScrollX());
+        db.SetProperty(GridWalkingDBHelper.PROPERTY_Y_POS, mapView.getScrollY());
+        db.SetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL, mapView.getZoomLevel());
+        db.SetProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION, gameState.getUseDataConnection()?1:0);
+        db.SetProperty(GridWalkingDBHelper.PROPERTY_SNAP_TO_CENTRE, gameState.getSnapToCentre()?1:0);
 
         super.onPause();
         DisableLocationUpdates();
@@ -116,6 +122,10 @@ public class MapFragment extends Fragment implements LocationListener {
     public void onResume() {
         super.onResume();
         EnableLocationUpdates();
+
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        mapView.getController().setZoom(db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
+        mapView.scrollTo(db.GetProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.GetProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
     }
 
     @Override
@@ -152,6 +162,9 @@ public class MapFragment extends Fragment implements LocationListener {
                 return true;
             case R.id.snap_to_centre:
                 toggleSnapToCentre(item);
+                return true;
+            case R.id.sync_highscore:
+                ((MapActivity)getActivity()).syncHighscore();
                 return true;
             case R.id.mark_visited:
                 discoverSelectedGrid();

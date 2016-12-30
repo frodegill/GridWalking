@@ -109,7 +109,7 @@ class GridOverlay extends Overlay {
         int y;
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         for (currentLevel = fromLevel; currentLevel < Grid.LEVEL_COUNT; currentLevel++) {
-            if (db.getLevelCount(currentLevel)==0 && !(0==currentLevel && null!=selectedGridKey)) {
+            if (db.GetLevelCount(currentLevel)==0 && !(0==currentLevel && null!=selectedGridKey)) {
                 continue;
             }
 
@@ -128,7 +128,7 @@ class GridOverlay extends Overlay {
                 try {
                     Integer gridLeftKey = grid.ToKey(currentLeftGrid, y);
                     Integer gridRightKey = grid.ToKey(currentRightGrid, y);
-                    currentSet = db.containsGrid(gridLeftKey, gridRightKey+currentStepping, currentLevel);
+                    currentSet = db.ContainsGrid(gridLeftKey, gridRightKey+currentStepping, currentLevel);
                 } catch (InvalidPositionException e) {
                     continue;
                 }

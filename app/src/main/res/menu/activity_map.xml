@@ -6,6 +6,8 @@
     <item android:id="@+id/snap_to_centre"
         android:checkable="true"
         android:title="@string/snap_to_centre"/>
+    <item android:id="@+id/sync_highscore"
+        android:title="@string/sync_highscore"/>
     <item android:id="@+id/mark_visited"
         android:title="@string/mark_visited"/>
 </menu>

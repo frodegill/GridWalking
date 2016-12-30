@@ -9,4 +9,5 @@
     <string name="snap_to_centre">Snap to centre</string>
     <string name="score">Score:</string>
     <string name="bonus">Bonus:</string>
+    <string name="sync_highscore">Sync highscore</string>
 </resources>

@@ -16,13 +16,13 @@ class Bonus {
     }
 
     int GetUnusedBonusCount() {
-        return GameState.getInstance().getDB().getUnusedBonusCount();
+        return GameState.getInstance().getDB().GetUnusedBonusCount();
     }
 
     void ConsumeBonus() {
         GridWalkingDBHelper db = GameState.getInstance().getDB();
-        if (db.getUnusedBonusCount() > 0) {
-            db.consumeBonus();
+        if (db.GetUnusedBonusCount() > 0) {
+            db.ConsumeBonus();
         }
     }
 
@@ -37,7 +37,7 @@ class Bonus {
 
         if (BONUS_SIZE_RADIUS >= CalculateDistance(pos, bonus_pos)) {
             int key = ToBonusKey(p);
-            GameState.getInstance().getDB().persistBonus(key);
+            GameState.getInstance().getDB().PersistBonus(key);
             return key;
         }
         return null;
@@ -101,7 +101,7 @@ class Bonus {
     }
 
     boolean Contains(final int key) {
-        return GameState.getInstance().getDB().containsBonus(key);
+        return GameState.getInstance().getDB().ContainsBonus(key);
     }
 
     int ToBonusKey(final Point<Integer> p) throws InvalidPositionException {

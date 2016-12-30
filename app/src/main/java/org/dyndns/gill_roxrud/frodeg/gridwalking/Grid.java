@@ -1,5 +1,6 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Paint;
 
@@ -141,8 +142,17 @@ class Grid {
         }
 
         AddToMRU(key);
-        GameState.getInstance().getDB().persistGrid(key, (byte) 0, consumeBonus);
-        RecursiveCheck(p, (byte) 0);
+
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        SQLiteDatabase dbInTransaction = db.StartTransaction();
+        boolean success = false;
+        try {
+            GameState.getInstance().getDB().PersistGrid(key, (byte) 0, consumeBonus);
+            RecursiveCheck(db, dbInTransaction, p, (byte) 0);
+            success = true;
+        } finally {
+            db.EndTransaction(dbInTransaction, success);
+        }
 
         Integer selectedGridKey = GameState.getInstance().getSelectedGridKey();
         if (selectedGridKey != null) { //Check if selection should be removed
@@ -157,19 +167,19 @@ class Grid {
         int key;
         byte level;
         for (level = LEVEL_COUNT-1; 0<=level; level--) {
-            if (0 == db.getLevelCount(level)) {
+            if (0 == db.GetLevelCount(level)) {
                 continue;
             }
             lowerLeft = GetLowerLeft(p, level);
             key = ToKey(lowerLeft);
-            if (db.containsGrid(key, level)) {
+            if (db.ContainsGrid(key, level)) {
                 return level;
             }
         }
         return -1;
     }
 
-    private void RecursiveCheck(final Point<Integer> p, final byte level) throws InvalidPositionException {
+    private void RecursiveCheck(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) throws InvalidPositionException {
         if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX() || LEVEL_COUNT<level)
             throw new InvalidPositionException();
 
@@ -179,20 +189,30 @@ class Grid {
         Rect<Integer> r = GetBoundingBoxKeys(p, (byte)(level+1));
 
         Set<Integer> keys = new TreeSet<>();
-        Integer lowerLeftKey = ToKey(r.getLowerLeft());
-        keys.add(lowerLeftKey);
-        keys.add(ToKey(r.getLowerRight()));
-        keys.add(ToKey(r.getUpperLeft()));
-        keys.add(ToKey(r.getUpperRight()));
+        Integer[] gridKeys = new Integer[4];
+        gridKeys[0] = ToKey(r.getLowerLeft());
+        gridKeys[1] = ToKey(r.getLowerRight());
+        gridKeys[2] = ToKey(r.getUpperLeft());
+        gridKeys[3] = ToKey(r.getUpperRight());
+        int i;
+        for (i=0; i<4; i++) {
+            keys.add(gridKeys[i]);
+        }
 
-        GridWalkingDBHelper db = GameState.getInstance().getDB();
-        Set<Integer> keyMatches = db.containsGrid(keys, level);
-        if (3 > keyMatches.size()) //Not enough. Bail out
+        Set<Integer> keyMatches = db.ContainsGrid(keys, level);
+        if (3 > keyMatches.size()) { //Not enough. Bail out
             return;
+        }
 
-        db.persistGrid(keyMatches, lowerLeftKey, (byte) (level + 1));
+        db.PersistGrid(keyMatches, gridKeys[0], (byte) (level + 1));
 
-        RecursiveCheck(r.getLowerLeft(), (byte) (level + 1));
+        for (i=0; i<4; i++) {
+            if (!keyMatches.contains(gridKeys[i])) {
+                RecursiveRemoveGrid(db, dbInTransaction, FromKey(gridKeys[i]), level);
+            }
+        }
+
+        RecursiveCheck(db, dbInTransaction, r.getLowerLeft(), (byte) (level + 1));
     }
 
     int ToHorizontalGrid(double x_pos, final byte level) {
@@ -350,7 +370,7 @@ class Grid {
         byte i;
         sb.append(" (");
         for (i = LEVEL_COUNT - 1; i >= 0; i--) {
-            levelCount = db.getLevelCount(i);
+            levelCount = db.GetLevelCount(i);
             if (!(levelCount==0 && first)) {
                 if (!first) {
                     sb.append(':');
@@ -362,5 +382,56 @@ class Grid {
         }
         sb.append(')');
         return Long.toString(score) + sb.toString();
+    }
+
+    void RecursiveRemoveGrid(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) {
+        try {
+            int gridKey = ToKey(p);
+            if (db.ContainsGrid(gridKey, level)) {
+                db.DeleteGrid(dbInTransaction, gridKey, level);
+
+            }
+
+            if (level > 0) {
+                Rect<Integer> r = GetBoundingBoxKeys(p, level);
+                RecursiveRemoveGrid(db, dbInTransaction, r.getLowerLeft(), (byte) (level-1));
+                RecursiveRemoveGrid(db, dbInTransaction, r.getLowerRight(), (byte) (level-1));
+                RecursiveRemoveGrid(db, dbInTransaction, r.getUpperLeft(), (byte) (level-1));
+                RecursiveRemoveGrid(db, dbInTransaction, r.getUpperRight(), (byte) (level-1));
+            }
+        } catch (InvalidPositionException e) {
+        }
+    }
+
+    void BugfixPurgeDuplicates() {
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        SQLiteDatabase dbInTransaction = db.StartTransaction();
+        boolean success = false;
+        try {
+            byte currentLevel;
+            for (currentLevel = Grid.LEVEL_COUNT - 1; currentLevel >= 1; currentLevel--) {
+                if (db.GetLevelCount(currentLevel) == 0) {
+                    continue;
+                }
+
+                Set<Integer> levelKeys = db.GetLevelGrids(currentLevel);
+                for (Integer levelKey : levelKeys) {
+                    try {
+                        Rect<Integer> r = GetBoundingBoxKeys(FromKey(levelKey), currentLevel);
+                        RecursiveRemoveGrid(db, dbInTransaction, r.getLowerLeft(), (byte) (currentLevel - 1));
+                        RecursiveRemoveGrid(db, dbInTransaction, r.getLowerRight(), (byte) (currentLevel - 1));
+                        RecursiveRemoveGrid(db, dbInTransaction, r.getUpperLeft(), (byte) (currentLevel - 1));
+                        RecursiveRemoveGrid(db, dbInTransaction, r.getUpperRight(), (byte) (currentLevel - 1));
+                    } catch (InvalidPositionException e) {
+                        continue;
+                    }
+                }
+            }
+
+            db.SetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_PURGE_DUPLICATES, 0);
+            success = true;
+        } finally {
+            db.EndTransaction(dbInTransaction, success);
+        }
     }
 }

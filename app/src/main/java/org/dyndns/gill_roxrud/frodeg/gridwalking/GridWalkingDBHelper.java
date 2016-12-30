@@ -8,34 +8,38 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.UUID;
 
 
 final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "GridWalking.db";
+    private static final String DATABASE_NAME         = "GridWalking.db";
 
-    private static final String GRID_TABLE_NAME = "grid";
-    private static final String GRID_COLUMN_KEY = "key";
-    private static final String GRID_COLUMN_LEVEL = "level";
+    private static final String GRID_TABLE_NAME       = "grid";
+    private static final String GRID_COLUMN_KEY       = "key";
+    private static final String GRID_COLUMN_LEVEL     = "level";
 
-    private static final String BONUS_TABLE_NAME = "bonus";
-    private static final String BONUS_COLUMN_KEY = "key";
+    private static final String BONUS_TABLE_NAME      = "bonus";
+    private static final String BONUS_COLUMN_KEY      = "key";
 
-    private static final String PROPERTY_TABLE_NAME = "properties";
-    private static final String PROPERTY_COLUMN_KEY = "key";
+    private static final String PROPERTY_TABLE_NAME   = "properties";
+    private static final String PROPERTY_COLUMN_KEY   = "key";
     private static final String PROPERTY_COLUMN_VALUE = "value";
 
     private static final String PROPERTY_LEVELCOUNT_PREFIX = "levelcount_";
-    private static final String PROPERTY_BONUSES_USED = "bonuses_used";
-    static final String PROPERTY_X_POS = "x_pos";
-    static final String PROPERTY_Y_POS = "y_pos";
-    static final String PROPERTY_ZOOM_LEVEL = "zoom_level";
-    static final String PROPERTY_USE_DATA_CONNECTION = "use_data_connection";
-    static final String PROPERTY_SNAP_TO_CENTRE = "snap_to_centre";
+    private static final String PROPERTY_BONUSES_USED    = "bonuses_used";
+    static final String PROPERTY_X_POS                   = "x_pos";
+    static final String PROPERTY_Y_POS                   = "y_pos";
+    static final String PROPERTY_ZOOM_LEVEL              = "zoom_level";
+    static final String PROPERTY_USE_DATA_CONNECTION     = "use_data_connection";
+    static final String PROPERTY_SNAP_TO_CENTRE          = "snap_to_centre";
+    static final String PROPERTY_USER_GUID               = "user_guid";
+    static final String PROPERTY_USER_NAME               = "username";
+    static final String PROPERTY_BUGFIX_PURGE_DUPLICATES = "bugfix_purge_duplicates";
 
 
     GridWalkingDBHelper(Context context) {
-        super(context, DATABASE_NAME, null, 2);
+        super(context, DATABASE_NAME, null, 3);
     }
 
     @Override
@@ -49,7 +53,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         byte level;
         for (level=0; level<Grid.LEVEL_COUNT; level++) {
             contentValues = new ContentValues();
-            contentValues.put(PROPERTY_COLUMN_KEY, toLevelKey(level));
+            contentValues.put(PROPERTY_COLUMN_KEY, ToLevelKey(level));
             contentValues.put(PROPERTY_COLUMN_VALUE, 0);
             db.insert(PROPERTY_TABLE_NAME, null, contentValues);
         }
@@ -96,9 +100,43 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
             db.setTransactionSuccessful();
             db.endTransaction();
         }
+        if (3>oldVersion && 3<=newVersion) {
+            db.beginTransaction();
+
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_USER_GUID);
+            contentValues.put(PROPERTY_COLUMN_VALUE, UUID.randomUUID().toString());
+            db.insert(PROPERTY_TABLE_NAME, null, contentValues);
+
+            contentValues = new ContentValues();
+            contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_USER_NAME);
+            contentValues.put(PROPERTY_COLUMN_VALUE, "");
+            db.insert(PROPERTY_TABLE_NAME, null, contentValues);
+
+            contentValues = new ContentValues();
+            contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_BUGFIX_PURGE_DUPLICATES);
+            contentValues.put(PROPERTY_COLUMN_VALUE, 1);
+            db.insert(PROPERTY_TABLE_NAME, null, contentValues);
+
+            db.setTransactionSuccessful();
+            db.endTransaction();
+        }
     }
 
-    boolean containsGrid(final int gridKey, final byte level) {
+    SQLiteDatabase StartTransaction() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+        return db;
+    }
+
+    void EndTransaction(SQLiteDatabase db, boolean successful) {
+        if (successful) {
+            db.setTransactionSuccessful();
+        }
+        db.endTransaction();
+    }
+
+    boolean ContainsGrid(final int gridKey, final byte level) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -116,14 +154,14 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    Set<Integer> containsGrid(final Set<Integer> gridKeys, final byte level) {
+    Set<Integer> ContainsGrid(final Set<Integer> gridKeys, final byte level) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
                     .rawQuery("SELECT " + GRID_COLUMN_KEY
                            + " FROM " + GRID_TABLE_NAME
                            + " WHERE " + GRID_COLUMN_LEVEL + "=?"
-                           + " AND " + GRID_COLUMN_KEY + " IN (" + setTostring(gridKeys) + ")",
+                           + " AND " + GRID_COLUMN_KEY + " IN (" + SetTostring(gridKeys) + ")",
                             new String[]{Byte.toString(level)});
             Set<Integer> result = new TreeSet<>();
             if (cursor.moveToFirst()) {
@@ -141,7 +179,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    Set<Integer> containsGrid(final int fromGridKey, final int toGridKey, final byte level) {
+    Set<Integer> ContainsGrid(final int fromGridKey, final int toGridKey, final byte level) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -167,7 +205,31 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    boolean containsBonus(final int bonusKey) {
+    Set<Integer> GetLevelGrids(final byte level) {
+        Cursor cursor = null;
+        try {
+            cursor = this.getReadableDatabase()
+                    .rawQuery("SELECT " + GRID_COLUMN_KEY
+                                    + " FROM " + GRID_TABLE_NAME
+                                    + " WHERE " + GRID_COLUMN_LEVEL + "=?",
+                            new String[]{Byte.toString(level)});
+            Set<Integer> result = new TreeSet<>();
+            if (cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    result.add(cursor.getInt(0));
+                    cursor.moveToNext();
+                }
+            }
+            return result;
+        }
+        finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    boolean ContainsBonus(final int bonusKey) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -185,56 +247,61 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void persistGrid(final int gridKey, final byte level, final boolean consumeBonus) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.beginTransaction();
+    void PersistGrid(final int gridKey, final byte level, final boolean consumeBonus) {
+        SQLiteDatabase db = StartTransaction();
+
         ContentValues contentValues = new ContentValues();
         contentValues.put(GRID_COLUMN_KEY, gridKey);
         contentValues.put(GRID_COLUMN_LEVEL, level);
         db.insert(GRID_TABLE_NAME, null, contentValues);
 
-        adjustLevelCount(db, level, 1);
+        AdjustLevelCount(db, level, 1);
 
         if (consumeBonus) {
-            consumeBonus(db);
+            ConsumeBonus(db);
         }
 
-        db.setTransactionSuccessful();
-        db.endTransaction();
+        EndTransaction(db, true);
     }
 
-    void persistGrid(final Set<Integer> oldGridKeys, final int newGridKey, final byte newLevel) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.beginTransaction();
-        db.execSQL("DELETE FROM "+GRID_TABLE_NAME
-                 +" WHERE "+GRID_COLUMN_KEY+" IN ("+ setTostring(oldGridKeys)+")");
+    void PersistGrid(final Set<Integer> oldGridKeys, final int newGridKey, final byte newLevel) {
+        SQLiteDatabase db = StartTransaction();
 
-        adjustLevelCount(db, (byte) (newLevel-1), -(oldGridKeys.size()));
+        db.execSQL("DELETE FROM "+GRID_TABLE_NAME
+                 +" WHERE "+GRID_COLUMN_KEY+" IN ("+ SetTostring(oldGridKeys)+")");
+
+        AdjustLevelCount(db, (byte) (newLevel-1), -(oldGridKeys.size()));
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(GRID_COLUMN_KEY, newGridKey);
         contentValues.put(GRID_COLUMN_LEVEL, newLevel);
         db.insert(GRID_TABLE_NAME, null, contentValues);
 
-        adjustLevelCount(db, newLevel, 1);
+        AdjustLevelCount(db, newLevel, 1);
 
-        db.setTransactionSuccessful();
-        db.endTransaction();
+        EndTransaction(db, true);
     }
 
-    void persistBonus(final int bonusKey) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.beginTransaction();
+    void DeleteGrid(final SQLiteDatabase dbInTransaction, final int gridKey, final byte level) {
+        dbInTransaction.execSQL("DELETE FROM "+GRID_TABLE_NAME
+                              +" WHERE " + GRID_COLUMN_LEVEL + "=?"
+                              +" AND "+GRID_COLUMN_KEY+"=?",
+                new String[]{Integer.toString(level), Integer.toString(gridKey)});
+
+        AdjustLevelCount(dbInTransaction, level, -1);
+    }
+
+    void PersistBonus(final int bonusKey) {
+        SQLiteDatabase db = StartTransaction();
 
         ContentValues contentValues = new ContentValues();
         contentValues.put(BONUS_COLUMN_KEY, bonusKey);
         db.insert(BONUS_TABLE_NAME, null, contentValues);
 
-        db.setTransactionSuccessful();
-        db.endTransaction();
+        EndTransaction(db, true);
     }
 
-    int getUnusedBonusCount() {
+    int GetUnusedBonusCount() {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM " + BONUS_TABLE_NAME, null);
@@ -242,7 +309,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 return 0;
             }
             int bonusesFound = cursor.isAfterLast() ? 0 : cursor.getInt(0);
-            return bonusesFound - getProperty(PROPERTY_BONUSES_USED) + Bonus.START_BONUS;
+            return bonusesFound - GetProperty(PROPERTY_BONUSES_USED) + Bonus.START_BONUS;
         }
         finally {
             if (cursor != null) {
@@ -251,25 +318,23 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void consumeBonus() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.beginTransaction();
+    void ConsumeBonus() {
+        SQLiteDatabase db = StartTransaction();
 
-        consumeBonus(db);
+        ConsumeBonus(db);
 
-        db.setTransactionSuccessful();
-        db.endTransaction();
+        EndTransaction(db, true);
     }
 
-    private void consumeBonus(final SQLiteDatabase dbInTransaction) {
-        adjustProperty(dbInTransaction, PROPERTY_BONUSES_USED, 1);
+    private void ConsumeBonus(final SQLiteDatabase dbInTransaction) {
+        AdjustProperty(dbInTransaction, PROPERTY_BONUSES_USED, 1);
     }
 
-    int getLevelCount(final byte level) {
-        return getProperty(toLevelKey(level));
+    int GetLevelCount(final byte level) {
+        return GetProperty(ToLevelKey(level));
     }
 
-    int getProperty(final String property) {
+    int GetProperty(final String property) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -289,31 +354,49 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void setProperty(final String property, final int value) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        db.beginTransaction();
+    String GetStringProperty(final String property) {
+        Cursor cursor = null;
+        try {
+            cursor = this.getReadableDatabase()
+                    .rawQuery("SELECT " + PROPERTY_COLUMN_VALUE
+                           + " FROM " + PROPERTY_TABLE_NAME
+                           + " WHERE " + PROPERTY_COLUMN_KEY + "=?",
+                            new String[]{property});
+            if (!cursor.moveToFirst()) {
+                return "";
+            }
+            return cursor.isAfterLast() ? "" : cursor.getString(0);
+        }
+        finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    void SetProperty(final String property, final int value) {
+        SQLiteDatabase db = StartTransaction();
 
         db.execSQL("UPDATE "+PROPERTY_TABLE_NAME
                         +" SET "+PROPERTY_COLUMN_VALUE+" = ?"
                         +" WHERE "+PROPERTY_COLUMN_KEY+"=?",
                 new String[] {Integer.toString(value), property});
 
-        db.setTransactionSuccessful();
-        db.endTransaction();
+        EndTransaction(db, true);
     }
 
-    private void adjustLevelCount(final SQLiteDatabase db, final byte level, final int value) {
-        adjustProperty(db, toLevelKey(level), value);
+    private void AdjustLevelCount(final SQLiteDatabase db, final byte level, final int value) {
+        AdjustProperty(db, ToLevelKey(level), value);
     }
 
-    private void adjustProperty(final SQLiteDatabase db, final String property, final int value) {
+    private void AdjustProperty(final SQLiteDatabase db, final String property, final int value) {
         db.execSQL("UPDATE "+PROPERTY_TABLE_NAME
                         +" SET "+PROPERTY_COLUMN_VALUE+" = "+PROPERTY_COLUMN_VALUE+"+?"
                         +" WHERE "+PROPERTY_COLUMN_KEY+"=?",
                 new String[] {Integer.toString(value), property});
     }
 
-    private String setTostring(final Set<Integer> keys) {
+    private String SetTostring(final Set<Integer> keys) {
         StringBuilder sb = new StringBuilder();
         for (Integer key : keys) {
             if (sb.length() > 0) {
@@ -324,7 +407,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         return sb.toString();
     }
 
-    private String toLevelKey(final byte level) {
+    private String ToLevelKey(final byte level) {
         return PROPERTY_LEVELCOUNT_PREFIX+Byte.toString(level);
     }
 
