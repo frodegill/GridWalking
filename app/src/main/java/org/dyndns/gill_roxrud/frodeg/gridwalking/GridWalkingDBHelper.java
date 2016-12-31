@@ -31,10 +31,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
     static final String PROPERTY_X_POS                   = "x_pos";
     static final String PROPERTY_Y_POS                   = "y_pos";
     static final String PROPERTY_ZOOM_LEVEL              = "zoom_level";
-    static final String PROPERTY_USE_DATA_CONNECTION     = "use_data_connection";
-    static final String PROPERTY_SNAP_TO_CENTRE          = "snap_to_centre";
     static final String PROPERTY_USER_GUID               = "user_guid";
-    static final String PROPERTY_USER_NAME               = "username";
     static final String PROPERTY_BUGFIX_PURGE_DUPLICATES = "bugfix_purge_duplicates";
 
 
@@ -78,39 +75,18 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         contentValues.put(PROPERTY_COLUMN_VALUE, 11);
         db.insert(PROPERTY_TABLE_NAME, null, contentValues);
 
-        contentValues = new ContentValues();
-        contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_USE_DATA_CONNECTION);
-        contentValues.put(PROPERTY_COLUMN_VALUE, 1);
-        db.insert(PROPERTY_TABLE_NAME, null, contentValues);
-
         db.setTransactionSuccessful();
         db.endTransaction();
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (2>oldVersion && 2<=newVersion) {
-            db.beginTransaction();
-
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_SNAP_TO_CENTRE);
-            contentValues.put(PROPERTY_COLUMN_VALUE, 1);
-            db.insert(PROPERTY_TABLE_NAME, null, contentValues);
-
-            db.setTransactionSuccessful();
-            db.endTransaction();
-        }
         if (3>oldVersion && 3<=newVersion) {
             db.beginTransaction();
 
             ContentValues contentValues = new ContentValues();
             contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_USER_GUID);
             contentValues.put(PROPERTY_COLUMN_VALUE, UUID.randomUUID().toString());
-            db.insert(PROPERTY_TABLE_NAME, null, contentValues);
-
-            contentValues = new ContentValues();
-            contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_USER_NAME);
-            contentValues.put(PROPERTY_COLUMN_VALUE, "");
             db.insert(PROPERTY_TABLE_NAME, null, contentValues);
 
             contentValues = new ContentValues();
@@ -381,6 +357,17 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                         +" SET "+PROPERTY_COLUMN_VALUE+" = ?"
                         +" WHERE "+PROPERTY_COLUMN_KEY+"=?",
                 new String[] {Integer.toString(value), property});
+
+        EndTransaction(db, true);
+    }
+
+    void SetStringProperty(final String property, final String value) {
+        SQLiteDatabase db = StartTransaction();
+
+        db.execSQL("UPDATE "+PROPERTY_TABLE_NAME
+                        +" SET "+PROPERTY_COLUMN_VALUE+" = ?"
+                        +" WHERE "+PROPERTY_COLUMN_KEY+"=?",
+                new String[] {value, property});
 
         EndTransaction(db, true);
     }

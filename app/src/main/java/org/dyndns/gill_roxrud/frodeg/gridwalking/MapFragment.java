@@ -81,11 +81,7 @@ public class MapFragment extends Fragment implements LocationListener {
         mapView.getOverlays().add(new BonusOverlay(context));
         mapView.getOverlays().add(new MyLocationOverlay(context));
 
-        gameState.setUseDataConnection(1 == db.GetProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION));
         mapView.setUseDataConnection(gameState.getUseDataConnection());
-
-        gameState.setSnapToCentre(1 == db.GetProperty(GridWalkingDBHelper.PROPERTY_SNAP_TO_CENTRE));
-
         mapView.getController().setZoom(db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
         mapView.scrollTo(db.GetProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.GetProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
 
@@ -105,8 +101,6 @@ public class MapFragment extends Fragment implements LocationListener {
         db.SetProperty(GridWalkingDBHelper.PROPERTY_X_POS, mapView.getScrollX());
         db.SetProperty(GridWalkingDBHelper.PROPERTY_Y_POS, mapView.getScrollY());
         db.SetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL, mapView.getZoomLevel());
-        db.SetProperty(GridWalkingDBHelper.PROPERTY_USE_DATA_CONNECTION, gameState.getUseDataConnection()?1:0);
-        db.SetProperty(GridWalkingDBHelper.PROPERTY_SNAP_TO_CENTRE, gameState.getSnapToCentre()?1:0);
 
         super.onPause();
         DisableLocationUpdates();
@@ -123,9 +117,11 @@ public class MapFragment extends Fragment implements LocationListener {
         super.onResume();
         EnableLocationUpdates();
 
-        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        GameState gameState = GameState.getInstance();
+        GridWalkingDBHelper db = gameState.getDB();
         mapView.getController().setZoom(db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
         mapView.scrollTo(db.GetProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.GetProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
+        mapView.setUseDataConnection(gameState.getUseDataConnection());
     }
 
     @Override
@@ -138,17 +134,7 @@ public class MapFragment extends Fragment implements LocationListener {
     public void onPrepareOptionsMenu(final Menu menu) {
         GameState gameState = GameState.getInstance();
         super.onPrepareOptionsMenu(menu);
-        MenuItem item = menu.findItem(R.id.offline);
-        if (item != null) {
-            item.setChecked(!gameState.getUseDataConnection());
-        }
-
-        item = menu.findItem(R.id.snap_to_centre);
-        if (item != null) {
-            item.setChecked(gameState.getSnapToCentre());
-        }
-
-        item = menu.findItem(R.id.mark_visited);
+        MenuItem item = menu.findItem(R.id.mark_visited);
         if (item != null) {
             item.setVisible(gameState.getSelectedGridKey() !=null);
         }
@@ -157,39 +143,18 @@ public class MapFragment extends Fragment implements LocationListener {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.offline:
-                toggleUseDataConnection(item);
-                return true;
-            case R.id.snap_to_centre:
-                toggleSnapToCentre(item);
+            case R.id.mark_visited:
+                discoverSelectedGrid();
                 return true;
             case R.id.sync_highscore:
                 ((MapActivity)getActivity()).syncHighscore();
                 return true;
-            case R.id.mark_visited:
-                discoverSelectedGrid();
+            case R.id.settings:
+                Intent i = new Intent(GridWalkingApplication.getContext(), GridWalkingPreferenceActivity.class);
+                startActivity(i);
                 return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void toggleUseDataConnection(MenuItem item) {
-        GameState gameState = GameState.getInstance();
-        gameState.setUseDataConnection(!gameState.getUseDataConnection());
-        if (item != null) {
-            item.setChecked(gameState.getUseDataConnection());
-        }
-        if (this.mapView != null) {
-            this.mapView.setUseDataConnection(gameState.getUseDataConnection());
-        }
-    }
-
-    private void toggleSnapToCentre(MenuItem item) {
-        GameState gameState = GameState.getInstance();
-        gameState.setSnapToCentre(!gameState.getSnapToCentre());
-        if (item != null) {
-            item.setChecked(gameState.getSnapToCentre());
-        }
     }
 
     private void discoverSelectedGrid() {

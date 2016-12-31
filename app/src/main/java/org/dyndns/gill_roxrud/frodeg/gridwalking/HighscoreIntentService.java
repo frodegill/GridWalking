@@ -31,12 +31,13 @@ public class HighscoreIntentService  extends IntentService {
 
             StringBuilder sb = new StringBuilder();
 
-            GridWalkingDBHelper db = GameState.getInstance().getDB();
+            GameState gameState = GameState.getInstance();
+            GridWalkingDBHelper db = gameState.getDB();
 
             sb.append("?guid=");
             sb.append(URLEncoder.encode(db.GetStringProperty(GridWalkingDBHelper.PROPERTY_USER_GUID), "UTF-8"));
             sb.append("&name=");
-            sb.append(URLEncoder.encode(db.GetStringProperty(GridWalkingDBHelper.PROPERTY_USER_NAME), "UTF-8"));
+            sb.append(URLEncoder.encode(gameState.getHighscoreNickname(), "UTF-8"));
             byte i;
             for (i=0; i<Grid.LEVEL_COUNT; i++) {
                 sb.append("&l");

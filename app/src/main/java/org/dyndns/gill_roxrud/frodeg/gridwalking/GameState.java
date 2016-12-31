@@ -1,6 +1,9 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 class GameState {
 
     private static GameState instance = null;
@@ -8,8 +11,6 @@ class GameState {
     private final Bonus bonus;
     private final GridWalkingDBHelper db;
 
-    private boolean useDataConnection = true;
-    private boolean snapToCentre = true;
     private Integer selectedGridKey = null;
 
     private final Point<Double> currentPos = new Point<>(Grid.EAST+1.0, Grid.NORTH+1.0);
@@ -39,19 +40,18 @@ class GameState {
     GridWalkingDBHelper getDB() {return db;}
 
     boolean getUseDataConnection() {
-        return useDataConnection;
-    }
-
-    void setUseDataConnection(boolean useDataConnection) {
-        this.useDataConnection = useDataConnection;
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
+        return !sharedPrefs.getBoolean(GridWalkingPreferenceActivity.OFFLINE_PREFERENCE, true);
     }
 
     boolean getSnapToCentre() {
-        return snapToCentre;
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
+        return sharedPrefs.getBoolean(GridWalkingPreferenceActivity.SNAP_TO_CENTRE_PREFERENCE, true);
     }
 
-    void setSnapToCentre(boolean snapToCentre) {
-        this.snapToCentre = snapToCentre;
+    String getHighscoreNickname() {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
+        return sharedPrefs.getString(GridWalkingPreferenceActivity.HIGHSCORE_NICKNAME_PREFERENCE, "Anonymous");
     }
 
     Integer getSelectedGridKey() {

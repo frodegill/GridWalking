@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:title="@string/offline"
+        android:key="offline_preference" />
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:title="@string/snap_to_centre"
+        android:key="snap_to_centre_preference" />
+    <org.dyndns.gill_roxrud.frodeg.gridwalking.EditTextPreference
+        android:defaultValue="Anonymous"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="Highscore Name"
+        android:key="highscore_nickname_preference" />
+
+</PreferenceScreen>
