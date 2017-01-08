@@ -147,7 +147,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                     .rawQuery("SELECT " + GRID_COLUMN_KEY
                            + " FROM " + GRID_TABLE_NAME
                            + " WHERE " + GRID_COLUMN_LEVEL + "=?"
-                           + " AND " + GRID_COLUMN_KEY + " IN (" + SetTostring(gridKeys) + ")",
+                           + " AND " + GRID_COLUMN_KEY + " IN (" + SetToString(gridKeys) + ")",
                             new String[]{Byte.toString(level)});
             Set<Integer> result = new TreeSet<>();
             if (cursor.moveToFirst()) {
@@ -254,7 +254,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = StartTransaction();
 
         db.execSQL("DELETE FROM "+GRID_TABLE_NAME
-                 +" WHERE "+GRID_COLUMN_KEY+" IN ("+ SetTostring(oldGridKeys)+")");
+                 +" WHERE "+GRID_COLUMN_KEY+" IN ("+ SetToString(oldGridKeys)+")");
 
         AdjustLevelCount(db, (byte) (newLevel-1), -(oldGridKeys.size()));
 
@@ -393,7 +393,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 new String[] {Integer.toString(value), property});
     }
 
-    private String SetTostring(final Set<Integer> keys) {
+    private String SetToString(final Set<Integer> keys) {
         StringBuilder sb = new StringBuilder();
         for (Integer key : keys) {
             if (sb.length() > 0) {

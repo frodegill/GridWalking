@@ -47,25 +47,20 @@ class Grid {
                 gridColours[i] = new Paint();
             }
 
-            i=0;
-/*0*/       if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xFA, 0x80, 0x72)); //Salmon
-/*1*/       if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xD2, 0x69, 0x1E)); //Chocolate
-/*2*/       if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xFF, 0x69, 0xB4)); //Hot Pink
-/*3*/       if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xFF, 0x00, 0xFF)); //Magenta
-/*4*/       if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xDD, 0xA0, 0xDD)); //Plum
-/*5*/       if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0x8F, 0xBC, 0x8F)); //Dark Sea Green
-/*6*/       if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0x00, 0x80, 0x80)); //Teal
-/*7*/       if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0x99, 0x32, 0xCC)); //Dark Orchid
-/*8*/       if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xEE, 0x82, 0xEE)); //Violet
-/*9*/       if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xFF, 0xDE, 0xAD)); //Navajo White
-/*10*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xFF, 0x45, 0x00)); //Orange Red
-/*11*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0x00, 0xFF, 0x7F)); //Spring Green
-/*12*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xFF, 0x14, 0x93)); //Deep Pink
-/*13*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xB2, 0x22, 0x22)); //Firebrick
-/*14*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xFF, 0xD7, 0x00)); //Gold
-/*15*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xB0, 0x30, 0x60)); //Maroon
-/*16*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xBA, 0x55, 0xD3)); //Medium Orchid
-/*17*/      if (i<LEVEL_COUNT) gridColours[i++].setColor(Color.argb(0x80, 0xFF, 0xE4, 0xE1)); //Misty Rose
+            gridColours[0].setColor(Color.argb(0x80, 0xFA, 0x80, 0x72)); //Salmon
+            gridColours[1].setColor(Color.argb(0x80, 0xD2, 0x69, 0x1E)); //Chocolate
+            gridColours[2].setColor(Color.argb(0x80, 0xFF, 0x69, 0xB4)); //Hot Pink
+            gridColours[3].setColor(Color.argb(0x80, 0xFF, 0x00, 0xFF)); //Magenta
+            gridColours[4].setColor(Color.argb(0x80, 0xDD, 0xA0, 0xDD)); //Plum
+            gridColours[5].setColor(Color.argb(0x80, 0x8F, 0xBC, 0x8F)); //Dark Sea Green
+            gridColours[6].setColor(Color.argb(0x80, 0x00, 0x80, 0x80)); //Teal
+            gridColours[7].setColor(Color.argb(0x80, 0x99, 0x32, 0xCC)); //Dark Orchid
+            gridColours[8].setColor(Color.argb(0x80, 0xEE, 0x82, 0xEE)); //Violet
+            gridColours[9].setColor(Color.argb(0x80, 0xFF, 0xDE, 0xAD)); //Navajo White
+            gridColours[10].setColor(Color.argb(0x80, 0xFF, 0x45, 0x00)); //Orange Red
+            gridColours[11].setColor(Color.argb(0x80, 0x00, 0xFF, 0x7F)); //Spring Green
+            gridColours[12].setColor(Color.argb(0x80, 0xFF, 0x14, 0x93)); //Deep Pink
+            gridColours[13].setColor(Color.argb(0x80, 0xFF, 0xD7, 0x00)); //Gold
 
             selectedGridColour = new Paint();
             selectedGridColour.setColor(Color.argb(0xA0, 0xFF, 0xFF, 0x00));
@@ -384,7 +379,7 @@ class Grid {
         return Long.toString(score) + sb.toString();
     }
 
-    void RecursiveRemoveGrid(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) {
+    private void RecursiveRemoveGrid(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) {
         try {
             int gridKey = ToKey(p);
             if (db.ContainsGrid(gridKey, level)) {
@@ -423,7 +418,6 @@ class Grid {
                         RecursiveRemoveGrid(db, dbInTransaction, r.getUpperLeft(), (byte) (currentLevel - 1));
                         RecursiveRemoveGrid(db, dbInTransaction, r.getUpperRight(), (byte) (currentLevel - 1));
                     } catch (InvalidPositionException e) {
-                        continue;
                     }
                 }
             }

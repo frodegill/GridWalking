@@ -32,11 +32,6 @@ public class GridWalkingApplication extends Application{
         Thread.currentThread().setUncaughtExceptionHandler(new GridWalkingUncaughtExceptionHandler());
     }
 
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-    }
-
     private static class GridWalkingUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Thread thread, Throwable ex) {

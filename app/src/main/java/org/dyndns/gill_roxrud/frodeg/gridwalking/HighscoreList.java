@@ -15,7 +15,7 @@ class HighscoreList implements Parcelable {
     public HighscoreList() {
     }
 
-    protected HighscoreList(Parcel in) {
+    private HighscoreList(Parcel in) {
         playerPosition = in.readInt();
         totalPlayerCount = in.readInt();
         items = in.createTypedArrayList(HighscoreItem.CREATOR);

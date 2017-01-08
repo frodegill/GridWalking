@@ -14,7 +14,7 @@ class HighscoreItem implements Parcelable {
     public HighscoreItem() {
     }
 
-    protected HighscoreItem(Parcel in) {
+    private HighscoreItem(Parcel in) {
         position = in.readInt();
         username = in.readString();
         levels = in.createIntArray();

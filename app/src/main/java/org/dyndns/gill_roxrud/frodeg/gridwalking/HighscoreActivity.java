@@ -14,19 +14,15 @@ public class HighscoreActivity extends AppCompatActivity {
 
     public static final String HIGHSCORE_LIST = "highscore_list";
 
-    private ListView highscoreListView;
-    private ArrayList<HighscoreItem> highscoreArrayList;
-    private HighscoreAdapter highscoreListViewAdapter;
-
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_highscore);
 
-        highscoreListView = (ListView) findViewById(R.id.highscoreList);
-        highscoreArrayList = new ArrayList<>();
-        highscoreListViewAdapter = new HighscoreAdapter(this, highscoreArrayList);
+        ListView highscoreListView = (ListView) findViewById(R.id.highscoreList);
+        ArrayList<HighscoreItem> highscoreArrayList = new ArrayList<>();
+        HighscoreAdapter highscoreListViewAdapter = new HighscoreAdapter(this, highscoreArrayList);
 
         highscoreListView.setAdapter(highscoreListViewAdapter);
 

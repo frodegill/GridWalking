@@ -138,10 +138,7 @@ public class HighscoreIntentService  extends IntentService {
         int sum1 = Secrets.CRC_SEED1;
         int sum2 = Secrets.CRC_SEED2;
         int i;
-        StringBuilder sb = new StringBuilder();
         for (i = 0; i < s.length; i++) { /* https://en.wikipedia.org/wiki/Fletcher's_checksum */
-            sb.append(Byte.toString(s[i]));
-            sb.append(" ");
             sum1 = (sum1 + s[i]) % 255;
             sum2 = (sum2 + sum1) % 255;
         }
