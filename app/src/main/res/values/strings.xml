@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Grid Walking</string>
+    <string name="app_name" translatable="false">Grid Walking</string>
     <string name="app_subtitle">Discover Earth. One square at a time.</string>
-    <string name="app_title">Grid Walking</string>
+    <string name="app_title" translatable="false">Grid Walking</string>
     <string name="osmdroid_attribution">Based on osmdroid</string>
     <string name="start_button">START</string>
     <string name="mark_visited">Mark visited</string>
