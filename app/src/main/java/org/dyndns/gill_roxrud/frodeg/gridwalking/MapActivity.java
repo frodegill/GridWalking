@@ -5,10 +5,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
-
-import java.util.ArrayList;
 
 
 public class MapActivity extends AppCompatActivity {
@@ -31,13 +30,13 @@ public class MapActivity extends AppCompatActivity {
         if (requestCode == GridWalkingApplication.RequestCode.SYNC_HIGHSCORE.ordinal()) {
             if (responseCode == GridWalkingApplication.NetworkResponseCode.OK.ordinal()) {
                 Parcelable response = data.getParcelableExtra(HighscoreIntentService.RESPONSE_EXTRA);
-//                DomainObj domainObj = (DomainObj) response;
-//                setTextValue(R.id.domainText, domainObj.domain);
-                Toast.makeText(GridWalkingApplication.getContext(), "Syncing highscore succeeded", Toast.LENGTH_LONG).show();
+                HighscoreList highscoreList = (HighscoreList) response;
+
+                Intent intent = new Intent(this, HighscoreActivity.class);
+                intent.putExtra(HighscoreActivity.HIGHSCORE_LIST, highscoreList);
+                ContextCompat.startActivity(this, intent, null);
             } else {
-//                setTextValue(R.id.domainText, "");
                 String msg = data.getStringExtra(HighscoreIntentService.RESPONSE_MSG_EXTRA);
-//                Toast.makeText(ApplicationWrapper.getContext(), "Getting subdomains failed: " + msg, Toast.LENGTH_LONG).show();
                 Toast.makeText(GridWalkingApplication.getContext(), "Syncing highscore failed: " + msg, Toast.LENGTH_LONG).show();
             }
         }

@@ -1,6 +1,5 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 

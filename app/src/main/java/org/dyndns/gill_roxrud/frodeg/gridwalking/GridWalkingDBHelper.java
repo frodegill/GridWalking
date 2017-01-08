@@ -75,13 +75,23 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         contentValues.put(PROPERTY_COLUMN_VALUE, 11);
         db.insert(PROPERTY_TABLE_NAME, null, contentValues);
 
+        contentValues = new ContentValues();
+        contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_USER_GUID);
+        contentValues.put(PROPERTY_COLUMN_VALUE, UUID.randomUUID().toString());
+        db.insert(PROPERTY_TABLE_NAME, null, contentValues);
+
+        contentValues = new ContentValues();
+        contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_BUGFIX_PURGE_DUPLICATES);
+        contentValues.put(PROPERTY_COLUMN_VALUE, 1);
+        db.insert(PROPERTY_TABLE_NAME, null, contentValues);
+
         db.setTransactionSuccessful();
         db.endTransaction();
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (3>oldVersion && 3<=newVersion) {
+        if (oldVersion < 3) {
             db.beginTransaction();
 
             ContentValues contentValues = new ContentValues();
