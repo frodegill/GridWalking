@@ -86,11 +86,11 @@ public class MapFragment extends Fragment implements LocationListener {
 
         setHasOptionsMenu(true);
 
-        onScoreUpdated();
-
         if (db.GetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_PURGE_DUPLICATES) != 0) {
             GameState.getInstance().getGrid().BugfixPurgeDuplicates();
         }
+
+        onScoreUpdated();
     }
 
     @Override
