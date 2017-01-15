@@ -9,7 +9,7 @@ class HighscoreItem implements Parcelable {
     private int position;
     private String username;
     private int[] levels = new int[Grid.LEVEL_COUNT];
-    private int score;
+    private long score;
 
     public HighscoreItem() {
     }
@@ -18,7 +18,7 @@ class HighscoreItem implements Parcelable {
         position = in.readInt();
         username = in.readString();
         levels = in.createIntArray();
-        score = in.readInt();
+        score = in.readLong();
     }
 
     @Override
@@ -26,7 +26,7 @@ class HighscoreItem implements Parcelable {
         dest.writeInt(position);
         dest.writeString(username);
         dest.writeIntArray(levels);
-        dest.writeInt(score);
+        dest.writeLong(score);
     }
 
     @Override
@@ -53,7 +53,7 @@ class HighscoreItem implements Parcelable {
         for (i=0; i<Grid.LEVEL_COUNT; i++) {
             levels[Grid.LEVEL_COUNT-i-1] = Integer.valueOf(atoms[1+i]);
         }
-        score = Integer.valueOf(atoms[1+Grid.LEVEL_COUNT]);
+        score = Long.valueOf(atoms[1+Grid.LEVEL_COUNT]);
         username = atoms[2+Grid.LEVEL_COUNT];
         for (i=3+Grid.LEVEL_COUNT; i<atoms.length; i++) {
             username += ";"+atoms[i];
@@ -84,7 +84,7 @@ class HighscoreItem implements Parcelable {
         return sb.toString();
     }
 
-    public int getScore() {
+    public long getScore() {
         return score;
     }
 }

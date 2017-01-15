@@ -56,7 +56,7 @@ class HighscoreAdapter extends BaseAdapter {
         textView.setText(item.getLevelsString());
 
         textView = (TextView)vi.findViewById(R.id.score);
-        textView.setText(Integer.toString(item.getScore()));
+        textView.setText(Long.toString(item.getScore()));
 
         return vi;
     }
