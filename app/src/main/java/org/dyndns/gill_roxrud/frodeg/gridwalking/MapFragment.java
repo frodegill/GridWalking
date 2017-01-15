@@ -80,10 +80,6 @@ public class MapFragment extends Fragment implements LocationListener {
         mapView.getOverlays().add(new BonusOverlay(context));
         mapView.getOverlays().add(new MyLocationOverlay(context));
 
-        mapView.setUseDataConnection(gameState.getUseDataConnection());
-        mapView.getController().setZoom(db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
-        mapView.scrollTo(db.GetProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.GetProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
-
         setHasOptionsMenu(true);
 
         if (db.GetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_PURGE_DUPLICATES) != 0) {
@@ -114,13 +110,14 @@ public class MapFragment extends Fragment implements LocationListener {
     @Override
     public void onResume() {
         super.onResume();
-        EnableLocationUpdates();
 
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
         mapView.getController().setZoom(db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
         mapView.scrollTo(db.GetProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.GetProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
         mapView.setUseDataConnection(gameState.getUseDataConnection());
+
+        EnableLocationUpdates();
     }
 
     @Override
