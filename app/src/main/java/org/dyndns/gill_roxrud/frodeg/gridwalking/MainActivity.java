@@ -32,13 +32,6 @@ public class MainActivity extends AppCompatActivity {
         onStartButtonClicked(null);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.activity_map, menu);
-        return true;
-    }
-
     public void onStartButtonClicked(View v) {
         // Request permissions to support Android Marshmallow and above devices
         if (!needsPermissions()) {
