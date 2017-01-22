@@ -1,7 +1,5 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
-
-import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -17,9 +15,8 @@ class MyLocationOverlay extends Overlay {
     private static final Paint red = new Paint();
     private static final Paint black = new Paint();
 
-    MyLocationOverlay(Context ctx) {
-        super(ctx);
-
+    MyLocationOverlay() {
+        super();
         red.setColor(Color.argb(0x80, 0xC0, 0x00, 0x00));
         red.setStyle(Paint.Style.STROKE);
 
@@ -27,7 +24,7 @@ class MyLocationOverlay extends Overlay {
     }
 
     @Override
-    protected void draw(Canvas canvas, MapView mapView, boolean shadow) {
+    public void draw(Canvas canvas, MapView mapView, boolean shadow) {
         if (shadow) {
             return;
         }

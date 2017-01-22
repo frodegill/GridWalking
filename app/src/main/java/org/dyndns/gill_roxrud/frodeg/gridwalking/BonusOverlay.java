@@ -1,7 +1,6 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 
-import android.content.Context;
 import android.graphics.*;
 
 import org.osmdroid.api.IGeoPoint;
@@ -20,9 +19,8 @@ class BonusOverlay extends Overlay {
     private static final Paint white = new Paint();
     private static final Paint black = new Paint();
 
-    BonusOverlay(Context ctx) {
-        super(ctx);
-
+    BonusOverlay() {
+        super();
         white.setColor(Color.argb(0x80, 0xFF, 0xFF, 0xFF));
         white.setStyle(Paint.Style.STROKE);
 
@@ -77,7 +75,7 @@ class BonusOverlay extends Overlay {
     }
 
     @Override
-    protected void draw(Canvas canvas, MapView mapView, boolean shadow) {
+    public void draw(Canvas canvas, MapView mapView, boolean shadow) {
         if (shadow) {
             return;
         }
@@ -90,8 +88,8 @@ class BonusOverlay extends Overlay {
         }
 
         if (ne.getLongitude() < sw.getLongitude()) { //Across date-line?
-            GeoPoint neEastBorder = new GeoPoint(ne.getLatitudeE6(), Grid.EAST*1E6-1);
-            GeoPoint swWestBorder = new GeoPoint(sw.getLatitudeE6(), Grid.WEST*1E6);
+            GeoPoint neEastBorder = new GeoPoint(ne.getLatitude(), Grid.EAST);
+            GeoPoint swWestBorder = new GeoPoint(sw.getLatitude(), Grid.WEST);
             draw(canvas, mapView, neEastBorder, sw);
             draw(canvas, mapView, ne, swWestBorder);
         } else {

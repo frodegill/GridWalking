@@ -22,10 +22,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.osmdroid.api.IGeoPoint;
-import org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants;
+import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.CopyrightOverlay;
 
 
 public class MapFragment extends Fragment implements LocationListener {
@@ -64,21 +65,21 @@ public class MapFragment extends Fragment implements LocationListener {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        final Context context = this.getActivity();
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
 
-        //OpenStreetMapTileProviderConstants.DEBUG_TILE_PROVIDERS = true;
-        OpenStreetMapTileProviderConstants.DEBUGMODE = false;
+        Configuration.getInstance().setDebugTileProviders(false);
+        Configuration.getInstance().setDebugMode(false);
 
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.setBuiltInZoomControls(true);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
 
-        mapView.getOverlays().add(new GridOverlay(context, this));
-        mapView.getOverlays().add(new BonusOverlay(context));
-        mapView.getOverlays().add(new MyLocationOverlay(context));
+        mapView.getOverlays().add(new CopyrightOverlay(GridWalkingApplication.getContext()));
+        mapView.getOverlays().add(new GridOverlay(this));
+        mapView.getOverlays().add(new BonusOverlay());
+        mapView.getOverlays().add(new MyLocationOverlay());
 
         setHasOptionsMenu(true);
 

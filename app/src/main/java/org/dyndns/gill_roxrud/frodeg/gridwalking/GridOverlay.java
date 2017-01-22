@@ -1,7 +1,5 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
-
-import android.content.Context;
 import android.graphics.*;
 import android.graphics.Rect;
 import android.view.MotionEvent;
@@ -23,8 +21,8 @@ class GridOverlay extends Overlay {
     private final MapFragment mapFragment;
 
 
-    GridOverlay(Context ctx, final MapFragment mapFragment) {
-        super(ctx);
+    GridOverlay(final MapFragment mapFragment) {
+        super();
         this.mapFragment = mapFragment;
     }
 
@@ -38,7 +36,7 @@ class GridOverlay extends Overlay {
     }
 
     @Override
-    protected void draw(Canvas canvas, MapView mapView, boolean shadow) {
+    public void draw(Canvas canvas, MapView mapView, boolean shadow) {
         if (shadow) {
             return;
         }
@@ -51,8 +49,8 @@ class GridOverlay extends Overlay {
         }
 
         if (ne.getLongitude() < sw.getLongitude()) { //Across date-line?
-            GeoPoint neEastBorder = new GeoPoint(ne.getLatitudeE6(), Grid.EAST*1E6-1);
-            GeoPoint swWestBorder = new GeoPoint(sw.getLatitudeE6(), Grid.WEST*1E6);
+            GeoPoint neEastBorder = new GeoPoint(ne.getLatitude(), Grid.EAST);
+            GeoPoint swWestBorder = new GeoPoint(sw.getLatitude(), Grid.WEST);
             draw(canvas, mapView, neEastBorder, sw);
             draw(canvas, mapView, ne, swWestBorder);
         } else {

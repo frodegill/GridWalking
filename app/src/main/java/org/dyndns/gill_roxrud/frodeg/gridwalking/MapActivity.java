@@ -1,13 +1,17 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
+
+import org.osmdroid.config.Configuration;
 
 
 public class MapActivity extends AppCompatActivity {
@@ -16,6 +20,11 @@ public class MapActivity extends AppCompatActivity {
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Context context = GridWalkingApplication.getContext();
+        Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
+        Configuration.getInstance().setMapViewHardwareAccelerated(true);
+
         this.setContentView(R.layout.activity_map);
 
         FragmentManager fm = this.getSupportFragmentManager();
@@ -23,6 +32,12 @@ public class MapActivity extends AppCompatActivity {
             MapFragment mapFragment = new MapFragment();
             fm.beginTransaction().add(R.id.activity_map_layout, mapFragment, MAP_FRAGMENT_TAG).commit();
         }
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
     }
 
     @Override

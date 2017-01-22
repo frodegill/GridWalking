@@ -1,6 +1,7 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
@@ -17,9 +18,10 @@ class GameState {
 
 
     private GameState() {
+        Context context = GridWalkingApplication.getContext();
         grid = new Grid();
         bonus = new Bonus();
-        db = new GridWalkingDBHelper(GridWalkingApplication.getContext());
+        db = new GridWalkingDBHelper(context);
     }
 
     static GameState getInstance() {
