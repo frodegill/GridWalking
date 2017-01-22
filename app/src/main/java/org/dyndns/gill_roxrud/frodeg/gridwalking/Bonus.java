@@ -19,13 +19,6 @@ class Bonus {
         return GameState.getInstance().getDB().GetUnusedBonusCount();
     }
 
-    void ConsumeBonus() {
-        GridWalkingDBHelper db = GameState.getInstance().getDB();
-        if (db.GetUnusedBonusCount() > 0) {
-            db.ConsumeBonus();
-        }
-    }
-
     Integer ValidBonusKeyFromPos(final Point<Double> pos) throws InvalidPositionException {
         double horizontal_pos_rounding = pos.getX()+HALF_HOR_BONUS_DEGREE;
         if (Grid.EAST<=horizontal_pos_rounding) {
