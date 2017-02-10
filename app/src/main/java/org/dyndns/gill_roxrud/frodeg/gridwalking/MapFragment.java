@@ -147,7 +147,7 @@ public class MapFragment extends Fragment implements LocationListener {
                 ((MapActivity)getActivity()).syncHighscore();
                 return true;
             case R.id.settings:
-                Intent i = new Intent(GridWalkingApplication.getContext(), GridWalkingPreferenceActivity.class);
+                Intent i = new Intent(getContext(), GridWalkingPreferenceActivity.class);
                 startActivity(i);
                 return true;
         }
@@ -227,7 +227,7 @@ public class MapFragment extends Fragment implements LocationListener {
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             if (!locationManager.getAllProviders().contains(LocationManager.GPS_PROVIDER)) {
-                Toast.makeText(GridWalkingApplication.getContext(), "Failed to find a Location Provider (GPS)", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Failed to find a Location Provider (GPS)", Toast.LENGTH_LONG).show();
                 return;
             }
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_UPDATE_INTERVAL, LOCATION_UPDATE_DISTANCE, this);

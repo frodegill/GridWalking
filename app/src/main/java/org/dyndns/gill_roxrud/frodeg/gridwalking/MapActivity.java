@@ -52,7 +52,7 @@ public class MapActivity extends AppCompatActivity {
                 ContextCompat.startActivity(this, intent, null);
             } else {
                 String msg = data.getStringExtra(HighscoreIntentService.RESPONSE_MSG_EXTRA);
-                Toast.makeText(GridWalkingApplication.getContext(), "Syncing highscore failed: " + msg, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Syncing highscore failed: " + msg, Toast.LENGTH_LONG).show();
             }
         }
         super.onActivityResult(requestCode, responseCode, data);
@@ -60,7 +60,7 @@ public class MapActivity extends AppCompatActivity {
 
     void syncHighscore() {
         PendingIntent pendingResult = createPendingResult(GridWalkingApplication.RequestCode.SYNC_HIGHSCORE.ordinal(), new Intent(), 0);
-        Intent intent = new Intent(GridWalkingApplication.getContext(), HighscoreIntentService.class);
+        Intent intent = new Intent(MapActivity.this, HighscoreIntentService.class);
         intent.putExtra(HighscoreIntentService.PENDING_RESULT_EXTRA, pendingResult);
         startService(intent);
     }
