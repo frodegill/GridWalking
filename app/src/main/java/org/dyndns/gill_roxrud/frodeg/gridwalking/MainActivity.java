@@ -66,11 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < permissions.length; i++)
                     perms.put(permissions[i], grantResults[i]);
                 // Check for ACCESS_FINE_LOCATION
-                Boolean location = perms.get(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-                if (location) {
-                    // All Permissions Granted
-                    Toast.makeText(MainActivity.this, "All permissions granted", Toast.LENGTH_SHORT).show();
-                } else { // !location
+                if (perms.get(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     // Permission Denied
                     Toast.makeText(MainActivity.this, "Location permission is required to show the user's location on map.", Toast.LENGTH_SHORT).show();
                 }
