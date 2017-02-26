@@ -371,7 +371,7 @@ class Grid {
                     sb.append(':');
                 }
                 sb.append(Integer.toString(levelCount));
-                score += levelCount<<(2*i); //Each level up represents 4 squares
+                score += (levelCount<<(2*i)) * (i+1); //Each level up represents 4 squares
                 first = false;
             }
         }
