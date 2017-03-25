@@ -133,7 +133,8 @@ public class MapFragment extends Fragment implements LocationListener {
         super.onPrepareOptionsMenu(menu);
         MenuItem item = menu.findItem(R.id.mark_visited);
         if (item != null) {
-            item.setVisible(gameState.getSelectedGridKey() !=null);
+            GameState.ShowGridState showGridState = GameState.getInstance().getShowGridState();
+            item.setVisible(GameState.ShowGridState.SELF==showGridState && gameState.getSelectedGridKey()!=null);
         }
     }
 

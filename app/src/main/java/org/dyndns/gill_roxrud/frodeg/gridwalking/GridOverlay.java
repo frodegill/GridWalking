@@ -89,6 +89,7 @@ class GridOverlay extends Overlay {
     private void drawSquares(final Canvas canvas, final Projection projection, final IGeoPoint sw, final IGeoPoint ne, final byte gridLevel) {
         GameState gameState = GameState.getInstance();
         Grid grid = gameState.getGrid();
+        GameState.ShowGridState showGridState = gameState.getShowGridState();
         byte fromLevel = (byte) Math.max(gridLevel-DRAW_LEVEL_DEPTH, Grid.LEVEL_0);
         Integer selectedGridX = null;
         Integer selectedGridY = null;
@@ -126,7 +127,7 @@ class GridOverlay extends Overlay {
                 try {
                     Integer gridLeftKey = grid.ToKey(currentLeftGrid, y);
                     Integer gridRightKey = grid.ToKey(currentRightGrid, y);
-                    currentSet = db.ContainsGrid(gridLeftKey, gridRightKey+currentStepping, currentLevel);
+                    currentSet = db.ContainsGrid(gridLeftKey, gridRightKey+currentStepping, currentLevel, showGridState);
                 } catch (InvalidPositionException e) {
                     continue;
                 }

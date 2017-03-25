@@ -6,6 +6,11 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 class GameState {
+    enum ShowGridState {
+        NONE,
+        SELF,
+        SYNCED
+    }
 
     private static GameState instance = null;
     private final Grid grid;
@@ -22,6 +27,8 @@ class GameState {
         grid = new Grid();
         bonus = new Bonus();
         db = new GridWalkingDBHelper(context);
+        //String s = db.DumpDB();
+        //System.out.println(s);
     }
 
     static GameState getInstance() {
@@ -49,6 +56,10 @@ class GameState {
     boolean getSnapToCentre() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
         return sharedPrefs.getBoolean(GridWalkingPreferenceActivity.SNAP_TO_CENTRE_PREFERENCE, true);
+    }
+
+    ShowGridState getShowGridState() {
+        return ShowGridState.SELF;
     }
 
     String getHighscoreNickname() {
