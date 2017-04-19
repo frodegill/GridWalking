@@ -3,15 +3,20 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -23,6 +28,8 @@ public class HighscoreIntentService  extends IntentService {
 
     private static final String GRIDWALKING_ENDPOINT = "https://gill-roxrud.dyndns.org:1416";
     private static final String HIGHSCORE_REST_PATH = "/gridwalking/highscore/";
+
+    private static final boolean USE_SECURE_CONNECTION = GRIDWALKING_ENDPOINT.startsWith("https://");
 
     public static final String PENDING_RESULT_EXTRA = "pending_result";
     public static final String RESPONSE_EXTRA       = "response";
@@ -37,59 +44,70 @@ public class HighscoreIntentService  extends IntentService {
     protected void onHandleIntent(Intent intent) {
         PendingIntent reply = null;
         HighscoreList highscoreList = null;
+
+        GridWalkingDBHelper db = null;
+        SQLiteDatabase dbInTransaction = null;
+        boolean failed = false;
         try {
             reply = intent.getParcelableExtra(PENDING_RESULT_EXTRA);
 
             GameState gameState = GameState.getInstance();
-            GridWalkingDBHelper db = gameState.getDB();
+            db = gameState.getDB();
+            dbInTransaction = db.StartTransaction();
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(HIGHSCORE_REST_PATH);
-            sb.append(db.GetStringProperty(GridWalkingDBHelper.PROPERTY_USER_GUID));
-            byte i;
-            for (i=Grid.LEVEL_COUNT-1; i>=0; i--) {
-                sb.append('/');
-                sb.append(Integer.toString(db.GetLevelCount(i)));
-            }
-            sb.append('/');
-            String pathParams = sb.toString();
+            String pathParams = generatePathParamString(db);
             String nameParam = gameState.getHighscoreNickname();
 
-            boolean failed = false;
-            HttpsURLConnection httpsConnection = null;
+            Set<Integer> deletedGrids = new TreeSet<>();
+            Set<Integer>[] newGrids = new TreeSet[Grid.LEVEL_COUNT];
+            byte level;
+            for (level=0; level<Grid.LEVEL_COUNT; level++) {
+                newGrids[level] = new TreeSet<>();
+            }
+
+            HttpURLConnection httpConnection = null;
             try {
+                db.GetModifiedGrids(dbInTransaction, deletedGrids, newGrids);
+
                 URL url = new URL(GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
                                  +"?crc="+Crc((pathParams+nameParam).getBytes("UTF-8")));
 
-                httpsConnection = (HttpsURLConnection) url.openConnection();
+                httpConnection = (HttpURLConnection) url.openConnection();
+                if (USE_SECURE_CONNECTION) {
+                    HttpsURLConnection httpsConnection = (HttpsURLConnection) httpConnection;
 
-                SSLContext sc;
-                sc = SSLContext.getInstance("TLS");
-                sc.init(null, null, new java.security.SecureRandom());
-                httpsConnection.setSSLSocketFactory(sc.getSocketFactory());
+                    SSLContext sc;
+                    sc = SSLContext.getInstance("TLS");
+                    sc.init(null, null, new java.security.SecureRandom());
+                    httpsConnection.setSSLSocketFactory(sc.getSocketFactory());
+                }
 
-                httpsConnection.setReadTimeout(7000);
-                httpsConnection.setConnectTimeout(7000);
-                httpsConnection.setRequestMethod("POST");
-                httpsConnection.setDoInput(true);
+                httpConnection.setReadTimeout(7000);
+                httpConnection.setConnectTimeout(7000);
+                httpConnection.setRequestMethod("POST");
+                httpConnection.setDoOutput(true);
+                OutputStream outputStream = httpConnection.getOutputStream();
+                generateBody(db, outputStream);
+                httpConnection.setDoInput(true);
 
-                httpsConnection.connect();
+                httpConnection.connect();
 
-                int status = httpsConnection.getResponseCode();
+                int status = httpConnection.getResponseCode();
                 if (status >= 400) {
-                    InputStream is = httpsConnection.getErrorStream();
+                    InputStream is = httpConnection.getErrorStream();
                     InputStreamReader isr = new InputStreamReader(is);
                     BufferedReader in = new BufferedReader(isr);
                     String inputLine;
-                    sb = new StringBuilder();
+                    StringBuilder sb = new StringBuilder();
                     while ((inputLine = in.readLine()) != null) {
                         sb.append(inputLine);
                     }
+                    failed = true;
                     throw new IOException("HTTP 406: "+sb.toString());
                 }
 
                 highscoreList = new HighscoreList();
-                InputStream is = httpsConnection.getInputStream();
+                InputStream is = httpConnection.getInputStream();
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader in = new BufferedReader(isr);
                 boolean first = true;
@@ -107,8 +125,8 @@ public class HighscoreIntentService  extends IntentService {
             } catch (IOException|NoSuchAlgorithmException|KeyManagementException e) {
                 failed = true;
             } finally {
-                if (httpsConnection != null) {
-                    httpsConnection.disconnect();
+                if (httpConnection != null) {
+                    httpConnection.disconnect();
                 }
             }
 
@@ -118,8 +136,15 @@ public class HighscoreIntentService  extends IntentService {
             reply.send(this,
                     failed ? GridWalkingApplication.NetworkResponseCode.ERROR.ordinal() : GridWalkingApplication.NetworkResponseCode.OK.ordinal(),
                     response);
+
+            db.CommitModifiedGrids(dbInTransaction, deletedGrids, newGrids);
+
         } catch (PendingIntent.CanceledException e) {
             reportError(reply, GridWalkingApplication.NetworkResponseCode.ERROR.ordinal(), e.getMessage());
+        } finally {
+            if (db!=null && dbInTransaction!=null) {
+                db.EndTransaction(dbInTransaction, !failed);
+            }
         }
     }
 
@@ -132,6 +157,34 @@ public class HighscoreIntentService  extends IntentService {
             } catch (PendingIntent.CanceledException e) {
             }
         }
+    }
+
+    private String generatePathParamString(final GridWalkingDBHelper db) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(HIGHSCORE_REST_PATH);
+        sb.append(db.GetStringProperty(GridWalkingDBHelper.PROPERTY_USER_GUID));
+        byte i;
+        for (i=Grid.LEVEL_COUNT-1; i>=0; i--) {
+            sb.append('/');
+            sb.append(Integer.toString(db.GetLevelCount(i)));
+        }
+        sb.append('/');
+        return sb.toString();
+    }
+
+    private void generateBody(final GridWalkingDBHelper db, final OutputStream outputStream) throws IOException {
+        appendInt32(outputStream, 0xFFFFFFFF);
+        byte i;
+        for (i=0; i<Grid.LEVEL_COUNT; i++) {
+            appendInt32(outputStream, 0xFFFFFFFF);
+        }
+    }
+
+    private void appendInt32(final OutputStream outputStream, int value) throws IOException {
+        outputStream.write((value&0xFF000000)>>24);
+        outputStream.write((value&0x00FF0000)>>16);
+        outputStream.write((value&0x0000FF00)>>8);
+        outputStream.write(value&0x000000FF);
     }
 
     private int Crc(final byte[] s) {
