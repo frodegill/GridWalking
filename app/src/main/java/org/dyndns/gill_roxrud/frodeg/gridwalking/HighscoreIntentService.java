@@ -15,6 +15,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -59,10 +60,10 @@ public class HighscoreIntentService  extends IntentService {
             String nameParam = gameState.getHighscoreNickname();
 
             Set<Integer> deletedGrids = new TreeSet<>();
-            Set<Integer>[] newGrids = new TreeSet[Grid.LEVEL_COUNT];
+            ArrayList<Set<Integer>> newGrids = new ArrayList<>();
             byte level;
             for (level=0; level<Grid.LEVEL_COUNT; level++) {
-                newGrids[level] = new TreeSet<>();
+                newGrids.set(level, new TreeSet<Integer>());
             }
 
             HttpURLConnection httpConnection = null;

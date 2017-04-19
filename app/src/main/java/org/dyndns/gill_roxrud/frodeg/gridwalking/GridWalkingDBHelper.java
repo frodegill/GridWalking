@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
@@ -279,7 +280,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void GetModifiedGrids(final SQLiteDatabase dbInTransaction, final Set<Integer> deletedGrids, final Set<Integer>[] newGrids) {
+    void GetModifiedGrids(final SQLiteDatabase dbInTransaction, final Set<Integer> deletedGrids, final ArrayList<Set<Integer>> newGrids) {
         Cursor cursor = null;
 
         deletedGrids.clear();
@@ -305,7 +306,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
         byte level;
         for (level=0; level<Grid.LEVEL_COUNT; level++) {
-            newGrids[level].clear();
+            newGrids.get(level).clear();
             try {
                 cursor = dbInTransaction
                         .rawQuery("SELECT " + GRID_COLUMN_KEY
@@ -316,7 +317,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
                                 new String[]{Byte.toString(level)});
                 if (cursor.moveToFirst()) {
                     while (!cursor.isAfterLast()) {
-                        newGrids[level].add(cursor.getInt(0));
+                        newGrids.get(level).add(cursor.getInt(0));
                         cursor.moveToNext();
                     }
                 }
@@ -328,7 +329,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void CommitModifiedGrids(final SQLiteDatabase dbInTransaction, final Set<Integer> deletedGrids, final Set<Integer>[] newGrids) {
+    void CommitModifiedGrids(final SQLiteDatabase dbInTransaction, final Set<Integer> deletedGrids, final ArrayList<Set<Integer>> newGrids) {
         dbInTransaction.execSQL("DELETE FROM "+GRID_TABLE_NAME
                                +" WHERE " + GRID_COLUMN_KEY + " IN ("+ SetToString(deletedGrids)+")"
                                  +" AND " + GRID_COLUMN_STATUS + "="+Integer.toString(GRID_STATUS_DELETED)
@@ -338,7 +339,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         for (level=0; level<Grid.LEVEL_COUNT; level++) {
             dbInTransaction.execSQL("UPDATE "+GRID_TABLE_NAME
                                      +" SET " + GRID_COLUMN_STATUS + "="+Integer.toString(GRID_STATUS_SYNCED)
-                                   +" WHERE " + GRID_COLUMN_KEY + " IN ("+ SetToString(newGrids[level])+")"
+                                   +" WHERE " + GRID_COLUMN_KEY + " IN ("+ SetToString(newGrids.get(level))+")"
                                      +" AND " + GRID_COLUMN_STATUS + "="+Integer.toString(GRID_STATUS_NEW)
                                      +" AND " + GRID_COLUMN_OWNER + "="+Integer.toString(GRID_OWNER_SELF));
         }
