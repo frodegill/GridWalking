@@ -1,7 +1,7 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 
-class Point<T> {
+public class Point<T> {
     private T x;
     private T y;
 
@@ -28,11 +28,11 @@ class Point<T> {
         this.y = y;
     }
 
-    T getX() {
+    public T getX() {
         return x;
     }
 
-    T getY() {
+    public T getY() {
         return y;
     }
 }

@@ -7,7 +7,7 @@ import android.os.Parcelable;
 import java.util.ArrayList;
 
 
-class HighscoreList implements Parcelable {
+public class HighscoreList implements Parcelable {
     private int playerPosition;
     private int totalPlayerCount;
     private ArrayList<HighscoreItem> items;

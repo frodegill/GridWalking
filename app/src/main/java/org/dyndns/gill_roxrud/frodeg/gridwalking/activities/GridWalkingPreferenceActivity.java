@@ -1,7 +1,9 @@
-package org.dyndns.gill_roxrud.frodeg.gridwalking;
+package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+
+import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 
 
 public class GridWalkingPreferenceActivity extends PreferenceActivity {

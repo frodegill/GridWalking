@@ -5,7 +5,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 
-class HighscoreItem implements Parcelable {
+public class HighscoreItem implements Parcelable {
     private int position;
     private String username;
     private int[] levels = new int[Grid.LEVEL_COUNT];

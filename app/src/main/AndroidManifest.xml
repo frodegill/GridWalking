@@ -41,30 +41,30 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <service android:name=".HighscoreIntentService" android:exported="false"/>
+        <service android:name=".intents.SyncIntentService" android:exported="false"/>
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".MapActivity">
+            android:name=".activities.MapActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".HighscoreActivity">
+            android:name=".activities.HighscoreActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".GridWalkingPreferenceActivity">
+            android:name=".activities.GridWalkingPreferenceActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

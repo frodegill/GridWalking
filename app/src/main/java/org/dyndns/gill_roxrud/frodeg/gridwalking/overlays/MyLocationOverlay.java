@@ -1,21 +1,23 @@
-package org.dyndns.gill_roxrud.frodeg.gridwalking;
+package org.dyndns.gill_roxrud.frodeg.gridwalking.overlays;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Point;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.Projection;
 import org.osmdroid.views.overlay.Overlay;
 
 
-class MyLocationOverlay extends Overlay {
+public class MyLocationOverlay extends Overlay {
 
     private static final Paint red = new Paint();
     private static final Paint black = new Paint();
 
-    MyLocationOverlay() {
+    public MyLocationOverlay() {
         super();
         red.setColor(Color.argb(0x80, 0xC0, 0x00, 0x00));
         red.setStyle(Paint.Style.STROKE);

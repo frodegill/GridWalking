@@ -12,30 +12,30 @@ import java.util.Set;
 import java.util.TreeSet;
 
 
-class Grid {
+public class Grid {
     static final double AVERAGE_RADIUS_OF_EARTH = 6371000; //meters
     static final double AVERAGE_CIRCUMFENCE_OF_EARTH = AVERAGE_RADIUS_OF_EARTH*2*Math.PI; //meters
 
-    static final byte LEVEL_COUNT = 14;
-    static final byte LEVEL_0 = 0;
+    public static final byte LEVEL_COUNT = 14;
+    public static final byte LEVEL_0 = 0;
     private static final int HOR_GRID_COUNT = (1<<(LEVEL_COUNT-1))*2; //Less than 2^16. Times two because East and West
     private static final int VER_GRID_COUNT = HOR_GRID_COUNT/2; //Less than 2^15
 
     static final double NORTH = 90.0; //degrees
-    static final double EAST = 180.0; //degrees
+    public static final double EAST = 180.0; //degrees
     static final double SOUTH = -90.0; //degrees
-    static final double WEST = -180.0; //degrees
+    public static final double WEST = -180.0; //degrees
     static final double VER_DEGREES = NORTH-SOUTH;
     static final double HOR_DEGREES = EAST-WEST;
 
-    static final double GRID_MAX_NORTH = 80.0; //degrees
-    static final double GRID_MAX_SOUTH = -80.0; //degrees
+    public static final double GRID_MAX_NORTH = 80.0; //degrees
+    public static final double GRID_MAX_SOUTH = -80.0; //degrees
     static final double VER_GRID_DEGREES = GRID_MAX_NORTH-GRID_MAX_SOUTH;
 
     private static final byte MAX_MRU_COUNT = 10;
     private final List<Integer> mru_list = new ArrayList<>();
 
-    Paint gridColours[] = null;
+    public Paint gridColours[] = null;
     private Paint selectedGridColour = null;
 
 
@@ -67,11 +67,11 @@ class Grid {
         }
     }
 
-    Paint getSelectedGridColour() {
+    public Paint getSelectedGridColour() {
         return selectedGridColour;
     }
 
-    boolean SelectGridIfValid(IGeoPoint geoPoint, boolean unselectIfSelected) {
+    public boolean SelectGridIfValid(IGeoPoint geoPoint, boolean unselectIfSelected) {
         try {
             return SelectGridIfValid(ToGrid(geoPoint), unselectIfSelected);
         } catch (InvalidPositionException e) {
@@ -105,7 +105,7 @@ class Grid {
                 (oldSelectedGridKey!=null && currentSelectedGridKey!=null && oldSelectedGridKey.intValue()!=currentSelectedGridKey.intValue()));
     }
 
-    boolean DiscoverSelectedGrid() {
+    public boolean DiscoverSelectedGrid() {
         GameState gameState = GameState.getInstance();
         if (GameState.ShowGridState.SELF!=gameState.getShowGridState()) {
             return false;
@@ -215,7 +215,7 @@ class Grid {
         RecursiveCheck(db, dbInTransaction, r.getLowerLeft(), (byte) (level + 1));
     }
 
-    int ToHorizontalGrid(double x_pos, final byte level) {
+    public int ToHorizontalGrid(double x_pos, final byte level) {
         if (WEST>x_pos) {
             x_pos += HOR_DEGREES;
         } else if (EAST<=x_pos) {
@@ -255,7 +255,7 @@ class Grid {
         return value;
     }
 
-    int ToVerticalGridBounded(final double y_pos, final byte level) {
+    public int ToVerticalGridBounded(final double y_pos, final byte level) {
         if (Grid.GRID_MAX_SOUTH>y_pos) {
             return ToVerticalGridBounded(Grid.GRID_MAX_SOUTH, level);
         } else if (Grid.GRID_MAX_NORTH<y_pos) {
@@ -270,11 +270,11 @@ class Grid {
         return value;
     }
 
-    double FromHorizontalGrid(final int x_grid) {
+    public double FromHorizontalGrid(final int x_grid) {
         return WEST + ((double)x_grid/(double)HOR_GRID_COUNT) * (HOR_DEGREES);
     }
 
-    double FromVerticalGrid(final int y_grid) {
+    public double FromVerticalGrid(final int y_grid) {
         return GRID_MAX_SOUTH + ((double)y_grid/(double)VER_GRID_COUNT) * (VER_GRID_DEGREES);
     }
 
@@ -304,7 +304,7 @@ class Grid {
         return ToKey(p.getX(), p.getY());
     }
 
-    int ToKey(final int x, final int y) throws InvalidPositionException {
+    public int ToKey(final int x, final int y) throws InvalidPositionException {
         if (VER_GRID_COUNT<=y || HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
 
@@ -319,7 +319,7 @@ class Grid {
         return p;
     }
 
-    int XFromKey(final int key) throws InvalidPositionException {
+    public int XFromKey(final int key) throws InvalidPositionException {
         int x = key & 0xFFFF;
         if (HOR_GRID_COUNT<=x)
             throw new InvalidPositionException();
@@ -327,7 +327,7 @@ class Grid {
         return x;
     }
 
-    int YFromKey(final int key) throws InvalidPositionException {
+    public int YFromKey(final int key) throws InvalidPositionException {
         int y = key>>16;
         if (VER_GRID_COUNT<=y)
             throw new InvalidPositionException();
@@ -351,7 +351,7 @@ class Grid {
         }
     }
 
-    byte OsmToGridLevel(final int osmZoomLevel) {
+    public byte OsmToGridLevel(final int osmZoomLevel) {
         int gridLevel = LEVEL_COUNT - osmZoomLevel;
         if (0>gridLevel) {
             gridLevel = 0;
@@ -361,7 +361,7 @@ class Grid {
         return (byte)gridLevel;
     }
 
-    String getScoreString() {
+    public String getScoreString() {
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         StringBuilder sb = new StringBuilder();
         long score = 0;
@@ -403,7 +403,7 @@ class Grid {
         }
     }
 
-    void BugfixPurgeDuplicates() {
+    public void BugfixPurgeDuplicates() {
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         SQLiteDatabase dbInTransaction = db.StartTransaction();
         boolean success = false;

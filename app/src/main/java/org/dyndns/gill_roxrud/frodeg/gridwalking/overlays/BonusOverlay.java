@@ -1,8 +1,12 @@
-package org.dyndns.gill_roxrud.frodeg.gridwalking;
+package org.dyndns.gill_roxrud.frodeg.gridwalking.overlays;
 
 
 import android.graphics.*;
 
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Bonus;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Grid;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.InvalidPositionException;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -12,14 +16,14 @@ import org.osmdroid.views.overlay.Overlay;
 import java.util.HashSet;
 
 
-class BonusOverlay extends Overlay {
+public class BonusOverlay extends Overlay {
 
     static final private int MAX_DRAW_LEVEL = 4;
 
     private static final Paint white = new Paint();
     private static final Paint black = new Paint();
 
-    BonusOverlay() {
+    public BonusOverlay() {
         super();
         white.setColor(Color.argb(0x80, 0xFF, 0xFF, 0xFF));
         white.setStyle(Paint.Style.STROKE);

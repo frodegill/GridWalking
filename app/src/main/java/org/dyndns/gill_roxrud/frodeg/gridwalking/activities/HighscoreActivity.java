@@ -1,4 +1,4 @@
-package org.dyndns.gill_roxrud.frodeg.gridwalking;
+package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 
 
 import android.content.Intent;
@@ -7,6 +7,11 @@ import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreAdapter;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 
 import java.util.ArrayList;
 

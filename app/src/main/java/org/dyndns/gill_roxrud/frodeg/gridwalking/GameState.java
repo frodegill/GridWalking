@@ -1,12 +1,15 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-class GameState {
-    enum ShowGridState {
+import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.GridWalkingPreferenceActivity;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.MapFragment;
+
+
+public class GameState {
+    public enum ShowGridState {
         NONE,
         SELF,
         SYNCED
@@ -31,43 +34,43 @@ class GameState {
         //System.out.println(s);
     }
 
-    static GameState getInstance() {
+    public static GameState getInstance() {
         if (instance == null) {
             instance = new GameState();
         }
         return instance;
     }
 
-    Grid getGrid() {
+    public Grid getGrid() {
         return grid;
     }
 
-    Bonus getBonus() {
+    public Bonus getBonus() {
         return bonus;
     }
 
-    GridWalkingDBHelper getDB() {return db;}
+    public GridWalkingDBHelper getDB() {return db;}
 
-    boolean getUseDataConnection() {
+    public boolean getUseDataConnection() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
         return !sharedPrefs.getBoolean(GridWalkingPreferenceActivity.OFFLINE_PREFERENCE, false);
     }
 
-    boolean getSnapToCentre() {
+    public boolean getSnapToCentre() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
         return sharedPrefs.getBoolean(GridWalkingPreferenceActivity.SNAP_TO_CENTRE_PREFERENCE, true);
     }
 
-    ShowGridState getShowGridState() {
+    public ShowGridState getShowGridState() {
         return ShowGridState.SELF;
     }
 
-    String getHighscoreNickname() {
+    public String getHighscoreNickname() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
         return sharedPrefs.getString(GridWalkingPreferenceActivity.HIGHSCORE_NICKNAME_PREFERENCE, "Anonymous");
     }
 
-    Integer getSelectedGridKey() {
+    public Integer getSelectedGridKey() {
         return selectedGridKey;
     }
 
@@ -75,11 +78,11 @@ class GameState {
         this.selectedGridKey = selectedGridKey;
     }
 
-    Point<Double> getCurrentPos() {
+    public Point<Double> getCurrentPos() {
         return currentPos;
     }
 
-    void onPositionChanged(MapFragment mapFragment, double x_pos, double y_pos) {
+    public void onPositionChanged(MapFragment mapFragment, double x_pos, double y_pos) {
         currentPos.set(x_pos, y_pos);
         try {
             if (grid.Discover(currentPos, false) || null!=bonus.ValidBonusKeyFromPos(currentPos)) {

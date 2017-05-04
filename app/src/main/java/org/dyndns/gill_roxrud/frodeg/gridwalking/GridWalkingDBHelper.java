@@ -12,7 +12,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 
 
-final class GridWalkingDBHelper extends SQLiteOpenHelper {
+public final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME         = "GridWalking.db";
 
@@ -38,11 +38,11 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
     private static final String PROPERTY_LEVELCOUNT_PREFIX = "levelcount_";
     private static final String PROPERTY_BONUSES_USED    = "bonuses_used";
-    static final String PROPERTY_X_POS                   = "x_pos";
-    static final String PROPERTY_Y_POS                   = "y_pos";
-    static final String PROPERTY_ZOOM_LEVEL              = "zoom_level";
-    static final String PROPERTY_USER_GUID               = "user_guid";
-    static final String PROPERTY_BUGFIX_PURGE_DUPLICATES = "bugfix_purge_duplicates";
+    public static final String PROPERTY_X_POS                   = "x_pos";
+    public static final String PROPERTY_Y_POS                   = "y_pos";
+    public static final String PROPERTY_ZOOM_LEVEL              = "zoom_level";
+    public static final String PROPERTY_USER_GUID               = "user_guid";
+    public static final String PROPERTY_BUGFIX_PURGE_DUPLICATES = "bugfix_purge_duplicates";
 
 
     GridWalkingDBHelper(Context context) {
@@ -147,13 +147,13 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    SQLiteDatabase StartTransaction() {
+    public SQLiteDatabase StartTransaction() {
         SQLiteDatabase db = this.getWritableDatabase();
         db.beginTransaction();
         return db;
     }
 
-    void EndTransaction(SQLiteDatabase db, boolean successful) {
+    public void EndTransaction(SQLiteDatabase db, boolean successful) {
         if (successful) {
             db.setTransactionSuccessful();
         }
@@ -216,7 +216,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    Set<Integer> ContainsGrid(final int fromGridKey, final int toGridKey, final byte level, final GameState.ShowGridState gridState) {
+    public Set<Integer> ContainsGrid(final int fromGridKey, final int toGridKey, final byte level, final GameState.ShowGridState gridState) {
         Set<Integer> result = new TreeSet<>();
 
         if (GameState.ShowGridState.NONE == gridState) {
@@ -280,7 +280,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void GetModifiedGrids(final SQLiteDatabase dbInTransaction, final Set<Integer> deletedGrids, final ArrayList<Set<Integer>> newGrids) {
+    public void GetModifiedGrids(final SQLiteDatabase dbInTransaction, final Set<Integer> deletedGrids, final ArrayList<Set<Integer>> newGrids) {
         Cursor cursor = null;
 
         deletedGrids.clear();
@@ -432,7 +432,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         EndTransaction(db, successful);
     }
 
-    int GetUnusedBonusCount() {
+    public int GetUnusedBonusCount() {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM " + BONUS_TABLE_NAME, null);
@@ -461,11 +461,11 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         AdjustProperty(dbInTransaction, PROPERTY_BONUSES_USED, 1);
     }
 
-    int GetLevelCount(final byte level) {
+    public int GetLevelCount(final byte level) {
         return GetProperty(ToLevelKey(level));
     }
 
-    int GetProperty(final String property) {
+    public int GetProperty(final String property) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -485,7 +485,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    String GetStringProperty(final String property) {
+    public String GetStringProperty(final String property) {
         Cursor cursor = null;
         try {
             cursor = this.getReadableDatabase()
@@ -505,7 +505,7 @@ final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void SetProperty(final String property, final int value) {
+    public void SetProperty(final String property, final int value) {
         SQLiteDatabase db = StartTransaction();
 
         db.execSQL("UPDATE "+PROPERTY_TABLE_NAME

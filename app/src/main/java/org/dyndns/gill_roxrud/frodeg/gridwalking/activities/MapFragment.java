@@ -1,4 +1,4 @@
-package org.dyndns.gill_roxrud.frodeg.gridwalking;
+package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -21,6 +21,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.overlays.BonusOverlay;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.overlays.GridOverlay;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.overlays.MyLocationOverlay;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;

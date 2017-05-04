@@ -1,9 +1,14 @@
-package org.dyndns.gill_roxrud.frodeg.gridwalking;
+package org.dyndns.gill_roxrud.frodeg.gridwalking.overlays;
 
 import android.graphics.*;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Grid;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.InvalidPositionException;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.MapFragment;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -14,14 +19,14 @@ import java.util.Iterator;
 import java.util.Set;
 
 
-class GridOverlay extends Overlay {
+public class GridOverlay extends Overlay {
 
     static final private int DRAW_LEVEL_DEPTH = 5;
 
     private final MapFragment mapFragment;
 
 
-    GridOverlay(final MapFragment mapFragment) {
+    public GridOverlay(final MapFragment mapFragment) {
         super();
         this.mapFragment = mapFragment;
     }

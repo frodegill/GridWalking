@@ -1,4 +1,4 @@
-package org.dyndns.gill_roxrud.frodeg.gridwalking;
+package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 
 import android.Manifest;
 import android.content.Intent;
@@ -11,6 +11,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 import org.osmdroid.config.Configuration;
 
 import java.util.ArrayList;

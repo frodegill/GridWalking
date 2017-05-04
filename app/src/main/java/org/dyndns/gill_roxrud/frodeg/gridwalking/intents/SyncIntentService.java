@@ -1,9 +1,17 @@
-package org.dyndns.gill_roxrud.frodeg.gridwalking;
+package org.dyndns.gill_roxrud.frodeg.gridwalking.intents;
 
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Grid;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Secrets;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,12 +31,13 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
 
-public class HighscoreIntentService  extends IntentService {
+public class SyncIntentService extends IntentService {
 
-    private static final String TAG = HighscoreIntentService.class.getSimpleName();
+    private static final String TAG = SyncIntentService.class.getSimpleName();
 
-    private static final String GRIDWALKING_ENDPOINT = "https://gill-roxrud.dyndns.org:1416";
-    private static final String HIGHSCORE_REST_PATH = "/gridwalking/highscore/";
+    //private static final String GRIDWALKING_ENDPOINT = "https://gill-roxrud.dyndns.org:1416";
+    private static final String GRIDWALKING_ENDPOINT = "http://10.0.2.2:1416";
+    private static final String SYNC_REST_PATH = "/gridwalking/sync/";
 
     private static final boolean USE_SECURE_CONNECTION = GRIDWALKING_ENDPOINT.startsWith("https://");
 
@@ -37,7 +46,7 @@ public class HighscoreIntentService  extends IntentService {
     public static final String RESPONSE_MSG_EXTRA   = "msg";
 
 
-    public HighscoreIntentService() {
+    public SyncIntentService() {
         super(TAG);
     }
 
@@ -62,10 +71,11 @@ public class HighscoreIntentService  extends IntentService {
             Set<Integer> deletedGrids = new TreeSet<>();
             ArrayList<Set<Integer>> newGrids = new ArrayList<>();
             byte level;
-            for (level=0; level<Grid.LEVEL_COUNT; level++) {
-                newGrids.set(level, new TreeSet<Integer>());
+            for (level=0; level< Grid.LEVEL_COUNT; level++) {
+                newGrids.add(new TreeSet<Integer>());
             }
 
+            String msg = null;
             HttpURLConnection httpConnection = null;
             try {
                 db.GetModifiedGrids(dbInTransaction, deletedGrids, newGrids);
@@ -83,13 +93,14 @@ public class HighscoreIntentService  extends IntentService {
                     httpsConnection.setSSLSocketFactory(sc.getSocketFactory());
                 }
 
-                httpConnection.setReadTimeout(7000);
-                httpConnection.setConnectTimeout(7000);
+                httpConnection.setReadTimeout(7000*100);
+                httpConnection.setConnectTimeout(7000*100);
                 httpConnection.setRequestMethod("POST");
                 httpConnection.setDoOutput(true);
-                OutputStream outputStream = httpConnection.getOutputStream();
-                generateBody(db, outputStream);
                 httpConnection.setDoInput(true);
+
+                OutputStream outputStream = httpConnection.getOutputStream();
+                generateBody(outputStream, deletedGrids, newGrids);
 
                 httpConnection.connect();
 
@@ -125,6 +136,7 @@ public class HighscoreIntentService  extends IntentService {
                 }
             } catch (IOException|NoSuchAlgorithmException|KeyManagementException e) {
                 failed = true;
+                msg = e.getMessage();
             } finally {
                 if (httpConnection != null) {
                     httpConnection.disconnect();
@@ -133,12 +145,15 @@ public class HighscoreIntentService  extends IntentService {
 
             Intent response = new Intent();
             response.putExtra(RESPONSE_EXTRA, highscoreList);
+            if (msg != null) {
+                response.putExtra(RESPONSE_MSG_EXTRA, msg);
+            }
 
             reply.send(this,
                     failed ? GridWalkingApplication.NetworkResponseCode.ERROR.ordinal() : GridWalkingApplication.NetworkResponseCode.OK.ordinal(),
                     response);
 
-            db.CommitModifiedGrids(dbInTransaction, deletedGrids, newGrids);
+//            db.CommitModifiedGrids(dbInTransaction, deletedGrids, newGrids); //TODO, enable before release!
 
         } catch (PendingIntent.CanceledException e) {
             reportError(reply, GridWalkingApplication.NetworkResponseCode.ERROR.ordinal(), e.getMessage());
@@ -162,8 +177,10 @@ public class HighscoreIntentService  extends IntentService {
 
     private String generatePathParamString(final GridWalkingDBHelper db) {
         StringBuilder sb = new StringBuilder();
-        sb.append(HIGHSCORE_REST_PATH);
+        sb.append(SYNC_REST_PATH);
         sb.append(db.GetStringProperty(GridWalkingDBHelper.PROPERTY_USER_GUID));
+        sb.append('/');
+        sb.append(Integer.toString(db.GetUnusedBonusCount()));
         byte i;
         for (i=Grid.LEVEL_COUNT-1; i>=0; i--) {
             sb.append('/');
@@ -173,12 +190,20 @@ public class HighscoreIntentService  extends IntentService {
         return sb.toString();
     }
 
-    private void generateBody(final GridWalkingDBHelper db, final OutputStream outputStream) throws IOException {
-        appendInt32(outputStream, 0xFFFFFFFF);
-        byte i;
-        for (i=0; i<Grid.LEVEL_COUNT; i++) {
-            appendInt32(outputStream, 0xFFFFFFFF);
+    private void generateBody(final OutputStream outputStream, final Set<Integer> deletedGrids, final ArrayList<Set<Integer>> newGrids) throws IOException {
+        appendList(outputStream, deletedGrids);
+
+        byte level;
+        for (level=0; level<Grid.LEVEL_COUNT; level++) {
+            appendList(outputStream, newGrids.get(level));
         }
+    }
+
+    private void appendList(final OutputStream outputStream, Set<Integer> list) throws IOException {
+        for (Integer listItem : list) {
+            appendInt32(outputStream, listItem);
+        }
+        appendInt32(outputStream, 0xFFFFFFFF);
     }
 
     private void appendInt32(final OutputStream outputStream, int value) throws IOException {

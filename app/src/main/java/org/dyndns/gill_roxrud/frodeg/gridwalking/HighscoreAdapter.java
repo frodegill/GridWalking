@@ -12,7 +12,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 
-class HighscoreAdapter extends BaseAdapter {
+public class HighscoreAdapter extends BaseAdapter {
 
     private final ArrayList<HighscoreItem> data;
     private static LayoutInflater inflater = null;

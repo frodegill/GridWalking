@@ -1,12 +1,12 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 
-class Bonus {
+public class Bonus {
     static final int START_BONUS = 10;
 
     static final int HOR_BONUS_COUNT = (int)((1<<Grid.LEVEL_COUNT)/6.5536f);  //Less than 2^16
     static final int VER_BONUS_COUNT = HOR_BONUS_COUNT/2; //Less than 2^15
-    static final float BONUS_SIZE_RADIUS = 100.0f; //meters
+    public static final float BONUS_SIZE_RADIUS = 100.0f; //meters
 
     static final double HALF_HOR_BONUS_DEGREE = (Grid.HOR_DEGREES/HOR_BONUS_COUNT)/2; //Used for rounding
     static final double HALF_VER_BONUS_DEGREE = (Grid.VER_DEGREES/VER_BONUS_COUNT)/2; //Used for rounding
@@ -15,7 +15,7 @@ class Bonus {
     Bonus() {
     }
 
-    int GetUnusedBonusCount() {
+    public int GetUnusedBonusCount() {
         return GameState.getInstance().getDB().GetUnusedBonusCount();
     }
 
@@ -36,7 +36,7 @@ class Bonus {
         return null;
     }
 
-    int ToHorizontalBonusGrid(double x_pos) {
+    public int ToHorizontalBonusGrid(double x_pos) {
         if (Grid.WEST>x_pos) {
             x_pos += Grid.HOR_DEGREES;
         } else if (Grid.EAST<=x_pos) {
@@ -71,7 +71,7 @@ class Bonus {
         return Double.valueOf(VER_BONUS_COUNT * ((y_pos-Grid.GRID_MAX_SOUTH)/(Grid.VER_GRID_DEGREES))).intValue();
     }
 
-    int ToVerticalBonusGridBounded(final double y_pos) {
+    public int ToVerticalBonusGridBounded(final double y_pos) {
         if (Grid.GRID_MAX_SOUTH>y_pos) {
             return ToVerticalBonusGridBounded(Grid.GRID_MAX_SOUTH);
         } else if (Grid.GRID_MAX_NORTH<=y_pos) {
@@ -85,15 +85,15 @@ class Bonus {
         return value;
     }
 
-    double FromHorizontalBonusGrid(final int x_grid) {
+    public double FromHorizontalBonusGrid(final int x_grid) {
         return Grid.WEST + ((double)x_grid/(double)HOR_BONUS_COUNT) * (Grid.HOR_DEGREES);
     }
 
-    double FromVerticalBonusGrid(final int y_grid) {
+    public double FromVerticalBonusGrid(final int y_grid) {
         return Grid.GRID_MAX_SOUTH + ((double)y_grid/(double)VER_BONUS_COUNT) * (Grid.VER_GRID_DEGREES);
     }
 
-    boolean Contains(final int key) {
+    public boolean Contains(final int key) {
         return GameState.getInstance().getDB().ContainsBonus(key);
     }
 
@@ -101,7 +101,7 @@ class Bonus {
         return ToBonusKey(p.getX(), p.getY());
     }
 
-    int ToBonusKey(final int x, final int y) throws InvalidPositionException {
+    public int ToBonusKey(final int x, final int y) throws InvalidPositionException {
         if (VER_BONUS_COUNT<=y || HOR_BONUS_COUNT<=x)
             throw new InvalidPositionException();
 
@@ -131,7 +131,7 @@ class Bonus {
         return Grid.AVERAGE_RADIUS_OF_EARTH * c;
     }
 
-    String getBonusString() {
+    public String getBonusString() {
         return Integer.toString(GetUnusedBonusCount());
     }
 }
