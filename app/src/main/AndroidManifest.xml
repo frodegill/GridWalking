@@ -41,7 +41,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <service android:name=".intents.SyncIntentService" android:exported="false"/>
+        <service android:name=".intents.SyncHighscoreIntentService" android:exported="false"/>
+        <service android:name=".intents.SyncGridsIntentService" android:exported="false"/>
 
         <activity android:name=".activities.MainActivity">
             <intent-filter>

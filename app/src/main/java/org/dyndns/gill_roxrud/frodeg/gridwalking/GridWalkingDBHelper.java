@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
@@ -551,6 +553,48 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
     private String ToLevelKey(final byte level) {
         return PROPERTY_LEVELCOUNT_PREFIX+Byte.toString(level);
+    }
+
+    public void SyncExternalGrids(final InputStream is) throws IOException {
+        boolean successful = true;
+        SQLiteDatabase dbInTransaction = StartTransaction();
+
+        try {
+            dbInTransaction.execSQL("DELETE FROM "+GRID_TABLE_NAME
+                                  +" WHERE " + GRID_COLUMN_OWNER + "="+Integer.toString(GRID_OWNER_SYNCED));
+
+            byte level;
+            int gridKey;
+            for (level=0; level<Grid.LEVEL_COUNT; level++) {
+                while (0xFFFFFFFF != (gridKey=FetchInt32(is))) {
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(GRID_COLUMN_KEY, gridKey);
+                    contentValues.put(GRID_COLUMN_LEVEL, level);
+                    contentValues.put(GRID_COLUMN_STATUS, GRID_STATUS_SYNCED);
+                    contentValues.put(GRID_COLUMN_OWNER, GRID_OWNER_SYNCED);
+
+                    //System.out.println("Inserting "+Integer.toString(gridKey)+","+Byte.toString(level));
+
+                    successful &= (-1 != dbInTransaction.insert(GRID_TABLE_NAME, null, contentValues));
+                }
+            }
+        } catch (Exception e) {
+            successful = false;
+            throw e;
+        } finally {
+            EndTransaction(dbInTransaction, successful);
+        }
+    }
+
+    private int FetchInt32(final InputStream is) throws IOException {
+        int[] bytes = new int[4];
+        byte i;
+        for (i=0; i<4; i++) {
+            if (-1 == (bytes[i] = is.read())) {
+                throw new RuntimeException();
+            }
+        }
+        return ((bytes[0]&0xFF)<<24) | ((bytes[1]&0xFF)<<16) | ((bytes[2]&0xFF)<<8) | (bytes[3]&0xFF);
     }
 
     String DumpDB() {

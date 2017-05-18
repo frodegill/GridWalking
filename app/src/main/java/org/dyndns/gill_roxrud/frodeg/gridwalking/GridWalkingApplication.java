@@ -8,7 +8,8 @@ import android.util.Log;
 public class GridWalkingApplication extends Application{
 
     public enum RequestCode {
-        SYNC_HIGHSCORE
+        SYNC_HIGHSCORE,
+        SYNC_GRIDS
     }
 
     public enum NetworkResponseCode {

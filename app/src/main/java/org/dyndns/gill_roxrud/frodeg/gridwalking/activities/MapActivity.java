@@ -14,7 +14,7 @@ import android.widget.Toast;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.intents.SyncIntentService;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.intents.SyncHighscoreIntentService;
 import org.osmdroid.config.Configuration;
 
 
@@ -48,14 +48,14 @@ public class MapActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int responseCode, Intent data) {
         if (requestCode == GridWalkingApplication.RequestCode.SYNC_HIGHSCORE.ordinal()) {
             if (responseCode == GridWalkingApplication.NetworkResponseCode.OK.ordinal()) {
-                Parcelable response = data.getParcelableExtra(SyncIntentService.RESPONSE_EXTRA);
+                Parcelable response = data.getParcelableExtra(SyncHighscoreIntentService.RESPONSE_EXTRA);
                 HighscoreList highscoreList = (HighscoreList) response;
 
                 Intent intent = new Intent(this, HighscoreActivity.class);
                 intent.putExtra(HighscoreActivity.HIGHSCORE_LIST, highscoreList);
                 ContextCompat.startActivity(this, intent, null);
             } else {
-                String msg = data.getStringExtra(SyncIntentService.RESPONSE_MSG_EXTRA);
+                String msg = data.getStringExtra(SyncHighscoreIntentService.RESPONSE_MSG_EXTRA);
                 Toast.makeText(this, "Syncing highscore failed: " + msg, Toast.LENGTH_LONG).show();
             }
         }
@@ -64,8 +64,8 @@ public class MapActivity extends AppCompatActivity {
 
     void syncHighscore() {
         PendingIntent pendingResult = createPendingResult(GridWalkingApplication.RequestCode.SYNC_HIGHSCORE.ordinal(), new Intent(), 0);
-        Intent intent = new Intent(MapActivity.this, SyncIntentService.class);
-        intent.putExtra(SyncIntentService.PENDING_RESULT_EXTRA, pendingResult);
+        Intent intent = new Intent(MapActivity.this, SyncHighscoreIntentService.class);
+        intent.putExtra(SyncHighscoreIntentService.PENDING_RESULT_EXTRA, pendingResult);
         startService(intent);
     }
 

@@ -31,13 +31,13 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 
 
-public class SyncIntentService extends IntentService {
+public class SyncHighscoreIntentService extends IntentService {
 
-    private static final String TAG = SyncIntentService.class.getSimpleName();
+    private static final String TAG = SyncHighscoreIntentService.class.getSimpleName();
 
     //private static final String GRIDWALKING_ENDPOINT = "https://gill-roxrud.dyndns.org:1416";
     private static final String GRIDWALKING_ENDPOINT = "http://10.0.2.2:1416";
-    private static final String SYNC_REST_PATH = "/gridwalking/sync/";
+    private static final String SYNC_HIGHSCORE_REST_PATH = "/gridwalking/sync/";
 
     private static final boolean USE_SECURE_CONNECTION = GRIDWALKING_ENDPOINT.startsWith("https://");
 
@@ -46,7 +46,7 @@ public class SyncIntentService extends IntentService {
     public static final String RESPONSE_MSG_EXTRA   = "msg";
 
 
-    public SyncIntentService() {
+    public SyncHighscoreIntentService() {
         super(TAG);
     }
 
@@ -115,7 +115,7 @@ public class SyncIntentService extends IntentService {
                         sb.append(inputLine);
                     }
                     failed = true;
-                    throw new IOException("HTTP 406: "+sb.toString());
+                    throw new IOException("HTTP "+Integer.toString(status)+": "+sb.toString());
                 }
 
                 highscoreList = new HighscoreList();
@@ -177,7 +177,7 @@ public class SyncIntentService extends IntentService {
 
     private String generatePathParamString(final GridWalkingDBHelper db) {
         StringBuilder sb = new StringBuilder();
-        sb.append(SYNC_REST_PATH);
+        sb.append(SYNC_HIGHSCORE_REST_PATH);
         sb.append(db.GetStringProperty(GridWalkingDBHelper.PROPERTY_USER_GUID));
         sb.append('/');
         sb.append(Integer.toString(db.GetUnusedBonusCount()));

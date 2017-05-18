@@ -1,21 +1,27 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreAdapter;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.intents.SyncGridsIntentService;
 
 import java.util.ArrayList;
 
-public class HighscoreActivity extends AppCompatActivity {
+public class HighscoreActivity extends AppCompatActivity implements AdapterView.OnItemLongClickListener {
 
     public static final String HIGHSCORE_LIST = "highscore_list";
 
@@ -25,11 +31,12 @@ public class HighscoreActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_highscore);
 
-        ListView highscoreListView = (ListView) findViewById(R.id.highscoreList);
+        final ListView highscoreListView = (ListView) findViewById(R.id.highscoreList);
         ArrayList<HighscoreItem> highscoreArrayList = new ArrayList<>();
         HighscoreAdapter highscoreListViewAdapter = new HighscoreAdapter(this, highscoreArrayList);
 
         highscoreListView.setAdapter(highscoreListViewAdapter);
+        highscoreListView.setOnItemLongClickListener(this);
 
         Intent intent = getIntent();
         Parcelable highscoreParcelable = intent.getParcelableExtra(HIGHSCORE_LIST);
@@ -45,5 +52,31 @@ public class HighscoreActivity extends AppCompatActivity {
             highscoreArrayList.addAll(highscoreList.getHighscoreItemList());
             highscoreListViewAdapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int responseCode, Intent data) {
+        if (requestCode == GridWalkingApplication.RequestCode.SYNC_GRIDS.ordinal()) {
+            if (responseCode == GridWalkingApplication.NetworkResponseCode.OK.ordinal()) {
+                //TODO, activate synced grids mode
+            } else {
+                String msg = data.getStringExtra(SyncGridsIntentService.RESPONSE_MSG_EXTRA);
+                Toast.makeText(this, "Syncing grids failed: " + msg, Toast.LENGTH_LONG).show();
+            }
+        }
+        super.onActivityResult(requestCode, responseCode, data);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        final ListView highscoreListView = (ListView) findViewById(R.id.highscoreList);
+        HighscoreItem item = (HighscoreItem) highscoreListView.getItemAtPosition(position);
+
+        PendingIntent pendingResult = createPendingResult(GridWalkingApplication.RequestCode.SYNC_GRIDS.ordinal(), new Intent(), 0);
+        Intent intent = new Intent(HighscoreActivity.this, SyncGridsIntentService.class);
+        intent.putExtra(SyncGridsIntentService.PARAM_GUID, item.getGuid());
+        intent.putExtra(SyncGridsIntentService.PENDING_RESULT_EXTRA, pendingResult);
+        startService(intent);
+        return true;
     }
 }

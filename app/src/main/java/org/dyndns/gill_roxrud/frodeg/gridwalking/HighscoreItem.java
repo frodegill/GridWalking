@@ -3,10 +3,12 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.view.View;
 
 
 public class HighscoreItem implements Parcelable {
     private int position;
+    private String guid;
     private String username;
     private int[] levels = new int[Grid.LEVEL_COUNT];
     private long score;
@@ -16,6 +18,7 @@ public class HighscoreItem implements Parcelable {
 
     private HighscoreItem(Parcel in) {
         position = in.readInt();
+        guid = in.readString();
         username = in.readString();
         levels = in.createIntArray();
         score = in.readLong();
@@ -24,6 +27,7 @@ public class HighscoreItem implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(position);
+        dest.writeString(guid);
         dest.writeString(username);
         dest.writeIntArray(levels);
         dest.writeLong(score);
@@ -54,14 +58,19 @@ public class HighscoreItem implements Parcelable {
             levels[Grid.LEVEL_COUNT-i-1] = Integer.valueOf(atoms[1+i]);
         }
         score = Long.valueOf(atoms[1+Grid.LEVEL_COUNT]);
-        username = atoms[2+Grid.LEVEL_COUNT];
-        for (i=3+Grid.LEVEL_COUNT; i<atoms.length; i++) {
+        guid = atoms[2+Grid.LEVEL_COUNT];
+        username = atoms[3+Grid.LEVEL_COUNT];
+        for (i=4+Grid.LEVEL_COUNT; i<atoms.length; i++) {
             username += ";"+atoms[i];
         }
     }
 
     public int getPosition() {
         return position;
+    }
+
+    public String getGuid() {
+        return guid;
     }
 
     public String getUsername() {
