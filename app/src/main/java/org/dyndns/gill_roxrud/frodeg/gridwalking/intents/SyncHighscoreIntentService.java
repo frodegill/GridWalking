@@ -93,14 +93,18 @@ public class SyncHighscoreIntentService extends IntentService {
                     httpsConnection.setSSLSocketFactory(sc.getSocketFactory());
                 }
 
+                boolean syncGrids = 100L<=gameState.getGrid().getScore();
+
                 httpConnection.setReadTimeout(7000*100);
                 httpConnection.setConnectTimeout(7000*100);
                 httpConnection.setRequestMethod("POST");
-                httpConnection.setDoOutput(true);
+                httpConnection.setDoOutput(syncGrids);
                 httpConnection.setDoInput(true);
 
-                OutputStream outputStream = httpConnection.getOutputStream();
-                generateBody(outputStream, deletedGrids, newGrids);
+                if(syncGrids) {
+                    OutputStream outputStream = httpConnection.getOutputStream();
+                    generateBody(outputStream, deletedGrids, newGrids);
+                }
 
                 httpConnection.connect();
 

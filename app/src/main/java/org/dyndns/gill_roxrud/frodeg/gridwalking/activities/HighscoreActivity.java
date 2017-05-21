@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreAdapter;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
@@ -58,7 +59,8 @@ public class HighscoreActivity extends AppCompatActivity implements AdapterView.
     protected void onActivityResult(int requestCode, int responseCode, Intent data) {
         if (requestCode == GridWalkingApplication.RequestCode.SYNC_GRIDS.ordinal()) {
             if (responseCode == GridWalkingApplication.NetworkResponseCode.OK.ordinal()) {
-                //TODO, activate synced grids mode
+                GameState.getInstance().setShowGridState(GameState.ShowGridState.SYNCED);
+                this.finish();
             } else {
                 String msg = data.getStringExtra(SyncGridsIntentService.RESPONSE_MSG_EXTRA);
                 Toast.makeText(this, "Syncing grids failed: " + msg, Toast.LENGTH_LONG).show();

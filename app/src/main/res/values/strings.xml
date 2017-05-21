@@ -13,4 +13,6 @@
     <string name="settings">Settings</string>
     <string name="your_position">Your position:</string>
     <string name="total_players">Total players:</string>
+    <string name="show_synced_grids">Show synced grids</string>
+    <string name="show_grids">Show grids</string>
 </resources>

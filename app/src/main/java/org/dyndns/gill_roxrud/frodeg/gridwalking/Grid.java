@@ -384,6 +384,18 @@ public class Grid {
         return Long.toString(score) + sb.toString();
     }
 
+    public long getScore() {
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        long score = 0;
+        int levelCount;
+        byte i;
+        for (i = LEVEL_COUNT - 1; i >= 0; i--) {
+            levelCount = db.GetLevelCount(i);
+            score += (levelCount<<(2*i)) * (i+1); //Each level up represents 4 squares
+        }
+        return score;
+    }
+
     private void RecursiveRemoveGrid(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) {
         try {
             int gridKey = ToKey(p);
