@@ -11,6 +11,7 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Networking;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Secrets;
 
 import java.io.BufferedReader;
@@ -35,15 +36,13 @@ public class SyncHighscoreIntentService extends IntentService {
 
     private static final String TAG = SyncHighscoreIntentService.class.getSimpleName();
 
-    //private static final String GRIDWALKING_ENDPOINT = "https://gill-roxrud.dyndns.org:1416";
-    private static final String GRIDWALKING_ENDPOINT = "http://10.0.2.2:1416";
+    private static final String GRIDWALKING_ENDPOINT = "https://gill-roxrud.dyndns.org:1416";
+    //private static final String GRIDWALKING_ENDPOINT = "http://10.0.2.2:1416";
     private static final String SYNC_HIGHSCORE_REST_PATH = "/gridwalking/sync/";
 
-    private static final boolean USE_SECURE_CONNECTION = GRIDWALKING_ENDPOINT.startsWith("https://");
-
     public static final String PENDING_RESULT_EXTRA = "pending_result";
-    public static final String RESPONSE_EXTRA       = "response";
-    public static final String RESPONSE_MSG_EXTRA   = "msg";
+    public static final String RESPONSE_EXTRA       = "org.dyndns.gill_roxrud.frodeg.gridwalking.response";
+    public static final String RESPONSE_MSG_EXTRA   = "org.dyndns.gill_roxrud.frodeg.gridwalking.msg";
 
 
     public SyncHighscoreIntentService() {
@@ -79,27 +78,12 @@ public class SyncHighscoreIntentService extends IntentService {
             HttpURLConnection httpConnection = null;
             try {
                 db.GetModifiedGrids(dbInTransaction, deletedGrids, newGrids);
-
-                URL url = new URL(GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
-                                 +"?crc="+Crc((pathParams+nameParam).getBytes("UTF-8")));
-
-                httpConnection = (HttpURLConnection) url.openConnection();
-                if (USE_SECURE_CONNECTION) {
-                    HttpsURLConnection httpsConnection = (HttpsURLConnection) httpConnection;
-
-                    SSLContext sc;
-                    sc = SSLContext.getInstance("TLS");
-                    sc.init(null, null, new java.security.SecureRandom());
-                    httpsConnection.setSSLSocketFactory(sc.getSocketFactory());
-                }
-
                 boolean syncGrids = 100L<=gameState.getGrid().getScore();
 
-                httpConnection.setReadTimeout(7000*100);
-                httpConnection.setConnectTimeout(7000*100);
-                httpConnection.setRequestMethod("POST");
-                httpConnection.setDoOutput(syncGrids);
-                httpConnection.setDoInput(true);
+                String urlString = GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
+                                  +"?crc="+Crc((pathParams+nameParam).getBytes("UTF-8"));
+
+                httpConnection = Networking.prepareConnection(urlString, "POST", syncGrids, true);
 
                 if(syncGrids) {
                     OutputStream outputStream = httpConnection.getOutputStream();
@@ -138,7 +122,7 @@ public class SyncHighscoreIntentService extends IntentService {
                         highscoreList.getHighscoreItemList().add(highscoreItem);
                     }
                 }
-            } catch (IOException|NoSuchAlgorithmException|KeyManagementException e) {
+            } catch (Exception e) {
                 failed = true;
                 msg = e.getMessage();
             } finally {

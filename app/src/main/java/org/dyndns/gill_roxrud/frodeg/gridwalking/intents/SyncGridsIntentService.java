@@ -7,6 +7,7 @@ import android.content.Intent;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Networking;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,15 +26,14 @@ public class SyncGridsIntentService extends IntentService {
 
     private static final String TAG = SyncGridsIntentService.class.getSimpleName();
 
-    //private static final String GRIDWALKING_ENDPOINT = "https://gill-roxrud.dyndns.org:1416";
-    private static final String GRIDWALKING_ENDPOINT = "http://10.0.2.2:1416";
+    private static final String GRIDWALKING_ENDPOINT = "https://gill-roxrud.dyndns.org:1416";
+    //private static final String GRIDWALKING_ENDPOINT = "http://10.0.2.2:1416";
     private static final String SYNC_GRIDS_REST_PATH = "/gridwalking/grids/";
-
-    private static final boolean USE_SECURE_CONNECTION = GRIDWALKING_ENDPOINT.startsWith("https://");
 
     public static final String PARAM_GUID           = "param_guid";
     public static final String PENDING_RESULT_EXTRA = "pending_result";
-    public static final String RESPONSE_MSG_EXTRA   = "msg";
+    public static final String RESPONSE_EXTRA       = "org.dyndns.gill_roxrud.frodeg.gridwalking.response";
+    public static final String RESPONSE_MSG_EXTRA   = "org.dyndns.gill_roxrud.frodeg.gridwalking.msg";
 
 
     public SyncGridsIntentService() {
@@ -54,27 +54,13 @@ public class SyncGridsIntentService extends IntentService {
 
             String pathParams = generatePathParamString(guid);
 
+            Integer aGrid = null;
             String msg = null;
             HttpURLConnection httpConnection = null;
             try {
-                URL url = new URL(GRIDWALKING_ENDPOINT+pathParams);
+                String urlString = GRIDWALKING_ENDPOINT+pathParams;
 
-                httpConnection = (HttpURLConnection) url.openConnection();
-                if (USE_SECURE_CONNECTION) {
-                    HttpsURLConnection httpsConnection = (HttpsURLConnection) httpConnection;
-
-                    SSLContext sc;
-                    sc = SSLContext.getInstance("TLS");
-                    sc.init(null, null, new java.security.SecureRandom());
-                    httpsConnection.setSSLSocketFactory(sc.getSocketFactory());
-                }
-
-                httpConnection.setReadTimeout(7000*100);
-                httpConnection.setConnectTimeout(7000*100);
-                httpConnection.setRequestMethod("GET");
-                httpConnection.setDoOutput(false);
-                httpConnection.setDoInput(true);
-
+                httpConnection = Networking.prepareConnection(urlString, "GET", false, true);
                 httpConnection.connect();
 
                 int status = httpConnection.getResponseCode();
@@ -91,7 +77,7 @@ public class SyncGridsIntentService extends IntentService {
                     throw new IOException("HTTP "+Integer.toString(status)+": "+sb.toString());
                 }
 
-                db.SyncExternalGrids(httpConnection.getInputStream());
+                aGrid = db.SyncExternalGrids(httpConnection.getInputStream());
 
             } catch (IOException|NoSuchAlgorithmException|KeyManagementException e) {
                 failed = true;
@@ -103,6 +89,9 @@ public class SyncGridsIntentService extends IntentService {
             }
 
             Intent response = new Intent();
+            if (aGrid != null) {
+                response.putExtra(RESPONSE_EXTRA, aGrid.intValue());
+            }
             if (msg != null) {
                 response.putExtra(RESPONSE_MSG_EXTRA, msg);
             }

@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.GridWalkingPreferenceActivity;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.MapFragment;
+import org.osmdroid.api.IGeoPoint;
 
 
 public class GameState {
@@ -21,6 +22,7 @@ public class GameState {
     private final GridWalkingDBHelper db;
 
     private Integer selectedGridKey = null;
+    private IGeoPoint positionHint = null;
 
     private final Point<Double> currentPos = new Point<>(Grid.EAST+1.0, Grid.NORTH+1.0);
 
@@ -74,6 +76,7 @@ public class GameState {
         SharedPreferences.Editor prefsEditor = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext()).edit();
         prefsEditor.putBoolean(GridWalkingPreferenceActivity.SHOW_GRIDS_PREFERENCE, ShowGridState.NONE!=showGridState);
         prefsEditor.putBoolean(GridWalkingPreferenceActivity.SHOW_SYNCED_GRIDS_PREFERENCE, ShowGridState.SYNCED==showGridState);
+        prefsEditor.putBoolean(GridWalkingPreferenceActivity.SNAP_TO_CENTRE_PREFERENCE, ShowGridState.SYNCED!=showGridState);
         prefsEditor.commit();
     }
 
@@ -102,5 +105,15 @@ public class GameState {
             }
         } catch (InvalidPositionException e) {
         }
+    }
+
+    public void pushPositionHint(final IGeoPoint positionHint) {
+        this.positionHint = positionHint;
+    }
+
+    public IGeoPoint popPositionHint() {
+        IGeoPoint tmp = this.positionHint;
+        this.positionHint = null;
+        return tmp;
     }
 }

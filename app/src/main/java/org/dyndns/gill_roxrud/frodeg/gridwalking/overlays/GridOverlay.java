@@ -113,7 +113,9 @@ public class GridOverlay extends Overlay {
         int y;
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         for (currentLevel = fromLevel; currentLevel < Grid.LEVEL_COUNT; currentLevel++) {
-            if (db.GetLevelCount(currentLevel)==0 && !(0==currentLevel && null!=selectedGridKey)) {
+            if (GameState.ShowGridState.SYNCED!=showGridState &&
+                db.GetLevelCount(currentLevel)==0 &&
+                !(0==currentLevel && null!=selectedGridKey)) {
                 continue;
             }
 

@@ -555,7 +555,8 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         return PROPERTY_LEVELCOUNT_PREFIX+Byte.toString(level);
     }
 
-    public void SyncExternalGrids(final InputStream is) throws IOException {
+    public Integer SyncExternalGrids(final InputStream is) throws IOException {
+        Integer aGrid = null;
         boolean successful = true;
         SQLiteDatabase dbInTransaction = StartTransaction();
 
@@ -567,6 +568,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             int gridKey;
             for (level=0; level<Grid.LEVEL_COUNT; level++) {
                 while (0xFFFFFFFF != (gridKey=FetchInt32(is))) {
+                    aGrid = gridKey;
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(GRID_COLUMN_KEY, gridKey);
                     contentValues.put(GRID_COLUMN_LEVEL, level);
@@ -584,6 +586,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         } finally {
             EndTransaction(dbInTransaction, successful);
         }
+        return aGrid;
     }
 
     private int FetchInt32(final InputStream is) throws IOException {

@@ -125,6 +125,11 @@ public class MapFragment extends Fragment implements LocationListener {
         mapView.scrollTo(db.GetProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.GetProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
         mapView.setUseDataConnection(gameState.getUseDataConnection());
 
+        IGeoPoint positionHint = gameState.popPositionHint();
+        if (positionHint != null) {
+            mapView.getController().setCenter(positionHint);
+        }
+
         EnableLocationUpdates();
     }
 

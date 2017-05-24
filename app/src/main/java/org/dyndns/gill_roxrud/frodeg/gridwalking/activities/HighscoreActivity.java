@@ -13,12 +13,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Grid;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreAdapter;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.InvalidPositionException;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.intents.SyncGridsIntentService;
+import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
 
@@ -59,7 +62,18 @@ public class HighscoreActivity extends AppCompatActivity implements AdapterView.
     protected void onActivityResult(int requestCode, int responseCode, Intent data) {
         if (requestCode == GridWalkingApplication.RequestCode.SYNC_GRIDS.ordinal()) {
             if (responseCode == GridWalkingApplication.NetworkResponseCode.OK.ordinal()) {
-                GameState.getInstance().setShowGridState(GameState.ShowGridState.SYNCED);
+                GameState gameState = GameState.getInstance();
+                gameState.setShowGridState(GameState.ShowGridState.SYNCED);
+                if (data.hasExtra(SyncGridsIntentService.RESPONSE_EXTRA)) {
+                    int aGrid = data.getIntExtra(SyncGridsIntentService.RESPONSE_EXTRA, 0);
+                    Grid grid = GameState.getInstance().getGrid();
+                    try {
+                        GeoPoint geoPoint = new GeoPoint(grid.FromVerticalGrid(grid.YFromKey(aGrid)),
+                                grid.FromHorizontalGrid(grid.XFromKey(aGrid)));
+                        gameState.pushPositionHint(geoPoint);
+                    } catch (InvalidPositionException e) {
+                    }
+                }
                 this.finish();
             } else {
                 String msg = data.getStringExtra(SyncGridsIntentService.RESPONSE_MSG_EXTRA);
