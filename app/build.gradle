@@ -8,7 +8,7 @@ android {
         applicationId "org.dyndns.gill_roxrud.frodeg.gridwalking"
         minSdkVersion 9
         targetSdkVersion 25
-        versionCode 11
+        versionCode 13
         versionName "1.5"
     }
     buildTypes {
