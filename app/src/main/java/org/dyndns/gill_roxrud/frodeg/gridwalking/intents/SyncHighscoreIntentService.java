@@ -3,6 +3,7 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking.intents;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
@@ -70,7 +71,7 @@ public class SyncHighscoreIntentService extends IntentService {
             Set<Integer> deletedGrids = new TreeSet<>();
             ArrayList<Set<Integer>> newGrids = new ArrayList<>();
             byte level;
-            for (level=0; level< Grid.LEVEL_COUNT; level++) {
+            for (level=0; level<Grid.LEVEL_COUNT; level++) {
                 newGrids.add(new TreeSet<Integer>());
             }
 
@@ -81,11 +82,11 @@ public class SyncHighscoreIntentService extends IntentService {
                 boolean syncGrids = 100L<=gameState.getGrid().getScore();
 
                 String urlString = GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
-                                  +"?crc="+Crc((pathParams+nameParam).getBytes("UTF-8"));
+                        +"?crc="+Crc((pathParams+nameParam).getBytes("UTF-8"));
 
                 httpConnection = Networking.prepareConnection(urlString, "POST", syncGrids, true);
 
-                if(syncGrids) {
+                if (syncGrids) {
                     OutputStream outputStream = httpConnection.getOutputStream();
                     generateBody(outputStream, deletedGrids, newGrids);
                 }
@@ -141,9 +142,9 @@ public class SyncHighscoreIntentService extends IntentService {
                     failed ? GridWalkingApplication.NetworkResponseCode.ERROR.ordinal() : GridWalkingApplication.NetworkResponseCode.OK.ordinal(),
                     response);
 
-//            db.CommitModifiedGrids(dbInTransaction, deletedGrids, newGrids); //TODO, enable before release!
+            db.CommitModifiedGrids(dbInTransaction, deletedGrids, newGrids);
 
-        } catch (PendingIntent.CanceledException e) {
+        } catch (Exception e) {
             reportError(reply, GridWalkingApplication.NetworkResponseCode.ERROR.ordinal(), e.getMessage());
         } finally {
             if (db!=null && dbInTransaction!=null) {

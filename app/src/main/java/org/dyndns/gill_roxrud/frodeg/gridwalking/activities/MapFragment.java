@@ -93,6 +93,9 @@ public class MapFragment extends Fragment implements LocationListener {
         if (db.GetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_PURGE_DUPLICATES) != 0) {
             GameState.getInstance().getGrid().BugfixPurgeDuplicates();
         }
+        if (db.GetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_ADJUST_LEVELCOUNT) != 0) {
+            GameState.getInstance().getGrid().BugfixAdjustLevelCount();
+        }
 
         onScoreUpdated();
     }

@@ -1,8 +1,10 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.widget.Toast;
 
 import org.osmdroid.api.IGeoPoint;
 
@@ -149,6 +151,9 @@ public class Grid {
             GameState.getInstance().getDB().PersistGrid(key, (byte) 0, consumeBonus);
             RecursiveCheck(db, dbInTransaction, p, (byte) 0);
             success = true;
+        } catch (SQLException e) {
+            success = false;
+            Toast.makeText(GridWalkingApplication.getContext(), "ERR10: " + e.getMessage(), Toast.LENGTH_LONG).show();
         } finally {
             db.EndTransaction(dbInTransaction, success);
         }
@@ -179,7 +184,7 @@ public class Grid {
         return -1;
     }
 
-    private void RecursiveCheck(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) throws InvalidPositionException {
+    private void RecursiveCheck(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) throws InvalidPositionException, SQLException {
         if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX() || LEVEL_COUNT<level)
             throw new InvalidPositionException();
 
@@ -396,12 +401,11 @@ public class Grid {
         return score;
     }
 
-    private void RecursiveRemoveGrid(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) {
+    private void RecursiveRemoveGrid(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) throws SQLException {
         try {
             int gridKey = ToKey(p);
             if (db.ContainsGrid(gridKey, level, GameState.ShowGridState.SELF)) {
                 db.DeleteGrid(dbInTransaction, gridKey, level);
-
             }
 
             if (level > 0) {
@@ -439,8 +443,31 @@ public class Grid {
                 }
             }
 
-            db.SetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_PURGE_DUPLICATES, 0);
+            db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_BUGFIX_PURGE_DUPLICATES, 0);
             success = true;
+        } catch (SQLException e) {
+            success = false;
+            Toast.makeText(GridWalkingApplication.getContext(), "ERR9: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        } finally {
+            db.EndTransaction(dbInTransaction, success);
+        }
+    }
+
+    public void BugfixAdjustLevelCount() {
+        GridWalkingDBHelper db = GameState.getInstance().getDB();
+        SQLiteDatabase dbInTransaction = db.StartTransaction();
+        boolean success = false;
+        try {
+            byte level;
+            for (level = 0; level < Grid.LEVEL_COUNT; level++) {
+                db.UpdateLevelCountFromDb(dbInTransaction, level);
+            }
+
+            db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_BUGFIX_ADJUST_LEVELCOUNT, 0);
+            success = true;
+        } catch (SQLException e) {
+            success = false;
+            Toast.makeText(GridWalkingApplication.getContext(), "ERR11: " + e.getMessage(), Toast.LENGTH_LONG).show();
         } finally {
             db.EndTransaction(dbInTransaction, success);
         }
