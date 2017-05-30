@@ -3,7 +3,6 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking.intents;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
@@ -21,16 +20,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 
 
 public class SyncHighscoreIntentService extends IntentService {

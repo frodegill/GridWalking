@@ -3,7 +3,6 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.view.View;
 
 
 public class HighscoreItem implements Parcelable {

@@ -77,7 +77,7 @@ public class GameState {
         prefsEditor.putBoolean(GridWalkingPreferenceActivity.SHOW_GRIDS_PREFERENCE, ShowGridState.NONE!=showGridState);
         prefsEditor.putBoolean(GridWalkingPreferenceActivity.SHOW_SYNCED_GRIDS_PREFERENCE, ShowGridState.SYNCED==showGridState);
         prefsEditor.putBoolean(GridWalkingPreferenceActivity.SNAP_TO_CENTRE_PREFERENCE, ShowGridState.SYNCED!=showGridState);
-        prefsEditor.commit();
+        prefsEditor.apply();
     }
 
     public String getHighscoreNickname() {

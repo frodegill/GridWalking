@@ -1,7 +1,6 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking.overlays;
 
 import android.graphics.*;
-import android.graphics.Rect;
 import android.view.MotionEvent;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
