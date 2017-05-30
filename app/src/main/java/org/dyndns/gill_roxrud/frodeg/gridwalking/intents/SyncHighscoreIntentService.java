@@ -200,7 +200,7 @@ public class SyncHighscoreIntentService extends IntentService {
         int sum2 = Secrets.CRC_SEED2;
         int i;
         for (i = 0; i < s.length; i++) { /* https://en.wikipedia.org/wiki/Fletcher's_checksum */
-            sum1 = (sum1 + s[i]) % 255;
+            sum1 = (sum1 + (s[i]&0xFF)) % 255;
             sum2 = (sum2 + sum1) % 255;
         }
         return (sum2 << 8) | sum1;
