@@ -388,10 +388,8 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void PersistGrid(final int gridKey, final byte level, final boolean consumeBonus) {
+    boolean PersistGrid(final SQLiteDatabase dbInTransaction, final int gridKey, final byte level, final boolean consumeBonus) {
         boolean successful = true;
-        SQLiteDatabase dbInTransaction = StartTransaction();
-
         try {
             ContentValues contentValues = new ContentValues();
             contentValues.put(GRID_COLUMN_KEY, gridKey);
@@ -409,14 +407,11 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             successful = false;
             Toast.makeText(GridWalkingApplication.getContext(), "ERR3: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-
-        EndTransaction(dbInTransaction, successful);
+        return successful;
     }
 
-    void PersistGrid(final Set<Integer> oldGridKeys, final int newGridKey, final byte newLevel) {
+    boolean PersistGrid(final SQLiteDatabase dbInTransaction, final Set<Integer> oldGridKeys, final int newGridKey, final byte newLevel) {
         boolean successful = true;
-        SQLiteDatabase dbInTransaction = StartTransaction();
-
         try {
             byte oldLevel = (byte) (newLevel - 1);
 
@@ -441,8 +436,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             successful = false;
             Toast.makeText(GridWalkingApplication.getContext(), "ERR4: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-
-        EndTransaction(dbInTransaction, successful);
+        return successful;
     }
 
     void DeleteGrid(final SQLiteDatabase dbInTransaction, final int gridKey, final byte level) throws SQLException {
@@ -456,7 +450,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         AdjustLevelCount(dbInTransaction, level, -1);
     }
 
-    void PersistBonus(final int bonusKey) {
+    void PersistBonusT(final int bonusKey) {
         boolean successful = true;
         SQLiteDatabase dbInTransaction = StartTransaction();
 
@@ -490,7 +484,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    void ConsumeBonus() {
+    void ConsumeBonusT() {
         SQLiteDatabase dbInTransaction = StartTransaction();
 
         boolean successful = true;
@@ -559,7 +553,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 new String[] {Integer.toString(value), property});
     }
 
-    public void SetProperty(final String property, final int value) {
+    public void SetPropertyT(final String property, final int value) {
         boolean successful = true;
         SQLiteDatabase dbInTransaction = StartTransaction();
 
@@ -573,7 +567,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         EndTransaction(dbInTransaction, successful);
     }
 
-    void SetStringProperty(final String property, final String value) {
+    void SetStringPropertyT(final String property, final String value) {
         boolean successful = true;
         SQLiteDatabase dbInTransaction = StartTransaction();
 
@@ -641,7 +635,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         return PROPERTY_LEVELCOUNT_PREFIX+Byte.toString(level);
     }
 
-    public Integer SyncExternalGrids(final InputStream is) throws IOException {
+    public Integer SyncExternalGridsT(final InputStream is) throws IOException {
         Integer aGrid = null;
         boolean successful = true;
         SQLiteDatabase dbInTransaction = StartTransaction();

@@ -77,7 +77,7 @@ public class SyncGridsIntentService extends IntentService {
                     throw new IOException("HTTP "+Integer.toString(status)+": "+sb.toString());
                 }
 
-                aGrid = db.SyncExternalGrids(httpConnection.getInputStream());
+                aGrid = db.SyncExternalGridsT(httpConnection.getInputStream());
 
             } catch (IOException|NoSuchAlgorithmException|KeyManagementException e) {
                 failed = true;

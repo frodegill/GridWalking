@@ -97,10 +97,10 @@ public class GameState {
         return currentPos;
     }
 
-    public void onPositionChanged(MapFragment mapFragment, double x_pos, double y_pos) {
+    public void onPositionChangedT(MapFragment mapFragment, double x_pos, double y_pos) {
         currentPos.set(x_pos, y_pos);
         try {
-            if (grid.Discover(currentPos, false) || null!=bonus.ValidBonusKeyFromPos(currentPos)) {
+            if (grid.DiscoverT(currentPos, false) || null!=bonus.ValidBonusKeyFromPosT(currentPos)) { //Two transactions, OK
                 mapFragment.onScoreUpdated();
             }
         } catch (InvalidPositionException e) {

@@ -19,7 +19,7 @@ public class Bonus {
         return GameState.getInstance().getDB().GetUnusedBonusCount();
     }
 
-    Integer ValidBonusKeyFromPos(final Point<Double> pos) throws InvalidPositionException {
+    Integer ValidBonusKeyFromPosT(final Point<Double> pos) throws InvalidPositionException {
         double horizontal_pos_rounding = pos.getX()+HALF_HOR_BONUS_DEGREE;
         if (Grid.EAST<=horizontal_pos_rounding) {
             horizontal_pos_rounding -= Grid.HOR_DEGREES;
@@ -30,7 +30,7 @@ public class Bonus {
 
         if (BONUS_SIZE_RADIUS >= CalculateDistance(pos, bonus_pos)) {
             int key = ToBonusKey(p);
-            GameState.getInstance().getDB().PersistBonus(key);
+            GameState.getInstance().getDB().PersistBonusT(key);
             return key;
         }
         return null;

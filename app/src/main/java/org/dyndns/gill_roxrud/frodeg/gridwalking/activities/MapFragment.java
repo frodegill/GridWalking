@@ -5,6 +5,8 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.SQLException;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -91,10 +93,10 @@ public class MapFragment extends Fragment implements LocationListener {
         setHasOptionsMenu(true);
 
         if (db.GetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_PURGE_DUPLICATES) != 0) {
-            GameState.getInstance().getGrid().BugfixPurgeDuplicates();
+            GameState.getInstance().getGrid().BugfixPurgeDuplicatesT();
         }
         if (db.GetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_ADJUST_LEVELCOUNT) != 0) {
-            GameState.getInstance().getGrid().BugfixAdjustLevelCount();
+            GameState.getInstance().getGrid().BugfixAdjustLevelCountT();
         }
 
         onScoreUpdated();
@@ -104,9 +106,19 @@ public class MapFragment extends Fragment implements LocationListener {
     public void onPause() {
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
-        db.SetProperty(GridWalkingDBHelper.PROPERTY_X_POS, mapView.getScrollX());
-        db.SetProperty(GridWalkingDBHelper.PROPERTY_Y_POS, mapView.getScrollY());
-        db.SetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL, mapView.getZoomLevel());
+
+        boolean successful = true;
+        SQLiteDatabase dbInTransaction = db.StartTransaction();
+        try {
+            db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_X_POS, mapView.getScrollX());
+            db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_Y_POS, mapView.getScrollY());
+            db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL, mapView.getZoomLevel());
+
+        } catch (SQLException e) {
+            successful = false;
+            Toast.makeText(GridWalkingApplication.getContext(), "ERR12: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+        db.EndTransaction(dbInTransaction, successful);
 
         super.onPause();
         DisableLocationUpdates();
@@ -157,7 +169,7 @@ public class MapFragment extends Fragment implements LocationListener {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.mark_visited:
-                discoverSelectedGrid();
+                discoverSelectedGridT();
                 return true;
             case R.id.sync_highscore:
                 ((MapActivity)getActivity()).syncHighscore();
@@ -170,8 +182,8 @@ public class MapFragment extends Fragment implements LocationListener {
         return super.onOptionsItemSelected(item);
     }
 
-    private void discoverSelectedGrid() {
-        if (GameState.getInstance().getGrid().DiscoverSelectedGrid()) {
+    private void discoverSelectedGridT() {
+        if (GameState.getInstance().getGrid().DiscoverSelectedGridT()) {
             mapView.postInvalidate();
             onScoreUpdated();
         }
@@ -209,7 +221,7 @@ public class MapFragment extends Fragment implements LocationListener {
     @Override
     public void onLocationChanged(Location location) {
         GameState gameState = GameState.getInstance();
-        gameState.onPositionChanged(this, location.getLongitude(), location.getLatitude());
+        gameState.onPositionChangedT(this, location.getLongitude(), location.getLatitude());
 
         if (gameState.getSnapToCentre()) {
             GeoPoint position = new GeoPoint(location.getLatitude(), location.getLongitude());

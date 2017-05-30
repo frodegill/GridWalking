@@ -107,7 +107,7 @@ public class Grid {
                 (oldSelectedGridKey!=null && currentSelectedGridKey!=null && oldSelectedGridKey.intValue()!=currentSelectedGridKey.intValue()));
     }
 
-    public boolean DiscoverSelectedGrid() {
+    public boolean DiscoverSelectedGridT() {
         GameState gameState = GameState.getInstance();
         if (GameState.ShowGridState.SELF!=gameState.getShowGridState()) {
             return false;
@@ -120,7 +120,7 @@ public class Grid {
         try {
             Bonus bonus = gameState.getBonus();
             if (bonus.GetUnusedBonusCount() > 0) {
-                DiscoverGrid(FromKey(selectedGridKey), true);
+                DiscoverGridT(FromKey(selectedGridKey), true);
                 return true;
             }
         } catch (InvalidPositionException e) {
@@ -128,11 +128,11 @@ public class Grid {
         return false;
     }
 
-    boolean Discover(final Point<Double> pos, final boolean consumeBonus) throws InvalidPositionException {
-        return DiscoverGrid(new Point<>(ToHorizontalGrid(pos.getX(), LEVEL_0), ToVerticalGrid(pos.getY(), LEVEL_0)), consumeBonus);
+    boolean DiscoverT(final Point<Double> pos, final boolean consumeBonus) throws InvalidPositionException {
+        return DiscoverGridT(new Point<>(ToHorizontalGrid(pos.getX(), LEVEL_0), ToVerticalGrid(pos.getY(), LEVEL_0)), consumeBonus);
     }
 
-    private boolean DiscoverGrid(final Point<Integer> p, final boolean consumeBonus) throws InvalidPositionException {
+    private boolean DiscoverGridT(final Point<Integer> p, final boolean consumeBonus) throws InvalidPositionException {
         int key = ToKey(p);
         if (IsInMRU(key)) {
             return false;
@@ -146,11 +146,10 @@ public class Grid {
 
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         SQLiteDatabase dbInTransaction = db.StartTransaction();
-        boolean success = false;
+        boolean success = true;
         try {
-            GameState.getInstance().getDB().PersistGrid(key, (byte) 0, consumeBonus);
-            RecursiveCheck(db, dbInTransaction, p, (byte) 0);
-            success = true;
+            success &= GameState.getInstance().getDB().PersistGrid(dbInTransaction, key, (byte) 0, consumeBonus);
+            success &= RecursiveCheck(db, dbInTransaction, p, (byte) 0);
         } catch (SQLException e) {
             success = false;
             Toast.makeText(GridWalkingApplication.getContext(), "ERR10: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -184,12 +183,12 @@ public class Grid {
         return -1;
     }
 
-    private void RecursiveCheck(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) throws InvalidPositionException, SQLException {
+    private boolean RecursiveCheck(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) throws InvalidPositionException, SQLException {
         if (VER_GRID_COUNT<=p.getY() || HOR_GRID_COUNT<=p.getX() || LEVEL_COUNT<level)
             throw new InvalidPositionException();
 
         if (LEVEL_COUNT==level)
-            return;
+            return true;
 
         Rect<Integer> r = GetBoundingBoxKeys(p, (byte)(level+1));
 
@@ -206,10 +205,12 @@ public class Grid {
 
         Set<Integer> keyMatches = db.ContainsGrid(keys, level, GameState.ShowGridState.SELF);
         if (3 > keyMatches.size()) { //Not enough. Bail out
-            return;
+            return true;
         }
 
-        db.PersistGrid(keyMatches, gridKeys[0], (byte) (level + 1));
+        if (!db.PersistGrid(dbInTransaction, keyMatches, gridKeys[0], (byte) (level + 1))) {
+            return false;
+        }
 
         for (i=0; i<4; i++) {
             if (!keyMatches.contains(gridKeys[i])) {
@@ -217,7 +218,7 @@ public class Grid {
             }
         }
 
-        RecursiveCheck(db, dbInTransaction, r.getLowerLeft(), (byte) (level + 1));
+        return RecursiveCheck(db, dbInTransaction, r.getLowerLeft(), (byte) (level + 1));
     }
 
     public int ToHorizontalGrid(double x_pos, final byte level) {
@@ -419,7 +420,7 @@ public class Grid {
         }
     }
 
-    public void BugfixPurgeDuplicates() {
+    public void BugfixPurgeDuplicatesT() {
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         SQLiteDatabase dbInTransaction = db.StartTransaction();
         boolean success = false;
@@ -453,7 +454,7 @@ public class Grid {
         }
     }
 
-    public void BugfixAdjustLevelCount() {
+    public void BugfixAdjustLevelCountT() {
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         SQLiteDatabase dbInTransaction = db.StartTransaction();
         boolean success = false;
