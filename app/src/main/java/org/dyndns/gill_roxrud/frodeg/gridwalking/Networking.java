@@ -26,8 +26,8 @@ public class Networking {
             httpsConnection.setSSLSocketFactory(sc.getSocketFactory());
         }
 
-        httpConnection.setReadTimeout(7000);
-        httpConnection.setConnectTimeout(7000);
+        httpConnection.setReadTimeout(30*1000);
+        httpConnection.setConnectTimeout(30*1000);
         httpConnection.setRequestMethod(requestMethod);
         httpConnection.setRequestProperty("User-Agent", "Grid Walking "+BuildConfig.VERSION_NAME);
         httpConnection.setDoOutput(doOutput);
