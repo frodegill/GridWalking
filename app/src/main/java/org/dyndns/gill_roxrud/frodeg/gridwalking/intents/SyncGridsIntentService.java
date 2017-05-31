@@ -69,6 +69,7 @@ public class SyncGridsIntentService extends IntentService {
                     while ((inputLine = in.readLine()) != null) {
                         sb.append(inputLine);
                     }
+                    in.close();
                     failed = true;
                     throw new IOException("HTTP "+Integer.toString(status)+": "+sb.toString());
                 }

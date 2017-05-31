@@ -2,6 +2,7 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -16,7 +17,7 @@ public class Networking {
         boolean useSecureConnection = urlString.startsWith("https://");
         URL url = new URL(urlString);
 
-        HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
+        HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
         if (useSecureConnection) {
             HttpsURLConnection httpsConnection = (HttpsURLConnection) httpConnection;
 
@@ -27,7 +28,7 @@ public class Networking {
         }
 
         httpConnection.setReadTimeout(30*1000);
-        httpConnection.setConnectTimeout(30*1000);
+        httpConnection.setConnectTimeout(1*1000);
         httpConnection.setRequestMethod(requestMethod);
         httpConnection.setRequestProperty("User-Agent", "Grid Walking "+BuildConfig.VERSION_NAME);
         httpConnection.setDoOutput(doOutput);
