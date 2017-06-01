@@ -23,7 +23,7 @@ public class Networking {
 
             SSLContext sc;
             sc = SSLContext.getInstance("TLS");
-            sc.init(null, null, new java.security.SecureRandom());
+            sc.init(null, null, GameState.getInstance().getSecureRandom());
             httpsConnection.setSSLSocketFactory(sc.getSocketFactory());
         }
 
