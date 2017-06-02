@@ -11,7 +11,7 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.Networking;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.networking.Networking;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Secrets;
 
 import java.io.BufferedReader;

@@ -1,4 +1,7 @@
-package org.dyndns.gill_roxrud.frodeg.gridwalking;
+package org.dyndns.gill_roxrud.frodeg.gridwalking.networking;
+
+import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -20,18 +23,14 @@ public class Networking {
         HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
         if (useSecureConnection) {
             HttpsURLConnection httpsConnection = (HttpsURLConnection) httpConnection;
-
-            SSLContext sc;
-            sc = SSLContext.getInstance("TLS");
-            sc.init(null, null, GameState.getInstance().getSecureRandom());
-            httpsConnection.setSSLSocketFactory(sc.getSocketFactory());
+            httpsConnection.setSSLSocketFactory(new TLSSocketFactory());
         }
 
         httpConnection.setReadTimeout(30*1000);
         httpConnection.setConnectTimeout(1*1000);
         httpConnection.setRequestMethod(requestMethod);
         httpConnection.setRequestProperty("Connection", "close");
-        httpConnection.setRequestProperty("User-Agent", "Grid Walking "+BuildConfig.VERSION_NAME);
+        httpConnection.setRequestProperty("User-Agent", "Grid Walking "+ BuildConfig.VERSION_NAME);
         httpConnection.setDoOutput(doOutput);
         httpConnection.setDoInput(doInput);
 

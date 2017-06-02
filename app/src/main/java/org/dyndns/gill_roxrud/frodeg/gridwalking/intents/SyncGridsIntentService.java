@@ -7,7 +7,7 @@ import android.content.Intent;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.Networking;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.networking.Networking;
 
 import java.io.BufferedReader;
 import java.io.IOException;
