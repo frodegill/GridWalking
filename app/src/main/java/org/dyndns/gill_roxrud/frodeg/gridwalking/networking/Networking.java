@@ -21,16 +21,17 @@ public class Networking {
         URL url = new URL(urlString);
 
         HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
+        httpConnection.setReadTimeout(30*1000);
+        httpConnection.setConnectTimeout(5*1000);
+
         if (useSecureConnection) {
             HttpsURLConnection httpsConnection = (HttpsURLConnection) httpConnection;
             httpsConnection.setSSLSocketFactory(new TLSSocketFactory());
         }
 
-        httpConnection.setReadTimeout(30*1000);
-        httpConnection.setConnectTimeout(1*1000);
         httpConnection.setRequestMethod(requestMethod);
         httpConnection.setRequestProperty("Connection", "close");
-        httpConnection.setRequestProperty("User-Agent", "Grid Walking "+ BuildConfig.VERSION_NAME);
+        httpConnection.setRequestProperty("User-Agent", "Grid Walking/"+ BuildConfig.VERSION_NAME);
         httpConnection.setDoOutput(doOutput);
         httpConnection.setDoInput(doInput);
 
