@@ -88,6 +88,7 @@ public class SyncHighscoreIntentService extends IntentService {
                     httpConnection.setFixedLengthStreamingMode(length);
                     OutputStream outputStream = httpConnection.getOutputStream();
                     outputStream.write(baos.toByteArray(), 0, length);
+                    outputStream.flush();
                 }
 
                 httpConnection.connect();
