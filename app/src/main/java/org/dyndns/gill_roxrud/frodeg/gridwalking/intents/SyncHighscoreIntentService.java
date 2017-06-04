@@ -15,6 +15,7 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.networking.Networking;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Secrets;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -80,9 +81,13 @@ public class SyncHighscoreIntentService extends IntentService {
                 httpConnection = Networking.prepareConnection(urlString, "POST", syncGrids, true);
 
                 if (syncGrids) {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    generateBody(baos, deletedGrids, newGrids);
+
+                    int length = baos.size();
+                    httpConnection.setFixedLengthStreamingMode(length);
                     OutputStream outputStream = httpConnection.getOutputStream();
-                    generateBody(outputStream, deletedGrids, newGrids);
-                    outputStream.close();
+                    outputStream.write(baos.toByteArray(), 0, length);
                 }
 
                 httpConnection.connect();
@@ -97,7 +102,6 @@ public class SyncHighscoreIntentService extends IntentService {
                     while ((inputLine = in.readLine()) != null) {
                         sb.append(inputLine);
                     }
-                    in.close();
                     failed = true;
                     throw new IOException("HTTP "+Integer.toString(status)+": "+sb.toString());
                 }
@@ -118,7 +122,6 @@ public class SyncHighscoreIntentService extends IntentService {
                         highscoreList.getHighscoreItemList().add(highscoreItem);
                     }
                 }
-                in.close();
             } catch (Exception e) {
                 failed = true;
                 msg = e.getMessage();
