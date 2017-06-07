@@ -6,10 +6,10 @@ android {
 
     defaultConfig {
         applicationId "org.dyndns.gill_roxrud.frodeg.gridwalking"
-        minSdkVersion 9
+        minSdkVersion 11
         targetSdkVersion 25
-        versionCode 23
-        versionName "1.6.9"
+        versionCode 26
+        versionName "1.7"
     }
     buildTypes {
         release {
@@ -17,6 +17,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    useLibrary 'org.apache.http.legacy'
 }
 
 dependencies {

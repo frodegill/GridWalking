@@ -4,18 +4,21 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreProtocolPNames;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.networking.Networking;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
 
 
 public class SyncGridsIntentService extends IntentService {
@@ -52,16 +55,19 @@ public class SyncGridsIntentService extends IntentService {
 
             Integer aGrid = null;
             String msg = null;
-            HttpURLConnection httpConnection = null;
             try {
                 String urlString = GRIDWALKING_ENDPOINT+pathParams;
 
-                httpConnection = Networking.prepareConnection(urlString, "GET", false, true);
-                httpConnection.connect();
+                HttpClient httpClient = new DefaultHttpClient();
+                httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Grid Walking/"+ BuildConfig.VERSION_NAME);
+                HttpGet httpGet = new HttpGet(urlString);
 
-                int status = httpConnection.getResponseCode();
-                if (status >= 400) {
-                    InputStream is = httpConnection.getErrorStream();
+                HttpResponse response = httpClient.execute(httpGet);
+                HttpEntity resEntity = response.getEntity();
+                InputStream is = resEntity.getContent();
+
+                int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode >= 400) {
                     InputStreamReader isr = new InputStreamReader(is);
                     BufferedReader in = new BufferedReader(isr);
                     String inputLine;
@@ -70,19 +76,14 @@ public class SyncGridsIntentService extends IntentService {
                         sb.append(inputLine);
                     }
                     in.close();
-                    failed = true;
-                    throw new IOException("HTTP "+Integer.toString(status)+": "+sb.toString());
+                    throw new IOException("HTTP "+Integer.toString(statusCode)+": "+sb.toString());
                 }
 
-                aGrid = db.SyncExternalGridsT(httpConnection.getInputStream());
-
-            } catch (IOException|NoSuchAlgorithmException|KeyManagementException e) {
+                aGrid = db.SyncExternalGridsT(is);
+                is.close();
+            } catch (Exception e) {
                 failed = true;
                 msg = e.getMessage();
-            } finally {
-                if (httpConnection != null) {
-                    httpConnection.disconnect();
-                }
             }
 
             Intent response = new Intent();

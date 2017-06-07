@@ -5,13 +5,20 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.CoreProtocolPNames;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Grid;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.networking.Networking;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Secrets;
 
 import java.io.BufferedReader;
@@ -20,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Set;
@@ -70,32 +76,28 @@ public class SyncHighscoreIntentService extends IntentService {
             }
 
             String msg = null;
-            HttpURLConnection httpConnection = null;
             try {
                 db.GetModifiedGrids(dbInTransaction, deletedGrids, newGrids);
-                boolean syncGrids = 100L<=gameState.getGrid().getScore();
+                boolean syncGrids = 10L<=gameState.getGrid().getScore();
 
                 String urlString = GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
                         +"?crc="+Crc((pathParams+nameParam).getBytes("UTF-8"));
 
-                httpConnection = Networking.prepareConnection(urlString, "POST", syncGrids, true);
-
+                HttpClient httpClient = new DefaultHttpClient();
+                httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Grid Walking/"+ BuildConfig.VERSION_NAME);
+                HttpPost httpPost = new HttpPost(urlString);
                 if (syncGrids) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     generateBody(baos, deletedGrids, newGrids);
-
-                    int length = baos.size();
-                    httpConnection.setFixedLengthStreamingMode(length);
-                    OutputStream outputStream = httpConnection.getOutputStream();
-                    outputStream.write(baos.toByteArray(), 0, length);
-                    outputStream.flush();
+                    httpPost.setEntity(new ByteArrayEntity(baos.toByteArray()));
                 }
 
-                httpConnection.connect();
+                HttpResponse response = httpClient.execute(httpPost);
+                HttpEntity resEntity = response.getEntity();
+                InputStream is = resEntity.getContent();
 
-                int status = httpConnection.getResponseCode();
-                if (status >= 400) {
-                    InputStream is = httpConnection.getErrorStream();
+                int statusCode = response.getStatusLine().getStatusCode();
+                if (statusCode >= 400) {
                     InputStreamReader isr = new InputStreamReader(is);
                     BufferedReader in = new BufferedReader(isr);
                     String inputLine;
@@ -103,12 +105,12 @@ public class SyncHighscoreIntentService extends IntentService {
                     while ((inputLine = in.readLine()) != null) {
                         sb.append(inputLine);
                     }
+                    in.close();
                     failed = true;
-                    throw new IOException("HTTP "+Integer.toString(status)+": "+sb.toString());
+                    throw new IOException("HTTP "+Integer.toString(statusCode)+": "+sb.toString());
                 }
 
                 highscoreList = new HighscoreList();
-                InputStream is = httpConnection.getInputStream();
                 InputStreamReader isr = new InputStreamReader(is);
                 BufferedReader in = new BufferedReader(isr);
                 boolean first = true;
@@ -123,13 +125,10 @@ public class SyncHighscoreIntentService extends IntentService {
                         highscoreList.getHighscoreItemList().add(highscoreItem);
                     }
                 }
+                in.close();
             } catch (Exception e) {
                 failed = true;
                 msg = e.getMessage();
-            } finally {
-                if (httpConnection != null) {
-                    httpConnection.disconnect();
-                }
             }
 
             Intent response = new Intent();
