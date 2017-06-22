@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -567,15 +569,19 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         EndTransaction(dbInTransaction, successful);
     }
 
+    void SetStringProperty(final SQLiteDatabase dbInTransaction, final String property, final String value) throws SQLException {
+        dbInTransaction.execSQL("UPDATE "+PROPERTY_TABLE_NAME
+                        +" SET "+PROPERTY_COLUMN_VALUE+" = ?"
+                        +" WHERE "+PROPERTY_COLUMN_KEY+"=?",
+                new String[] {value, property});
+    }
+
     void SetStringPropertyT(final String property, final String value) {
         boolean successful = true;
         SQLiteDatabase dbInTransaction = StartTransaction();
 
         try {
-            dbInTransaction.execSQL("UPDATE "+PROPERTY_TABLE_NAME
-                            +" SET "+PROPERTY_COLUMN_VALUE+" = ?"
-                            +" WHERE "+PROPERTY_COLUMN_KEY+"=?",
-                    new String[] {value, property});
+            SetStringProperty(dbInTransaction, property, value);
         } catch (SQLException e) {
             successful = false;
             Toast.makeText(GridWalkingApplication.getContext(), "ERR8: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -635,7 +641,49 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         return PROPERTY_LEVELCOUNT_PREFIX+Byte.toString(level);
     }
 
-    public Integer SyncExternalGridsT(final InputStream is) throws IOException {
+    public void RestoreFromFileT(final File restoreFile) throws Exception {
+        boolean successful = true;
+        SQLiteDatabase dbInTransaction = StartTransaction();
+
+        try {
+            FileInputStream is = new FileInputStream(restoreFile);
+            Secrets secrets = new Secrets();
+
+            dbInTransaction.execSQL("DELETE FROM "+GRID_TABLE_NAME
+                                   +" WHERE "+GRID_COLUMN_OWNER+"="+Integer.toString(GRID_OWNER_SELF));
+
+            byte level;
+            int gridKey;
+            for (level=0; level<Grid.LEVEL_COUNT; level++) {
+                while (0xFFFFFFFF != (gridKey=FetchInt32(is, secrets))) {
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(GRID_COLUMN_KEY, gridKey);
+                    contentValues.put(GRID_COLUMN_LEVEL, level);
+                    contentValues.put(GRID_COLUMN_STATUS, GRID_STATUS_SYNCED);
+                    contentValues.put(GRID_COLUMN_OWNER, GRID_OWNER_SELF);
+
+                    successful &= (-1 != dbInTransaction.insert(GRID_TABLE_NAME, null, contentValues));
+                }
+                UpdateLevelCountFromDb(dbInTransaction, level);
+            }
+
+            int uuidLength = FetchByte(is, secrets);
+            String uuid = FetchString(is, uuidLength, secrets);
+            SetStringProperty(dbInTransaction, PROPERTY_USER_GUID, uuid);
+
+            long crc32 = FetchInt32(is, null);
+            if (crc32 != secrets.Crc32()) {
+                throw new Exception("Invalid CRC");
+            }
+        } catch (Exception e) {
+            successful = false;
+            throw e;
+        } finally {
+            EndTransaction(dbInTransaction, successful);
+        }
+    }
+
+    public Integer SyncExternalGridsT(final InputStream is) throws Exception {
         Integer aGrid = null;
         boolean successful = true;
         SQLiteDatabase dbInTransaction = StartTransaction();
@@ -647,7 +695,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             byte level;
             int gridKey;
             for (level=0; level<Grid.LEVEL_COUNT; level++) {
-                while (0xFFFFFFFF != (gridKey=FetchInt32(is))) {
+                while (0xFFFFFFFF != (gridKey=FetchInt32(is, null))) {
                     aGrid = gridKey;
                     ContentValues contentValues = new ContentValues();
                     contentValues.put(GRID_COLUMN_KEY, gridKey);
@@ -669,15 +717,46 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         return aGrid;
     }
 
-    private int FetchInt32(final InputStream is) throws IOException {
+    private int FetchByte(final InputStream is, final Secrets secrets) throws IOException {
+        int b;
+        if (-1 == (b = is.read())) {
+            throw new RuntimeException();
+        }
+
+        if (secrets != null) {
+            secrets.Append((byte)(b&0xFF));
+        }
+
+        return b&0xFF;
+    }
+
+    private int FetchInt32(final InputStream is, final Secrets secrets) throws IOException {
         int[] bytes = new int[4];
         byte i;
         for (i=0; i<4; i++) {
             if (-1 == (bytes[i] = is.read())) {
                 throw new RuntimeException();
             }
+
+            if (secrets != null) {
+                secrets.Append((byte)(bytes[i]&0xFF));
+            }
         }
+
         return ((bytes[0]&0xFF)<<24) | ((bytes[1]&0xFF)<<16) | ((bytes[2]&0xFF)<<8) | (bytes[3]&0xFF);
+    }
+
+    private String FetchString(final InputStream is, final int stringLength, final Secrets secrets) throws IOException {
+        byte[] bytes = new byte[stringLength];
+        if (-1 == is.read(bytes, 0, stringLength)) {
+            throw new RuntimeException();
+        }
+
+        if (secrets != null) {
+            secrets.Append(bytes);
+        }
+
+        return new String(bytes, "UTF-8");
     }
 
     String DumpDB() {

@@ -80,8 +80,10 @@ public class SyncHighscoreIntentService extends IntentService {
                 db.GetModifiedGrids(dbInTransaction, deletedGrids, newGrids);
                 boolean syncGrids = 10L<=gameState.getGrid().getScore();
 
+                Secrets secrets = new Secrets();
+                secrets.Append((pathParams+nameParam).getBytes("UTF-8"));
                 String urlString = GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
-                        +"?crc="+Crc((pathParams+nameParam).getBytes("UTF-8"));
+                        +"?crc="+Integer.toString(secrets.Crc16());
 
                 HttpClient httpClient = new DefaultHttpClient();
                 httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Grid Walking/"+ BuildConfig.VERSION_NAME);
@@ -201,14 +203,4 @@ public class SyncHighscoreIntentService extends IntentService {
         outputStream.write(value&0x000000FF);
     }
 
-    private int Crc(final byte[] s) {
-        int sum1 = Secrets.CRC_SEED1;
-        int sum2 = Secrets.CRC_SEED2;
-        int i;
-        for (i = 0; i < s.length; i++) { /* https://en.wikipedia.org/wiki/Fletcher's_checksum */
-            sum1 = (sum1 + (s[i]&0xFF)) % 255;
-            sum2 = (sum2 + sum1) % 255;
-        }
-        return (sum2 << 8) | sum1;
-    }
 }
