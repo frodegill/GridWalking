@@ -8,8 +8,6 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.GridWalkingPreferenc
 import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.MapFragment;
 import org.osmdroid.api.IGeoPoint;
 
-import java.security.SecureRandom;
-
 
 public class GameState {
     public enum ShowGridState {
@@ -19,8 +17,6 @@ public class GameState {
     }
 
     private static GameState instance = null;
-
-    private SecureRandom secureRandom = null;
 
     private final Grid grid;
     private final Bonus bonus;
@@ -34,8 +30,6 @@ public class GameState {
 
     private GameState() {
         Context context = GridWalkingApplication.getContext();
-        secureRandom = new SecureRandom();
-        secureRandom.setSeed(System.currentTimeMillis());
 
         grid = new Grid();
         bonus = new Bonus();
@@ -49,10 +43,6 @@ public class GameState {
             instance = new GameState();
         }
         return instance;
-    }
-
-    public SecureRandom getSecureRandom() {
-        return secureRandom;
     }
 
     public Grid getGrid() {
