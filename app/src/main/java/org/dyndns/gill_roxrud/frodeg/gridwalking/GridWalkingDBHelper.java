@@ -652,6 +652,9 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             dbInTransaction.execSQL("DELETE FROM "+GRID_TABLE_NAME
                                    +" WHERE "+GRID_COLUMN_OWNER+"="+Integer.toString(GRID_OWNER_SELF));
 
+            dbInTransaction.execSQL("DELETE FROM "+BONUS_TABLE_NAME);
+            SetProperty(dbInTransaction, PROPERTY_BONUSES_USED, 0);
+
             byte level;
             int gridKey;
             for (level=0; level<Grid.LEVEL_COUNT; level++) {
