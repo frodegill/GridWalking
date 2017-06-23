@@ -1,7 +1,6 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,7 +9,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -59,15 +57,12 @@ public class MapFragment extends Fragment implements LocationListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, null);
-        mapView = (MapView) view.findViewById(R.id.mapview);
+        mapView = view.findViewById(R.id.mapview);
         return view;
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     private void setHardwareAccelerationOff() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            mapView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
+        mapView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
     }
 
     @Override
@@ -207,13 +202,13 @@ public class MapFragment extends Fragment implements LocationListener {
     public void onScoreUpdated() {
         TextView view;
         try {
-            view = (TextView) getView().findViewById(R.id.score);
+            view = getView().findViewById(R.id.score);
             view.setText(GameState.getInstance().getGrid().getScoreString());
         }
         catch(NullPointerException e) {}
 
         try {
-            view = (TextView) getView().findViewById(R.id.bonus);
+            view = getView().findViewById(R.id.bonus);
             view.setText(GameState.getInstance().getBonus().getBonusString());
         } catch(NullPointerException e) {}
     }

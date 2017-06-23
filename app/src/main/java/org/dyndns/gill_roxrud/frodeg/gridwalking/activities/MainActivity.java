@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 import org.osmdroid.config.Configuration;
 
@@ -145,14 +144,21 @@ public class MainActivity extends AppCompatActivity {
             }
 
             case REQUEST_CODE_ASK_MULTIPLE_RESTORE_PERMISSIONS: {
-                Map<String, Integer> perms = new HashMap<>();
-                // Initial
-                perms.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
-                // Fill with results
-                for (int i = 0; i < permissions.length; i++)
-                    perms.put(permissions[i], grantResults[i]);
-                // Check for ACCESS_FINE_LOCATION
-                if (perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                boolean permissionGranted;
+                if (Build.VERSION.SDK_INT < 16) {
+                    permissionGranted = true;
+                } else {
+                    Map<String, Integer> perms = new HashMap<>();
+                    // Initial
+                    perms.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
+                    // Fill with results
+                    for (int i = 0; i < permissions.length; i++)
+                        perms.put(permissions[i], grantResults[i]);
+                    // Check for READ_EXTERNAL_STORAGE
+                    permissionGranted = perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+                }
+
+                if (!permissionGranted) {
                     // Permission Denied
                     Toast.makeText(MainActivity.this, "External Storage permission is required to restore from file.", Toast.LENGTH_SHORT).show();
                 } else {

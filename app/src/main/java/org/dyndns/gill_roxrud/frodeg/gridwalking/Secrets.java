@@ -8,9 +8,9 @@ public class Secrets {
     private static final int CRC_SEED3 = 0;
     private static final int CRC_SEED4 = 0;
 
-    private int[] crc = new int[4];
+    private final int[] crc = new int[4];
 
-    
+
     public Secrets() {
         crc[0] = CRC_SEED1;
         crc[1] = CRC_SEED2;

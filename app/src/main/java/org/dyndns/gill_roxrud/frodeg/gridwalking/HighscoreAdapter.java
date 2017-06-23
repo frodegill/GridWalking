@@ -39,25 +39,25 @@ public class HighscoreAdapter extends BaseAdapter {
 
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
-        View vi = view;
+        View v = view;
         if (view == null) {
-            vi = inflater.inflate(R.layout.highscorerow, null);
+            v = inflater.inflate(R.layout.highscorerow, null);
         }
 
         HighscoreItem item = (HighscoreItem) getItem(i);
 
-        TextView textView = (TextView)vi.findViewById(R.id.position);
+        TextView textView = v.findViewById(R.id.position);
         textView.setText(Integer.toString(item.getPosition()));
 
-        textView = (TextView)vi.findViewById(R.id.nickname);
+        textView = v.findViewById(R.id.nickname);
         textView.setText(item.getUsername());
 
-        textView = (TextView)vi.findViewById(R.id.levels);
+        textView = v.findViewById(R.id.levels);
         textView.setText(item.getLevelsString());
 
-        textView = (TextView)vi.findViewById(R.id.score);
+        textView = v.findViewById(R.id.score);
         textView.setText(Long.toString(item.getScore()));
 
-        return vi;
+        return v;
     }
 }

@@ -569,7 +569,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         EndTransaction(dbInTransaction, successful);
     }
 
-    void SetStringProperty(final SQLiteDatabase dbInTransaction, final String property, final String value) throws SQLException {
+    private void SetStringProperty(final SQLiteDatabase dbInTransaction, final String property, final String value) throws SQLException {
         dbInTransaction.execSQL("UPDATE "+PROPERTY_TABLE_NAME
                         +" SET "+PROPERTY_COLUMN_VALUE+" = ?"
                         +" WHERE "+PROPERTY_COLUMN_KEY+"=?",
