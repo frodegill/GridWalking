@@ -16,3 +16,4 @@
 #   public *;
 #}
 -printmapping mapping.txt
+-dontwarn org.osmdroid.tileprovider.modules.NetworkAvailabliltyCheck
