@@ -34,6 +34,7 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.CopyrightOverlay;
+import org.osmdroid.views.overlay.ScaleBarOverlay;
 
 
 public class MapFragment extends Fragment implements LocationListener {
@@ -84,6 +85,7 @@ public class MapFragment extends Fragment implements LocationListener {
         mapView.getOverlays().add(new GridOverlay(this));
         mapView.getOverlays().add(new BonusOverlay());
         mapView.getOverlays().add(new MyLocationOverlay());
+        mapView.getOverlays().add(new ScaleBarOverlay(mapView));
 
         setHasOptionsMenu(true);
 
