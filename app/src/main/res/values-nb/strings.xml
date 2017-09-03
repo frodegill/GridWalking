@@ -16,4 +16,5 @@
     <string name="show_grids">Vis ruter</string>
     <string name="Anonymous">Anonymous</string>
     <string name="restore_button">Tilbakestill fra fil</string>
+    <string name="help_button">Hjelp</string>
 </resources>

@@ -3,6 +3,7 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -11,10 +12,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 import org.osmdroid.config.Configuration;
 
@@ -60,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Toast.makeText(MainActivity.this, "Resore failed: "+e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void onHelpButtonClicked(View v) {
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(GridWalkingApplication.HELP_URL)));
     }
 
     public void onCreatedByTextClicked(View v) {
@@ -127,6 +134,11 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        TextView toastView = (TextView) findViewById(R.id.toast);
+        if (toastView != null) {
+            toastView.setText("");
+        }
+
         switch (requestCode) {
             case REQUEST_CODE_ASK_MULTIPLE_APP_PERMISSIONS: {
                 Map<String, Integer> perms = new HashMap<>();
@@ -138,7 +150,12 @@ public class MainActivity extends AppCompatActivity {
                 // Check for ACCESS_FINE_LOCATION
                 if (perms.get(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     // Permission Denied
-                    Toast.makeText(MainActivity.this, "Location permission is required to show the user's location on map.", Toast.LENGTH_SHORT).show();
+                    final String msg = "Location permission is required to show the user's location on map.";
+                    if (toastView != null) {
+                        toastView.setText(msg);
+                    } else {
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
                 }
                 break;
             }
@@ -160,7 +177,12 @@ public class MainActivity extends AppCompatActivity {
 
                 if (!permissionGranted) {
                     // Permission Denied
-                    Toast.makeText(MainActivity.this, "External Storage permission is required to restore from file.", Toast.LENGTH_SHORT).show();
+                    final String msg = "External Storage permission is required to restore from file.";
+                    if (toastView != null) {
+                        toastView.setText(msg);
+                    } else {
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     showRestoreButton();
                 }
