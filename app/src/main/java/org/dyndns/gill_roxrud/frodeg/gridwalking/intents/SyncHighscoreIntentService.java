@@ -10,15 +10,13 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.CoreProtocolPNames;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Grid;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Networking;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Secrets;
 
 import java.io.BufferedReader;
@@ -85,8 +83,7 @@ public class SyncHighscoreIntentService extends IntentService {
                 String urlString = GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
                         +"?crc="+Integer.toString(secrets.Crc16());
 
-                HttpClient httpClient = new DefaultHttpClient();
-                httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Grid Walking/"+ BuildConfig.VERSION_NAME);
+                HttpClient httpClient = Networking.getInstance().createHttpClient();
                 HttpPost httpPost = new HttpPost(urlString);
                 if (syncGrids) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();

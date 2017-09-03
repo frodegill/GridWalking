@@ -8,12 +8,10 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.CoreProtocolPNames;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.Networking;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -58,8 +56,7 @@ public class SyncGridsIntentService extends IntentService {
             try {
                 String urlString = GRIDWALKING_ENDPOINT+pathParams;
 
-                HttpClient httpClient = new DefaultHttpClient();
-                httpClient.getParams().setParameter(CoreProtocolPNames.USER_AGENT, "Grid Walking/"+ BuildConfig.VERSION_NAME);
+                HttpClient httpClient = Networking.getInstance().createHttpClient();
                 HttpGet httpGet = new HttpGet(urlString);
 
                 HttpResponse response = httpClient.execute(httpGet);
