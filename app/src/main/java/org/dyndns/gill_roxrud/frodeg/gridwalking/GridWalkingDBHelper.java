@@ -674,7 +674,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             String uuid = FetchString(is, uuidLength, secrets);
             SetStringProperty(dbInTransaction, PROPERTY_USER_GUID, uuid);
 
-            long crc32 = FetchInt32(is, null);
+            long crc32 = FetchInt32(is, null) & 0x00000000FFFFFFFFL;
             if (crc32 != secrets.Crc32()) {
                 throw new Exception("Invalid CRC");
             }
