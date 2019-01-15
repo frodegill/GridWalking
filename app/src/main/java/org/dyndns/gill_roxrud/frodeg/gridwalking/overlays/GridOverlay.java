@@ -131,8 +131,8 @@ public class GridOverlay extends Overlay {
             Iterator<Integer> currentKeyIterator;
             for (y=currentBottomGrid; y<=(currentTopGrid+currentStepping); y+=currentStepping) {
                 try {
-                    Integer gridLeftKey = grid.ToKey(currentLeftGrid, y);
-                    Integer gridRightKey = grid.ToKey(currentRightGrid, y);
+                    int gridLeftKey = grid.ToKey(currentLeftGrid, y);
+                    int gridRightKey = grid.ToKey(currentRightGrid, y);
                     currentSet = db.ContainsGrid(gridLeftKey, gridRightKey+currentStepping, currentLevel, showGridState);
                 } catch (InvalidPositionException e) {
                     continue;

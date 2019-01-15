@@ -35,7 +35,7 @@ public class HighscoreActivity extends AppCompatActivity implements AdapterView.
         super.onCreate(savedInstanceState);
         this.setContentView(R.layout.activity_highscore);
 
-        final ListView highscoreListView = (ListView) findViewById(R.id.highscoreList);
+        final ListView highscoreListView = findViewById(R.id.highscoreList);
         ArrayList<HighscoreItem> highscoreArrayList = new ArrayList<>();
         HighscoreAdapter highscoreListViewAdapter = new HighscoreAdapter(this, highscoreArrayList);
 
@@ -46,10 +46,10 @@ public class HighscoreActivity extends AppCompatActivity implements AdapterView.
         Parcelable highscoreParcelable = intent.getParcelableExtra(HIGHSCORE_LIST);
         HighscoreList highscoreList = (HighscoreList) highscoreParcelable;
         if (highscoreList != null) {
-            TextView view = (TextView) findViewById(R.id.total_players);
+            TextView view = findViewById(R.id.total_players);
             view.setText(Integer.toString(highscoreList.getTotalPlayerCount()));
 
-            view = (TextView) findViewById(R.id.your_position);
+            view = findViewById(R.id.your_position);
             view.setText(Integer.toString(highscoreList.getPlayerPosition()));
 
             highscoreArrayList.clear();
@@ -85,7 +85,7 @@ public class HighscoreActivity extends AppCompatActivity implements AdapterView.
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        final ListView highscoreListView = (ListView) findViewById(R.id.highscoreList);
+        final ListView highscoreListView = findViewById(R.id.highscoreList);
         HighscoreItem item = (HighscoreItem) highscoreListView.getItemAtPosition(position);
 
         PendingIntent pendingResult = createPendingResult(GridWalkingApplication.RequestCode.SYNC_GRIDS.ordinal(), new Intent(), 0);

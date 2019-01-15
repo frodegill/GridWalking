@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
@@ -192,22 +193,15 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             return false;
         }
 
-        Cursor cursor = null;
-        try {
-            cursor = this.getReadableDatabase()
-                    .rawQuery("SELECT COUNT(*)"
-                                    + " FROM " + GRID_TABLE_NAME
-                                    + " WHERE " + GRID_COLUMN_KEY + "=?"
-                                    + " AND " + GRID_COLUMN_LEVEL + "=?"
-                                    + " AND " + GRID_COLUMN_STATUS + "!="+Integer.toString(GRID_STATUS_DELETED)
-                                    + " AND " + GRID_COLUMN_OWNER + "="+Integer.toString(GameState.ShowGridState.SELF==gridState ? GRID_OWNER_SELF : GRID_OWNER_SYNCED),
-                            new String[]{Integer.toString(gridKey), Byte.toString(level)});
+        try (Cursor cursor = this.getReadableDatabase()
+                .rawQuery("SELECT COUNT(*)"
+                                + " FROM " + GRID_TABLE_NAME
+                                + " WHERE " + GRID_COLUMN_KEY + "=?"
+                                + " AND " + GRID_COLUMN_LEVEL + "=?"
+                                + " AND " + GRID_COLUMN_STATUS + "!=" + Integer.toString(GRID_STATUS_DELETED)
+                                + " AND " + GRID_COLUMN_OWNER + "=" + Integer.toString(GameState.ShowGridState.SELF == gridState ? GRID_OWNER_SELF : GRID_OWNER_SYNCED),
+                        new String[]{Integer.toString(gridKey), Byte.toString(level)})) {
             return cursor.moveToFirst() && !cursor.isAfterLast() && (1 == cursor.getInt(0));
-        }
-        finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
     }
 
@@ -218,16 +212,14 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             return result;
         }
 
-        Cursor cursor = null;
-        try {
-            cursor = this.getReadableDatabase()
-                    .rawQuery("SELECT " + GRID_COLUMN_KEY
-                           + " FROM " + GRID_TABLE_NAME
-                           + " WHERE " + GRID_COLUMN_LEVEL + "=?"
-                           + " AND " + GRID_COLUMN_KEY + " IN (" + SetToString(gridKeys) + ")"
-                           + " AND " + GRID_COLUMN_STATUS + "!="+Integer.toString(GRID_STATUS_DELETED)
-                           + " AND " + GRID_COLUMN_OWNER + "="+Integer.toString(GameState.ShowGridState.SELF==gridState ? GRID_OWNER_SELF : GRID_OWNER_SYNCED),
-                            new String[]{Byte.toString(level)});
+        try (Cursor cursor = this.getReadableDatabase()
+                .rawQuery("SELECT " + GRID_COLUMN_KEY
+                                + " FROM " + GRID_TABLE_NAME
+                                + " WHERE " + GRID_COLUMN_LEVEL + "=?"
+                                + " AND " + GRID_COLUMN_KEY + " IN (" + SetToString(gridKeys) + ")"
+                                + " AND " + GRID_COLUMN_STATUS + "!=" + Integer.toString(GRID_STATUS_DELETED)
+                                + " AND " + GRID_COLUMN_OWNER + "=" + Integer.toString(GameState.ShowGridState.SELF == gridState ? GRID_OWNER_SELF : GRID_OWNER_SYNCED),
+                        new String[]{Byte.toString(level)})) {
             if (cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
                     result.add(cursor.getInt(0));
@@ -235,11 +227,6 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 }
             }
             return result;
-        }
-        finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
     }
 
@@ -250,17 +237,15 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             return result;
         }
 
-        Cursor cursor = null;
-        try {
-            cursor = this.getReadableDatabase()
-                    .rawQuery("SELECT " + GRID_COLUMN_KEY
-                                    + " FROM " + GRID_TABLE_NAME
-                                    + " WHERE " + GRID_COLUMN_LEVEL + "=? "
-                                    + " AND " + GRID_COLUMN_KEY + ">=?"
-                                    + " AND " + GRID_COLUMN_KEY + "<=?"
-                                    + " AND " + GRID_COLUMN_STATUS + "!="+Integer.toString(GRID_STATUS_DELETED)
-                                    + " AND " + GRID_COLUMN_OWNER + "="+Integer.toString(GameState.ShowGridState.SELF==gridState ? GRID_OWNER_SELF : GRID_OWNER_SYNCED),
-                            new String[]{Byte.toString(level), Integer.toString(fromGridKey), Integer.toString(toGridKey)});
+        try (Cursor cursor = this.getReadableDatabase()
+                .rawQuery("SELECT " + GRID_COLUMN_KEY
+                                + " FROM " + GRID_TABLE_NAME
+                                + " WHERE " + GRID_COLUMN_LEVEL + "=? "
+                                + " AND " + GRID_COLUMN_KEY + ">=?"
+                                + " AND " + GRID_COLUMN_KEY + "<=?"
+                                + " AND " + GRID_COLUMN_STATUS + "!=" + Integer.toString(GRID_STATUS_DELETED)
+                                + " AND " + GRID_COLUMN_OWNER + "=" + Integer.toString(GameState.ShowGridState.SELF == gridState ? GRID_OWNER_SELF : GRID_OWNER_SYNCED),
+                        new String[]{Byte.toString(level), Integer.toString(fromGridKey), Integer.toString(toGridKey)})) {
             if (cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
                     result.add(cursor.getInt(0));
@@ -268,11 +253,6 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 }
             }
             return result;
-        }
-        finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
     }
 
@@ -283,15 +263,13 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             return result;
         }
 
-        Cursor cursor = null;
-        try {
-            cursor = this.getReadableDatabase()
-                    .rawQuery("SELECT " + GRID_COLUMN_KEY
-                                    + " FROM " + GRID_TABLE_NAME
-                                    + " WHERE " + GRID_COLUMN_LEVEL + "=?"
-                                    + " AND " + GRID_COLUMN_STATUS + "!="+Integer.toString(GRID_STATUS_DELETED)
-                                    + " AND " + GRID_COLUMN_OWNER + "="+Integer.toString(GameState.ShowGridState.SELF==gridState ? GRID_OWNER_SELF : GRID_OWNER_SYNCED),
-                            new String[]{Byte.toString(level)});
+        try (Cursor cursor = this.getReadableDatabase()
+                .rawQuery("SELECT " + GRID_COLUMN_KEY
+                                + " FROM " + GRID_TABLE_NAME
+                                + " WHERE " + GRID_COLUMN_LEVEL + "=?"
+                                + " AND " + GRID_COLUMN_STATUS + "!=" + Integer.toString(GRID_STATUS_DELETED)
+                                + " AND " + GRID_COLUMN_OWNER + "=" + Integer.toString(GameState.ShowGridState.SELF == gridState ? GRID_OWNER_SELF : GRID_OWNER_SYNCED),
+                        new String[]{Byte.toString(level)})) {
             if (cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
                     result.add(cursor.getInt(0));
@@ -299,11 +277,6 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 }
             }
             return result;
-        }
-        finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
     }
 
@@ -373,20 +346,13 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
     }
 
     boolean ContainsBonus(final int bonusKey) {
-        Cursor cursor = null;
-        try {
-            cursor = this.getReadableDatabase()
-                    .rawQuery("SELECT COUNT(*)"
-                                    + " FROM " + BONUS_TABLE_NAME
-                                    + " WHERE " + BONUS_COLUMN_KEY + "=?",
-                            new String[]{Integer.toString(bonusKey)});
+        try (Cursor cursor = this.getReadableDatabase()
+                .rawQuery("SELECT COUNT(*)"
+                                + " FROM " + BONUS_TABLE_NAME
+                                + " WHERE " + BONUS_COLUMN_KEY + "=?",
+                        new String[]{Integer.toString(bonusKey)})) {
 
             return cursor.moveToFirst() && !cursor.isAfterLast() && (1 == cursor.getInt(0));
-        }
-        finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
     }
 
@@ -469,20 +435,13 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
     }
 
     public int GetUnusedBonusCount() {
-        Cursor cursor = null;
-        try {
-            cursor = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM " + BONUS_TABLE_NAME, null);
+        try (Cursor cursor = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM " + BONUS_TABLE_NAME, null)) {
             if (!cursor.moveToFirst()) {
                 return 0;
             }
             int bonusesFound = cursor.isAfterLast() ? 0 : cursor.getInt(0);
             int bonusesLeft = bonusesFound - GetProperty(PROPERTY_BONUSES_USED) + Bonus.START_BONUS;
-            return (bonusesLeft<0) ? 0 : bonusesLeft;
-        }
-        finally {
-            if (cursor != null) {
-                cursor.close();
-            }
+            return (bonusesLeft < 0) ? 0 : bonusesLeft;
         }
     }
 
@@ -509,42 +468,28 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
     }
 
     public int GetProperty(final String property) {
-        Cursor cursor = null;
-        try {
-            cursor = this.getReadableDatabase()
-                    .rawQuery("SELECT " + PROPERTY_COLUMN_VALUE
-                                    + " FROM " + PROPERTY_TABLE_NAME
-                                    + " WHERE " + PROPERTY_COLUMN_KEY + "=?",
-                            new String[]{property});
+        try (Cursor cursor = this.getReadableDatabase()
+                .rawQuery("SELECT " + PROPERTY_COLUMN_VALUE
+                                + " FROM " + PROPERTY_TABLE_NAME
+                                + " WHERE " + PROPERTY_COLUMN_KEY + "=?",
+                        new String[]{property})) {
             if (!cursor.moveToFirst()) {
                 return 0;
             }
             return cursor.isAfterLast() ? 0 : cursor.getInt(0);
         }
-        finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
     }
 
     public String GetStringProperty(final String property) {
-        Cursor cursor = null;
-        try {
-            cursor = this.getReadableDatabase()
-                    .rawQuery("SELECT " + PROPERTY_COLUMN_VALUE
-                           + " FROM " + PROPERTY_TABLE_NAME
-                           + " WHERE " + PROPERTY_COLUMN_KEY + "=?",
-                            new String[]{property});
+        try (Cursor cursor = this.getReadableDatabase()
+                .rawQuery("SELECT " + PROPERTY_COLUMN_VALUE
+                                + " FROM " + PROPERTY_TABLE_NAME
+                                + " WHERE " + PROPERTY_COLUMN_KEY + "=?",
+                        new String[]{property})) {
             if (!cursor.moveToFirst()) {
                 return "";
             }
             return cursor.isAfterLast() ? "" : cursor.getString(0);
-        }
-        finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
     }
 
@@ -604,22 +549,15 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
     public void UpdateLevelCountFromDb(final SQLiteDatabase dbInTransaction, final byte level) throws SQLException {
         int value = 0;
 
-        Cursor cursor = null;
-        try {
-            cursor = dbInTransaction
-                    .rawQuery("SELECT COUNT(*)"
-                                    + " FROM " + GRID_TABLE_NAME
-                                    + " WHERE " + GRID_COLUMN_LEVEL + "=?"
-                                    + " AND " + GRID_COLUMN_STATUS + "!="+Integer.toString(GRID_STATUS_DELETED)
-                                    + " AND " + GRID_COLUMN_OWNER + "="+Integer.toString(GRID_OWNER_SELF),
-                            new String[]{Byte.toString(level)});
+        try (Cursor cursor = dbInTransaction
+                .rawQuery("SELECT COUNT(*)"
+                                + " FROM " + GRID_TABLE_NAME
+                                + " WHERE " + GRID_COLUMN_LEVEL + "=?"
+                                + " AND " + GRID_COLUMN_STATUS + "!=" + Integer.toString(GRID_STATUS_DELETED)
+                                + " AND " + GRID_COLUMN_OWNER + "=" + Integer.toString(GRID_OWNER_SELF),
+                        new String[]{Byte.toString(level)})) {
             if (cursor.moveToFirst() && !cursor.isAfterLast()) {
                 value = cursor.getInt(0);
-            }
-        }
-        finally {
-            if (cursor != null) {
-                cursor.close();
             }
         }
 
@@ -759,16 +697,14 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             secrets.Append(bytes);
         }
 
-        return new String(bytes, "UTF-8");
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     String DumpDB() {
         StringBuilder sb = new StringBuilder();
-        Cursor cursor = null;
-        try {
-            cursor = this.getReadableDatabase()
-                    .rawQuery("SELECT "+GRID_COLUMN_KEY+","+GRID_COLUMN_LEVEL+","+GRID_COLUMN_STATUS+","+GRID_COLUMN_OWNER
-                                    + " FROM " + GRID_TABLE_NAME, null);
+        try (Cursor cursor = this.getReadableDatabase()
+                .rawQuery("SELECT " + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_COLUMN_STATUS + "," + GRID_COLUMN_OWNER
+                        + " FROM " + GRID_TABLE_NAME, null)) {
             if (cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
                     sb.append(Integer.toString(cursor.getInt(0)));
@@ -783,11 +719,6 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 }
             }
             return sb.toString();
-        }
-        finally {
-            if (cursor != null) {
-                cursor.close();
-            }
         }
     }
 }

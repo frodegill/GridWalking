@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button restoreButton = (Button) findViewById(R.id.restore_button);
+        Button restoreButton = findViewById(R.id.restore_button);
         restoreButton.setVisibility(Button.INVISIBLE);
 
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Button restoreButton = (Button) findViewById(R.id.restore_button);
+        Button restoreButton = findViewById(R.id.restore_button);
         restoreButton.setVisibility(Button.VISIBLE);
     }
 
@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        TextView toastView = (TextView) findViewById(R.id.toast);
+        TextView toastView = findViewById(R.id.toast);
         if (toastView != null) {
             toastView.setText("");
         }

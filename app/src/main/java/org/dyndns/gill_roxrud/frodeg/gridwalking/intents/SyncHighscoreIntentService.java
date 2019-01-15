@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
@@ -79,7 +80,7 @@ public class SyncHighscoreIntentService extends IntentService {
                 boolean syncGrids = 10L<=gameState.getGrid().getScore();
 
                 Secrets secrets = new Secrets();
-                secrets.Append((pathParams+nameParam).getBytes("UTF-8"));
+                secrets.Append((pathParams+nameParam).getBytes(StandardCharsets.UTF_8));
                 String urlString = GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
                         +"?crc="+Integer.toString(secrets.Crc16());
 

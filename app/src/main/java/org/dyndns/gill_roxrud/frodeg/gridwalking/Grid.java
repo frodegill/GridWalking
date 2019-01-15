@@ -232,7 +232,7 @@ public class Grid {
         if (HOR_GRID_COUNT==value)
             value = HOR_GRID_COUNT-1;
 
-        value &= ~((1<<level) - 1);
+        value &= -(1 << level);
         return value;
     }
 
@@ -247,7 +247,7 @@ public class Grid {
         if (HOR_GRID_COUNT==value)
             value = HOR_GRID_COUNT-1;
 
-        value &= ~((1<<level) - 1);
+        value &= -(1 << level);
         return value;
     }
 
@@ -257,7 +257,7 @@ public class Grid {
 
         int value = Double.valueOf(VER_GRID_COUNT * ((y_pos-GRID_MAX_SOUTH)/(VER_GRID_DEGREES))).intValue();
 
-        value &= ~((1<<level) - 1);
+        value &= -(1 << level);
         return value;
     }
 
@@ -272,7 +272,7 @@ public class Grid {
         if (VER_GRID_COUNT<=value)
             value = VER_GRID_COUNT-1;
 
-        value &= ~((1<<level) - 1);
+        value &= -(1 << level);
         return value;
     }
 
