@@ -39,13 +39,10 @@ public class MyLocationOverlay extends Overlay {
 
         Projection projection = mapView.getProjection();
         Point<Double> currentPos = GameState.getInstance().getCurrentPos();
-        GeoPoint geoPoint = new GeoPoint(currentPos.getY(), currentPos.getX());
-        android.graphics.Point reusePoint = null;
-        reusePoint = projection.toProjectedPixels(geoPoint, reusePoint);
-        reusePoint = projection.toPixelsFromProjected(reusePoint, reusePoint);
+        android.graphics.Point point = projection.toPixels(new GeoPoint(currentPos.getY(), currentPos.getX()), null, true);
 
-        canvas.drawCircle(reusePoint.x, reusePoint.y, line_halfwidth*16, red);
-        canvas.drawCircle(reusePoint.x, reusePoint.y, line_halfwidth*4, black);
+        canvas.drawCircle(point.x, point.y, line_halfwidth*16, red);
+        canvas.drawCircle(point.x, point.y, line_halfwidth*4, black);
     }
 
 }

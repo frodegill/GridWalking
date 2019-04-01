@@ -180,9 +180,7 @@ public class GridOverlay extends Overlay {
 
     private android.graphics.Point GridToPixel(final Grid grid, final int x, final int y, final Projection projection,
                                                android.graphics.Point reusePoint) {
-        GeoPoint geoPoint = new GeoPoint(grid.FromVerticalGrid(y), grid.FromHorizontalGrid(x));
-        reusePoint = projection.toProjectedPixels(geoPoint, reusePoint);
-        return projection.toPixelsFromProjected(reusePoint, reusePoint);
+        return projection.toPixels(new GeoPoint(grid.FromVerticalGrid(y), grid.FromHorizontalGrid(x)), reusePoint, true);
     }
 
     @Override

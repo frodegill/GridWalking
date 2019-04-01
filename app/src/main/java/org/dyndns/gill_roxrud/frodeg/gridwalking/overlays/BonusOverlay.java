@@ -35,7 +35,7 @@ public class BonusOverlay extends Overlay {
         Grid grid = GameState.getInstance().getGrid();
         Bonus bonus = GameState.getInstance().getBonus();
 
-        int gridLevel = grid.OsmToGridLevel(mapView.getZoomLevel());
+        int gridLevel = grid.OsmToGridLevel((int)mapView.getZoomLevelDouble());
         if (MAX_DRAW_LEVEL < gridLevel) {
             return;
         }
@@ -45,14 +45,12 @@ public class BonusOverlay extends Overlay {
         int bottomGrid = bonus.ToVerticalBonusGridBounded(sw.getLatitude());
         int rightGrid = bonus.ToHorizontalBonusGrid(ne.getLongitude());
 
-        android.graphics.Point point = null;
-        GeoPoint geoPoint;
-
         Projection projection = mapView.getProjection();
         float radius = projection.metersToPixels(Bonus.BONUS_SIZE_RADIUS);
 
         white.setStrokeWidth(radius/4);
 
+        Point point = new Point();
         HashSet<Integer> drawnBonuses = new HashSet<>();
         int x, y, key;
         for (y=bottomGrid; y<=(topGrid+1); y++) {
@@ -67,9 +65,7 @@ public class BonusOverlay extends Overlay {
                     continue;
                 }
 
-                geoPoint = new GeoPoint(bonus.FromVerticalBonusGrid(y), bonus.FromHorizontalBonusGrid(x));
-                point = projection.toProjectedPixels(geoPoint, point);
-                point = projection.toPixelsFromProjected(point, point);
+                point = projection.toPixels(new GeoPoint(bonus.FromVerticalBonusGrid(y), bonus.FromHorizontalBonusGrid(x)), point, true);
 
                 canvas.drawCircle(point.x, point.y, 2*radius, white);
                 canvas.drawCircle(point.x, point.y, radius, black);
