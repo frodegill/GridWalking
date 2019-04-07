@@ -33,6 +33,7 @@ import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.CopyrightOverlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
@@ -78,7 +79,7 @@ public class MapFragment extends Fragment implements LocationListener {
         Configuration.getInstance().setDebugMode(false);
 
         mapView.setTileSource(TileSourceFactory.MAPNIK);
-        mapView.setBuiltInZoomControls(true);
+        mapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
 
@@ -110,7 +111,7 @@ public class MapFragment extends Fragment implements LocationListener {
         try {
             db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_X_POS, mapView.getScrollX());
             db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_Y_POS, mapView.getScrollY());
-            db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL, mapView.getZoomLevel());
+            db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL, (int)mapView.getZoomLevelDouble());
 
         } catch (SQLException e) {
             successful = false;
@@ -134,7 +135,7 @@ public class MapFragment extends Fragment implements LocationListener {
 
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
-        mapView.getController().setZoom(db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
+        mapView.getController().setZoom((double)db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
         mapView.scrollTo(db.GetProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.GetProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
         mapView.setUseDataConnection(gameState.getUseDataConnection());
 

@@ -33,7 +33,7 @@ public class GridOverlay extends Overlay {
     private void draw(final Canvas canvas, final MapView mapView, final IGeoPoint ne, final IGeoPoint sw) {
         Grid grid = GameState.getInstance().getGrid();
         Projection projection = mapView.getProjection();
-        byte gridLevel = grid.OsmToGridLevel(mapView.getZoomLevel());
+        byte gridLevel = grid.OsmToGridLevel((int)mapView.getZoomLevelDouble());
 
         drawGrid(canvas, projection, sw, ne, gridLevel);
         drawSquares(canvas, projection, sw, ne, gridLevel);
