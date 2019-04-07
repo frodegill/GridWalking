@@ -2,10 +2,14 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.GridWalkingPreferenceActivity;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.MapFragment;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClientCompat6;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClientCompat7;
 import org.osmdroid.api.IGeoPoint;
 
 
@@ -54,6 +58,14 @@ public class GameState {
     }
 
     public GridWalkingDBHelper getDB() {return db;}
+
+    public HttpsClient getHttpsClient() {
+        if (Build.VERSION.SDK_INT < 24) { // Older than 7.0
+            return new HttpsClientCompat6();
+        } else {
+            return new HttpsClientCompat7();
+        }
+    }
 
     public boolean getUseDataConnection() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());

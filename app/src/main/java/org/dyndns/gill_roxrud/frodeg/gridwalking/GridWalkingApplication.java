@@ -9,16 +9,6 @@ public class GridWalkingApplication extends Application{
 
     public static final String HELP_URL = "https://gill-roxrud.dyndns.org/gridwalking";
 
-    public enum RequestCode {
-        SYNC_HIGHSCORE,
-        SYNC_GRIDS
-    }
-
-    public enum NetworkResponseCode {
-        OK,
-        ERROR
-    }
-
     private static GridWalkingApplication instance;
 
     public GridWalkingApplication() {

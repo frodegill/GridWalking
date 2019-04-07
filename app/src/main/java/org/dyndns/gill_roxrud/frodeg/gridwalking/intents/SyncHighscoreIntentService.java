@@ -5,19 +5,13 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Grid;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.Networking;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Secrets;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -28,6 +22,7 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -75,6 +70,9 @@ public class SyncHighscoreIntentService extends IntentService {
             }
 
             String msg = null;
+            HttpsClient httpsClient = null;
+            Map<String,Object> result = null;
+            BufferedReader in = null;
             try {
                 db.GetModifiedGrids(dbInTransaction, deletedGrids, newGrids);
                 boolean syncGrids = 10L<=gameState.getGrid().getScore();
@@ -84,51 +82,55 @@ public class SyncHighscoreIntentService extends IntentService {
                 String urlString = GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
                         +"?crc="+Integer.toString(secrets.Crc16());
 
-                HttpClient httpClient = Networking.getInstance().createHttpClient();
-                HttpPost httpPost = new HttpPost(urlString);
+                httpsClient = GameState.getInstance().getHttpsClient();
+                byte[] body = null;
                 if (syncGrids) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     generateBody(baos, deletedGrids, newGrids);
-                    httpPost.setEntity(new ByteArrayEntity(baos.toByteArray()));
+                    body = baos.toByteArray();
                 }
-
-                HttpResponse response = httpClient.execute(httpPost);
-                HttpEntity resEntity = response.getEntity();
-                InputStream is = resEntity.getContent();
-
-                int statusCode = response.getStatusLine().getStatusCode();
+                result = httpsClient.httpPost(urlString, body);
+                int statusCode = (int)result.get(HttpsClient.STATUS_INT);
+                InputStream is = (InputStream)result.get(HttpsClient.RESPONSE_INPUTSTREAM);
                 if (statusCode >= 400) {
                     InputStreamReader isr = new InputStreamReader(is);
-                    BufferedReader in = new BufferedReader(isr);
+                    in = new BufferedReader(isr);
                     String inputLine;
                     StringBuilder sb = new StringBuilder();
                     while ((inputLine = in.readLine()) != null) {
                         sb.append(inputLine);
                     }
-                    in.close();
+                    httpsClient.disconnect(result.get(HttpsClient.CONNECTION_OBJECT));
                     failed = true;
                     throw new IOException("HTTP "+Integer.toString(statusCode)+": "+sb.toString());
-                }
-
-                highscoreList = new HighscoreList();
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader in = new BufferedReader(isr);
-                boolean first = true;
-                String inputLine;
-                while ((inputLine = in.readLine()) != null) {
-                    if (first) {
-                        highscoreList.setPosition(inputLine);
-                        first = false;
-                    } else {
-                        HighscoreItem highscoreItem = new HighscoreItem();
-                        highscoreItem.setItem(inputLine);
-                        highscoreList.getHighscoreItemList().add(highscoreItem);
+                } else {
+                    highscoreList = new HighscoreList();
+                    InputStreamReader isr = new InputStreamReader(is);
+                    in = new BufferedReader(isr);
+                    boolean first = true;
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        if (first) {
+                            highscoreList.setPosition(inputLine);
+                            first = false;
+                        } else {
+                            HighscoreItem highscoreItem = new HighscoreItem();
+                            highscoreItem.setItem(inputLine);
+                            highscoreList.getHighscoreItemList().add(highscoreItem);
+                        }
                     }
                 }
-                in.close();
             } catch (Exception e) {
                 failed = true;
                 msg = e.getMessage();
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+                if (httpsClient!=null && result!= null && result.containsKey(HttpsClient.CONNECTION_OBJECT))
+                {
+                    httpsClient.disconnect(result.get(HttpsClient.CONNECTION_OBJECT));
+                }
             }
 
             Intent response = new Intent();
@@ -138,13 +140,13 @@ public class SyncHighscoreIntentService extends IntentService {
             }
 
             reply.send(this,
-                    failed ? GridWalkingApplication.NetworkResponseCode.ERROR.ordinal() : GridWalkingApplication.NetworkResponseCode.OK.ordinal(),
+                    failed ? HttpsClient.NetworkResponseCode.ERROR.ordinal() : HttpsClient.NetworkResponseCode.OK.ordinal(),
                     response);
 
             db.CommitModifiedGrids(dbInTransaction, deletedGrids, newGrids);
 
         } catch (Exception e) {
-            reportError(reply, GridWalkingApplication.NetworkResponseCode.ERROR.ordinal(), e.getMessage());
+            reportError(reply, HttpsClient.NetworkResponseCode.ERROR.ordinal(), e.getMessage());
         } finally {
             if (db!=null && dbInTransaction!=null) {
                 db.EndTransaction(dbInTransaction, !failed);

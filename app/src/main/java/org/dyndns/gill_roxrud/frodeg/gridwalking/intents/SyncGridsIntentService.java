@@ -4,19 +4,15 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Intent;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.Networking;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Map;
 
 
 public class SyncGridsIntentService extends IntentService {
@@ -53,17 +49,16 @@ public class SyncGridsIntentService extends IntentService {
 
             Integer aGrid = null;
             String msg = null;
+            HttpsClient httpsClient = null;
+            Map<String,Object> result = null;
+            InputStream is = null;
             try {
                 String urlString = GRIDWALKING_ENDPOINT+pathParams;
 
-                HttpClient httpClient = Networking.getInstance().createHttpClient();
-                HttpGet httpGet = new HttpGet(urlString);
-
-                HttpResponse response = httpClient.execute(httpGet);
-                HttpEntity resEntity = response.getEntity();
-                InputStream is = resEntity.getContent();
-
-                int statusCode = response.getStatusLine().getStatusCode();
+                httpsClient = GameState.getInstance().getHttpsClient();
+                result = httpsClient.httpGet(urlString);
+                int statusCode = (int)result.get(HttpsClient.STATUS_INT);
+                is = (InputStream)result.get(HttpsClient.RESPONSE_INPUTSTREAM);
                 if (statusCode >= 400) {
                     InputStreamReader isr = new InputStreamReader(is);
                     BufferedReader in = new BufferedReader(isr);
@@ -73,14 +68,26 @@ public class SyncGridsIntentService extends IntentService {
                         sb.append(inputLine);
                     }
                     in.close();
+                    is = null;
                     throw new IOException("HTTP "+Integer.toString(statusCode)+": "+sb.toString());
+                } else {
+                    aGrid = db.SyncExternalGridsT(is);
                 }
-
-                aGrid = db.SyncExternalGridsT(is);
-                is.close();
             } catch (Exception e) {
                 failed = true;
                 msg = e.getMessage();
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException e)
+                    {
+                    }
+                }
+                if (httpsClient!=null && result!=null && result.containsKey(HttpsClient.CONNECTION_OBJECT))
+                {
+                    httpsClient.disconnect(result.get(HttpsClient.CONNECTION_OBJECT));
+                }
             }
 
             Intent response = new Intent();
@@ -92,11 +99,11 @@ public class SyncGridsIntentService extends IntentService {
             }
 
             reply.send(this,
-                    failed ? GridWalkingApplication.NetworkResponseCode.ERROR.ordinal() : GridWalkingApplication.NetworkResponseCode.OK.ordinal(),
+                    failed ? HttpsClient.NetworkResponseCode.ERROR.ordinal() : HttpsClient.NetworkResponseCode.OK.ordinal(),
                     response);
 
         } catch (PendingIntent.CanceledException e) {
-            reportError(reply, GridWalkingApplication.NetworkResponseCode.ERROR.ordinal(), e.getMessage());
+            reportError(reply, HttpsClient.NetworkResponseCode.ERROR.ordinal(), e.getMessage());
         }
     }
 

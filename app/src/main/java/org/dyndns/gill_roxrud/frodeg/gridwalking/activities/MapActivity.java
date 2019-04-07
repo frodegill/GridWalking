@@ -15,6 +15,7 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.intents.SyncHighscoreIntentService;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
 import org.osmdroid.config.Configuration;
 
 
@@ -46,8 +47,8 @@ public class MapActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int responseCode, Intent data) {
-        if (requestCode == GridWalkingApplication.RequestCode.SYNC_HIGHSCORE.ordinal()) {
-            if (responseCode == GridWalkingApplication.NetworkResponseCode.OK.ordinal()) {
+        if (requestCode == HttpsClient.RequestCode.SYNC_HIGHSCORE.ordinal()) {
+            if (responseCode == HttpsClient.NetworkResponseCode.OK.ordinal()) {
                 Parcelable response = data.getParcelableExtra(SyncHighscoreIntentService.RESPONSE_EXTRA);
                 HighscoreList highscoreList = (HighscoreList) response;
 
@@ -63,7 +64,7 @@ public class MapActivity extends AppCompatActivity {
     }
 
     void syncHighscore() {
-        PendingIntent pendingResult = createPendingResult(GridWalkingApplication.RequestCode.SYNC_HIGHSCORE.ordinal(), new Intent(), 0);
+        PendingIntent pendingResult = createPendingResult(HttpsClient.RequestCode.SYNC_HIGHSCORE.ordinal(), new Intent(), 0);
         Intent intent = new Intent(MapActivity.this, SyncHighscoreIntentService.class);
         intent.putExtra(SyncHighscoreIntentService.PENDING_RESULT_EXTRA, pendingResult);
         startService(intent);

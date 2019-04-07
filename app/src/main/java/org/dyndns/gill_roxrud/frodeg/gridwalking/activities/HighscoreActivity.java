@@ -21,6 +21,7 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.InvalidPositionException;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.intents.SyncGridsIntentService;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
 import org.osmdroid.util.GeoPoint;
 
 import java.util.ArrayList;
@@ -60,8 +61,8 @@ public class HighscoreActivity extends AppCompatActivity implements AdapterView.
 
     @Override
     protected void onActivityResult(int requestCode, int responseCode, Intent data) {
-        if (requestCode == GridWalkingApplication.RequestCode.SYNC_GRIDS.ordinal()) {
-            if (responseCode == GridWalkingApplication.NetworkResponseCode.OK.ordinal()) {
+        if (requestCode == HttpsClient.RequestCode.SYNC_GRIDS.ordinal()) {
+            if (responseCode == HttpsClient.NetworkResponseCode.OK.ordinal()) {
                 GameState gameState = GameState.getInstance();
                 gameState.setShowGridState(GameState.ShowGridState.SYNCED);
                 if (data.hasExtra(SyncGridsIntentService.RESPONSE_EXTRA)) {
@@ -88,7 +89,7 @@ public class HighscoreActivity extends AppCompatActivity implements AdapterView.
         final ListView highscoreListView = findViewById(R.id.highscoreList);
         HighscoreItem item = (HighscoreItem) highscoreListView.getItemAtPosition(position);
 
-        PendingIntent pendingResult = createPendingResult(GridWalkingApplication.RequestCode.SYNC_GRIDS.ordinal(), new Intent(), 0);
+        PendingIntent pendingResult = createPendingResult(HttpsClient.RequestCode.SYNC_GRIDS.ordinal(), new Intent(), 0);
         Intent intent = new Intent(HighscoreActivity.this, SyncGridsIntentService.class);
         intent.putExtra(SyncGridsIntentService.PARAM_GUID, item.getGuid());
         intent.putExtra(SyncGridsIntentService.PENDING_RESULT_EXTRA, pendingResult);
