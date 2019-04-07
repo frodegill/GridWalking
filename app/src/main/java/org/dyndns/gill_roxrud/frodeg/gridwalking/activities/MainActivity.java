@@ -161,19 +161,14 @@ public class MainActivity extends AppCompatActivity {
             }
 
             case REQUEST_CODE_ASK_MULTIPLE_RESTORE_PERMISSIONS: {
-                boolean permissionGranted;
-                if (Build.VERSION.SDK_INT < 16) {
-                    permissionGranted = true;
-                } else {
-                    Map<String, Integer> perms = new HashMap<>();
-                    // Initial
-                    perms.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
-                    // Fill with results
-                    for (int i = 0; i < permissions.length; i++)
-                        perms.put(permissions[i], grantResults[i]);
-                    // Check for READ_EXTERNAL_STORAGE
-                    permissionGranted = perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-                }
+                Map<String, Integer> perms = new HashMap<>();
+                // Initial
+                perms.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
+                // Fill with results
+                for (int i = 0; i < permissions.length; i++)
+                    perms.put(permissions[i], grantResults[i]);
+                // Check for READ_EXTERNAL_STORAGE
+                boolean permissionGranted = perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
 
                 if (!permissionGranted) {
                     // Permission Denied
