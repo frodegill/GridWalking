@@ -60,18 +60,21 @@ public class HttpsClientCompat7 implements HttpsClient {
             httpsConnection.setSSLSocketFactory(sc.getSocketFactory());
         }
 
-        httpConnection.setReadTimeout(30*1000);
-        httpConnection.setConnectTimeout(30*1000);
+        httpConnection.setReadTimeout(7*1000);
+        httpConnection.setConnectTimeout(7*1000);
         httpConnection.setRequestMethod("POST");
         httpConnection.setRequestProperty("Connection", "close");
         httpConnection.setUseCaches(false);
         httpConnection.addRequestProperty("User-Agent", "Grid Walking/"+ BuildConfig.VERSION_NAME);
-        httpConnection.setDoOutput(true);
         httpConnection.setDoInput(true);
 
-        OutputStream outputStream = httpConnection.getOutputStream();
-        outputStream.write(body);
-        outputStream.flush();
+        OutputStream outputStream = null;
+        if (body != null) {
+            httpConnection.setDoOutput(true);
+            outputStream = httpConnection.getOutputStream();
+            outputStream.write(body);
+            outputStream.flush();
+        }
 
         Map<String,Object> result = new HashMap<>();
         result.put(CONNECTION_OBJECT, httpConnection);

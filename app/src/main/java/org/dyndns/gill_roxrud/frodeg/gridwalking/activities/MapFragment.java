@@ -60,7 +60,17 @@ public class MapFragment extends Fragment implements LocationListener {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, null);
+
         mapView = view.findViewById(R.id.mapview);
+        mapView.post(
+            new Runnable() {
+                @Override
+                public void run() {
+                    repositionAndEnableMap();
+                }
+            }
+        );
+
         return view;
     }
 
@@ -132,7 +142,10 @@ public class MapFragment extends Fragment implements LocationListener {
     @Override
     public void onResume() {
         super.onResume();
+        repositionAndEnableMap();
+    }
 
+    private void repositionAndEnableMap() {
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
         mapView.getController().setZoom((double)db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
@@ -145,6 +158,7 @@ public class MapFragment extends Fragment implements LocationListener {
         }
 
         EnableLocationUpdates();
+
     }
 
     @Override
