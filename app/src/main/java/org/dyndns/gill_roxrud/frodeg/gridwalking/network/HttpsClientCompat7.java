@@ -3,6 +3,7 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking.network;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -33,11 +34,10 @@ public class HttpsClientCompat7 implements HttpsClient {
         httpConnection.setConnectTimeout(30*1000);
         httpConnection.setRequestMethod("GET");
         httpConnection.setRequestProperty("Connection", "close");
+        httpConnection.setUseCaches(false);
         httpConnection.addRequestProperty("User-Agent", "Grid Walking/"+ BuildConfig.VERSION_NAME);
         httpConnection.setDoOutput(false);
         httpConnection.setDoInput(true);
-
-        httpConnection.connect();
 
         Map<String,Object> result = new HashMap<>();
         result.put(CONNECTION_OBJECT, httpConnection);
@@ -64,27 +64,37 @@ public class HttpsClientCompat7 implements HttpsClient {
         httpConnection.setConnectTimeout(30*1000);
         httpConnection.setRequestMethod("POST");
         httpConnection.setRequestProperty("Connection", "close");
+        httpConnection.setUseCaches(false);
         httpConnection.addRequestProperty("User-Agent", "Grid Walking/"+ BuildConfig.VERSION_NAME);
         httpConnection.setDoOutput(true);
+        httpConnection.setDoInput(true);
 
         OutputStream outputStream = httpConnection.getOutputStream();
         outputStream.write(body);
-        httpConnection.setDoInput(true);
-
-        httpConnection.connect();
+        outputStream.flush();
 
         Map<String,Object> result = new HashMap<>();
         result.put(CONNECTION_OBJECT, httpConnection);
         result.put(STATUS_INT, httpConnection.getResponseCode());
+        result.put(RESPONSE_OUTPUTSTREAM, outputStream);
         result.put(RESPONSE_INPUTSTREAM, httpConnection.getResponseCode() >= 400 ? httpConnection.getErrorStream() : httpConnection.getInputStream());
 
         return result;
     }
 
     @Override
-    public void disconnect(final Object connection) {
+    public void disconnect(final Map<String,Object> details) throws IOException {
+        InputStream is = (InputStream)details.get(HttpsClient.RESPONSE_INPUTSTREAM);
+        if (is != null) {
+            is.close();
+        }
+        OutputStream os = (OutputStream)details.get(HttpsClient.RESPONSE_OUTPUTSTREAM);
+        if (os != null) {
+            os.close();
+        }
+        HttpURLConnection connection = (HttpURLConnection)details.get(HttpsClient.CONNECTION_OBJECT);
         if (connection != null) {
-            ((HttpURLConnection)connection).disconnect();
+            connection.disconnect();
         }
     }
 

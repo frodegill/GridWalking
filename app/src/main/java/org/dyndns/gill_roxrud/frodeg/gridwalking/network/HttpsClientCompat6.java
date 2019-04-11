@@ -11,6 +11,9 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,7 +53,15 @@ public class HttpsClientCompat6 implements HttpsClient {
     }
 
     @Override
-    public void disconnect(final Object connection) {
+    public void disconnect(final Map<String,Object> details) throws IOException {
+        InputStream is = (InputStream)details.get(HttpsClient.RESPONSE_INPUTSTREAM);
+        if (is != null) {
+            is.close();
+        }
+        OutputStream os = (OutputStream)details.get(HttpsClient.RESPONSE_OUTPUTSTREAM);
+        if (os != null) {
+            os.close();
+        }
     }
 
 }

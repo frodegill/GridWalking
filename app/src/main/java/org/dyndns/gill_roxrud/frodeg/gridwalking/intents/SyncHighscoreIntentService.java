@@ -100,7 +100,6 @@ public class SyncHighscoreIntentService extends IntentService {
                     while ((inputLine = in.readLine()) != null) {
                         sb.append(inputLine);
                     }
-                    httpsClient.disconnect(result.get(HttpsClient.CONNECTION_OBJECT));
                     failed = true;
                     throw new IOException("HTTP "+Integer.toString(statusCode)+": "+sb.toString());
                 } else {
@@ -124,12 +123,14 @@ public class SyncHighscoreIntentService extends IntentService {
                 failed = true;
                 msg = e.getMessage();
             } finally {
-                if (in != null) {
-                    in.close();
-                }
-                if (httpsClient!=null && result!= null && result.containsKey(HttpsClient.CONNECTION_OBJECT))
-                {
-                    httpsClient.disconnect(result.get(HttpsClient.CONNECTION_OBJECT));
+                try {
+                    if (in != null) {
+                        in.close();
+                    }
+                    if (httpsClient != null && result != null) {
+                        httpsClient.disconnect(result);
+                    }
+                } catch (Exception e) {
                 }
             }
 

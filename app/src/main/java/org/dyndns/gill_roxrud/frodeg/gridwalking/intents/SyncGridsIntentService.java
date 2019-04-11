@@ -51,14 +51,13 @@ public class SyncGridsIntentService extends IntentService {
             String msg = null;
             HttpsClient httpsClient = null;
             Map<String,Object> result = null;
-            InputStream is = null;
             try {
                 String urlString = GRIDWALKING_ENDPOINT+pathParams;
 
                 httpsClient = GameState.getInstance().getHttpsClient();
                 result = httpsClient.httpGet(urlString);
                 int statusCode = (int)result.get(HttpsClient.STATUS_INT);
-                is = (InputStream)result.get(HttpsClient.RESPONSE_INPUTSTREAM);
+                InputStream is = (InputStream)result.get(HttpsClient.RESPONSE_INPUTSTREAM);
                 if (statusCode >= 400) {
                     InputStreamReader isr = new InputStreamReader(is);
                     BufferedReader in = new BufferedReader(isr);
@@ -68,7 +67,6 @@ public class SyncGridsIntentService extends IntentService {
                         sb.append(inputLine);
                     }
                     in.close();
-                    is = null;
                     throw new IOException("HTTP "+Integer.toString(statusCode)+": "+sb.toString());
                 } else {
                     aGrid = db.SyncExternalGridsT(is);
@@ -77,16 +75,12 @@ public class SyncGridsIntentService extends IntentService {
                 failed = true;
                 msg = e.getMessage();
             } finally {
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException e)
-                    {
+                try {
+                    if (httpsClient!=null && result!=null) {
+                        httpsClient.disconnect(result);
                     }
-                }
-                if (httpsClient!=null && result!=null && result.containsKey(HttpsClient.CONNECTION_OBJECT))
+                } catch (IOException e)
                 {
-                    httpsClient.disconnect(result.get(HttpsClient.CONNECTION_OBJECT));
                 }
             }
 

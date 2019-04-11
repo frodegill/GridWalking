@@ -17,12 +17,13 @@ public interface HttpsClient {
         ERROR
     }
 
-    String STATUS_INT           = "status";
-    String RESPONSE_INPUTSTREAM = "response";
-    String CONNECTION_OBJECT    = "connection";
+    String STATUS_INT            = "status";
+    String RESPONSE_INPUTSTREAM  = "input";
+    String RESPONSE_OUTPUTSTREAM = "output";
+    String CONNECTION_OBJECT     = "connection";
 
     Map<String,Object> httpGet(final String urlString) throws IOException, NoSuchAlgorithmException, KeyManagementException;
     Map<String,Object> httpPost(final String urlString, final byte[] body) throws IOException, NoSuchAlgorithmException, KeyManagementException;
-    void disconnect(final Object connection);
+    void disconnect(final Map<String,Object> details) throws IOException;
 
 }
