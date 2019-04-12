@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -88,7 +89,12 @@ public class MapFragment extends Fragment implements LocationListener {
         Configuration.getInstance().setDebugTileProviders(false);
         Configuration.getInstance().setDebugMode(false);
 
-        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        if (Build.VERSION.SDK_INT < 24) { //Use http:-map for Android 6.x and older
+            mapView.setTileSource(TileSourceFactory.HIKEBIKEMAP);
+        } else {
+            mapView.setTileSource(TileSourceFactory.MAPNIK);
+        }
+
         mapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
@@ -131,6 +137,7 @@ public class MapFragment extends Fragment implements LocationListener {
 
         super.onPause();
         DisableLocationUpdates();
+        mapView.onPause();
     }
 
     @Override
@@ -142,6 +149,7 @@ public class MapFragment extends Fragment implements LocationListener {
     @Override
     public void onResume() {
         super.onResume();
+        mapView.onResume();
         repositionAndEnableMap();
     }
 
