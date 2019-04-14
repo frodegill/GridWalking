@@ -63,20 +63,9 @@ public class MapFragment extends Fragment implements LocationListener {
         View view = inflater.inflate(R.layout.fragment_map, null);
 
         mapView = view.findViewById(R.id.mapview);
-        mapView.post(
-            new Runnable() {
-                @Override
-                public void run() {
-                    repositionAndEnableMap();
-                }
-            }
-        );
+        mapView.setDestroyMode(false);
 
         return view;
-    }
-
-    private void setHardwareAccelerationOff() {
-        mapView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
     }
 
     @Override
@@ -105,6 +94,8 @@ public class MapFragment extends Fragment implements LocationListener {
         mapView.getOverlays().add(new MyLocationOverlay());
         mapView.getOverlays().add(new ScaleBarOverlay(mapView));
 
+        repositionAndEnableMap();
+
         setHasOptionsMenu(true);
 
         if (db.GetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_PURGE_DUPLICATES) != 0) {
@@ -125,8 +116,8 @@ public class MapFragment extends Fragment implements LocationListener {
         boolean successful = true;
         SQLiteDatabase dbInTransaction = db.StartTransaction();
         try {
-            db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_X_POS, mapView.getScrollX());
-            db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_Y_POS, mapView.getScrollY());
+            db.SetStringProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_LATITUDE_POS, String.valueOf(mapView.getMapCenter().getLatitude()));
+            db.SetStringProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_LONGITUDE_POS, String.valueOf(mapView.getMapCenter().getLongitude()));
             db.SetProperty(dbInTransaction, GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL, (int)mapView.getZoomLevelDouble());
 
         } catch (SQLException e) {
@@ -149,7 +140,14 @@ public class MapFragment extends Fragment implements LocationListener {
     @Override
     public void onResume() {
         super.onResume();
+
+        if (Build.VERSION.SDK_INT < 24) { //Use http:-map for Android 6.x and older
+            mapView.setTileSource(TileSourceFactory.HIKEBIKEMAP);
+        } else {
+            mapView.setTileSource(TileSourceFactory.MAPNIK);
+        }
         mapView.onResume();
+
         repositionAndEnableMap();
     }
 
@@ -157,16 +155,19 @@ public class MapFragment extends Fragment implements LocationListener {
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
         mapView.getController().setZoom((double)db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
-        mapView.scrollTo(db.GetProperty(GridWalkingDBHelper.PROPERTY_X_POS), db.GetProperty(GridWalkingDBHelper.PROPERTY_Y_POS));
+        final String latitudeString = db.GetStringProperty(GridWalkingDBHelper.PROPERTY_LATITUDE_POS);
+        final String longitudeString = db.GetStringProperty(GridWalkingDBHelper.PROPERTY_LONGITUDE_POS);
+        if (latitudeString!=null && longitudeString!=null) {
+            mapView.setExpectedCenter(new GeoPoint(Double.valueOf(latitudeString), Double.valueOf(longitudeString)));
+        }
         mapView.setUseDataConnection(gameState.getUseDataConnection());
 
         IGeoPoint positionHint = gameState.popPositionHint();
         if (positionHint != null) {
-            mapView.getController().setCenter(positionHint);
+            mapView.setExpectedCenter(positionHint);
         }
 
         EnableLocationUpdates();
-
     }
 
     @Override
@@ -246,7 +247,7 @@ public class MapFragment extends Fragment implements LocationListener {
 
         if (gameState.getSnapToCentre()) {
             GeoPoint position = new GeoPoint(location.getLatitude(), location.getLongitude());
-            mapView.getController().setCenter(position);
+            mapView.setExpectedCenter(position);
         }
         mapView.postInvalidate();
     }

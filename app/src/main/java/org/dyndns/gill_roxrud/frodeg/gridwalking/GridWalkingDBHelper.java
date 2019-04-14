@@ -22,6 +22,7 @@ import java.util.UUID;
 public final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME         = "GridWalking.db";
+    private static final int    DATABASE_VERSION      = 5;
 
     private static final String GRID_TABLE_NAME       = "grid";
     private static final String GRID_COLUMN_KEY       = "key";
@@ -43,10 +44,10 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
     private static final String PROPERTY_COLUMN_KEY   = "key";
     private static final String PROPERTY_COLUMN_VALUE = "value";
 
-    private static final String PROPERTY_LEVELCOUNT_PREFIX = "levelcount_";
-    private static final String PROPERTY_BONUSES_USED    = "bonuses_used";
-    public static final String PROPERTY_X_POS                   = "x_pos";
-    public static final String PROPERTY_Y_POS                   = "y_pos";
+    private static final String PROPERTY_LEVELCOUNT_PREFIX      = "levelcount_";
+    private static final String PROPERTY_BONUSES_USED           = "bonuses_used";
+    public static final String PROPERTY_LATITUDE_POS            = "latitude";
+    public static final String PROPERTY_LONGITUDE_POS           = "longitude";
     public static final String PROPERTY_ZOOM_LEVEL              = "zoom_level";
     public static final String PROPERTY_USER_GUID               = "user_guid";
     public static final String PROPERTY_BUGFIX_PURGE_DUPLICATES = "bugfix_purge_duplicates";
@@ -54,7 +55,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
 
     GridWalkingDBHelper(Context context) {
-        super(context, DATABASE_NAME, null, 4);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
@@ -86,13 +87,13 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             successful &= (-1 != db.insert(PROPERTY_TABLE_NAME, null, contentValues));
 
             contentValues = new ContentValues();
-            contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_X_POS);
-            contentValues.put(PROPERTY_COLUMN_VALUE, 0);
+            contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_LATITUDE_POS);
+            contentValues.put(PROPERTY_COLUMN_VALUE, "0.0");
             successful &= (-1 != db.insert(PROPERTY_TABLE_NAME, null, contentValues));
 
             contentValues = new ContentValues();
-            contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_Y_POS);
-            contentValues.put(PROPERTY_COLUMN_VALUE, 0);
+            contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_LONGITUDE_POS);
+            contentValues.put(PROPERTY_COLUMN_VALUE, "0.0");
             successful &= (-1 != db.insert(PROPERTY_TABLE_NAME, null, contentValues));
 
             contentValues = new ContentValues();
@@ -126,7 +127,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         boolean successful = true;
 
-        if (oldVersion < 4) {
+        if (oldVersion < DATABASE_VERSION) {
             db.beginTransaction();
         }
 
@@ -165,12 +166,24 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 contentValues.put(PROPERTY_COLUMN_VALUE, 1);
                 successful &= (-1 != db.insert(PROPERTY_TABLE_NAME, null, contentValues));
             }
+
+            if (oldVersion < 5) {
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_LATITUDE_POS);
+                contentValues.put(PROPERTY_COLUMN_VALUE, "0.0");
+                successful &= (-1 != db.insert(PROPERTY_TABLE_NAME, null, contentValues));
+
+                contentValues = new ContentValues();
+                contentValues.put(PROPERTY_COLUMN_KEY, PROPERTY_LONGITUDE_POS);
+                contentValues.put(PROPERTY_COLUMN_VALUE, "0.0");
+                successful &= (-1 != db.insert(PROPERTY_TABLE_NAME, null, contentValues));
+            }
         } catch (SQLException e) {
             successful = false;
             Toast.makeText(GridWalkingApplication.getContext(), "ERR2: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
 
-        if (oldVersion < 4) {
+        if (oldVersion < DATABASE_VERSION) {
             EndTransaction(db, successful);
         }
     }
@@ -514,7 +527,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         EndTransaction(dbInTransaction, successful);
     }
 
-    private void SetStringProperty(final SQLiteDatabase dbInTransaction, final String property, final String value) throws SQLException {
+    public void SetStringProperty(final SQLiteDatabase dbInTransaction, final String property, final String value) throws SQLException {
         dbInTransaction.execSQL("UPDATE "+PROPERTY_TABLE_NAME
                         +" SET "+PROPERTY_COLUMN_VALUE+" = ?"
                         +" WHERE "+PROPERTY_COLUMN_KEY+"=?",
