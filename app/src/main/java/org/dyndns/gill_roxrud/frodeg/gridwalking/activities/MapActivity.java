@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
@@ -37,6 +38,8 @@ public class MapActivity extends AppCompatActivity {
             MapFragment mapFragment = new MapFragment();
             fm.beginTransaction().add(R.id.activity_map_layout, mapFragment, MAP_FRAGMENT_TAG).commit();
         }
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
