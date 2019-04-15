@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
             }
             if (!permissions.isEmpty()) {
-                String[] params = permissions.toArray(new String[permissions.size()]);
+                String[] params = permissions.toArray(new String[0]);
                 requestPermissions(params, REQUEST_CODE_ASK_MULTIPLE_APP_PERMISSIONS);
                 return true;
             } // else: We already have permissions, so handle as normal
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
                 permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
             }
             if (!permissions.isEmpty()) {
-                String[] params = permissions.toArray(new String[permissions.size()]);
+                String[] params = permissions.toArray(new String[0]);
                 requestPermissions(params, REQUEST_CODE_ASK_MULTIPLE_RESTORE_PERMISSIONS);
                 return true;
             } // else: We already have permissions, so handle as normal
