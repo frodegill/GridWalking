@@ -6,14 +6,15 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,8 +40,10 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.CopyrightOverlay;
 import org.osmdroid.views.overlay.ScaleBarOverlay;
 
+import java.util.ArrayList;
 
-public class MapFragment extends Fragment implements LocationListener {
+
+public class MapFragment extends Fragment implements LocationListener, GpsStatus.Listener {
     private static final long  LOCATION_UPDATE_INTERVAL = 30L;
     private static final float LOCATION_UPDATE_DISTANCE = 25.0f;
 
@@ -235,10 +238,38 @@ public class MapFragment extends Fragment implements LocationListener {
         } catch(NullPointerException e) {}
     }
 
+    public void onSpeedAltitudeUpdated(final int speed, final int altitude) {
+        TextView view;
+        try {
+            view = getView().findViewById(R.id.speed);
+            view.setText(altitude == 0.0 ? String.format("%dkm/h", speed) : String.format("%dkm/h | %dmasl", speed, altitude));
+        }
+        catch(NullPointerException e) {}
+    }
+
+    static final int MAX_QUALITY_COUNT = 8;
+    public void onGpsQualityUpdated(ArrayList<Integer> quality) {
+        String s = "";
+        for (int index=0; index<MAX_QUALITY_COUNT && index<quality.size(); index++) {
+            s += Integer.toString(quality.get(index));
+        }
+
+        if (quality.size() > MAX_QUALITY_COUNT) {
+            s += "+";
+        }
+
+        TextView view;
+        try {
+            view = getView().findViewById(R.id.gpsquality);
+            view.setText(s);
+        }
+        catch(NullPointerException e) {}
+    }
+
     @Override
     public void onLocationChanged(Location location) {
         GameState gameState = GameState.getInstance();
-        gameState.onPositionChangedT(this, location.getLongitude(), location.getLatitude());
+        gameState.onPositionChangedT(this, location.getLongitude(), location.getLatitude(), location.getAltitude());
 
         if (gameState.getSnapToCentre()) {
             GeoPoint position = new GeoPoint(location.getLatitude(), location.getLongitude());
@@ -264,6 +295,7 @@ public class MapFragment extends Fragment implements LocationListener {
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
             ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.removeUpdates(this);
+            locationManager.removeGpsStatusListener(this);
         }
     }
 
@@ -276,6 +308,19 @@ public class MapFragment extends Fragment implements LocationListener {
                 return;
             }
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_UPDATE_INTERVAL, LOCATION_UPDATE_DISTANCE, this);
+            locationManager.addGpsStatusListener(this);
+        }
+    }
+
+    @Override
+    public void onGpsStatusChanged(int event) {
+        if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
+            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                    ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                GameState gameState = GameState.getInstance();
+                LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                gameState.updateGpsQualityDisplay(this, locationManager.getGpsStatus(null));
+            }
         }
     }
 }

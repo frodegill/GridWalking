@@ -6,6 +6,7 @@
     <string name="mark_visited">Marker besøkt</string>
     <string name="osmdroid_attribution">Basert på osmdroid</string>
     <string name="score">Poeng:</string>
+    <string name="gps">Kvalitet:</string>
     <string name="settings">Innstillinger</string>
     <string name="start_button">START</string>
     <string name="sync_highscore">Synkroniser resultat</string>

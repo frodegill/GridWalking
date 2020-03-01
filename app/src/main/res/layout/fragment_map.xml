@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_map_layout"
     android:orientation="vertical"
     android:layout_width="fill_parent"
@@ -51,8 +52,49 @@
 
     <org.osmdroid.views.MapView
         android:id="@+id/mapview"
+        tilesource="Mapnik"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tilesource="Mapnik" />
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layout_weight="50">
+            <TextView android:id="@+id/speed"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="end"
+            android:layout_weight="50">
+
+            <TextView
+                android:id="@+id/gpstext"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/gps"
+                android:textStyle="bold"
+                tools:text="Quality" />
+            <TextView android:id="@+id/gpsquality"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="16dp"
+                android:layout_marginEnd="16dp"
+                android:textStyle="bold" />
+        </LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>

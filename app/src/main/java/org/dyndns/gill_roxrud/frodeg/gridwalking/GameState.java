@@ -2,6 +2,9 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.GpsSatellite;
+import android.location.GpsStatus;
+import android.location.Location;
 import android.os.Build;
 import android.preference.PreferenceManager;
 
@@ -11,6 +14,9 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClientCompat6;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClientCompat7;
 import org.osmdroid.api.IGeoPoint;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 
 public class GameState {
@@ -30,6 +36,7 @@ public class GameState {
     private IGeoPoint positionHint = null;
 
     private final Point<Double> currentPos = new Point<>(Grid.EAST+1.0, Grid.NORTH+1.0);
+    private long currentPosSetTime = 0L;
 
 
     private GameState() {
@@ -111,14 +118,47 @@ public class GameState {
         return currentPos;
     }
 
-    public void onPositionChangedT(MapFragment mapFragment, double x_pos, double y_pos) {
+    public void onPositionChangedT(MapFragment mapFragment, double x_pos, double y_pos, double z_pos) {
+        long now = System.currentTimeMillis();
+        if (currentPosSetTime != 0L) {
+            float[] result = new float[1];
+            Location.distanceBetween(currentPos.getX(), currentPos.getY(), x_pos, y_pos, result);
+            float distanceMeter = result[0];
+            long differenceSeconds = (now - currentPosSetTime)/1000;
+            float kmPrHour = (distanceMeter/differenceSeconds)*3.6f;
+            mapFragment.onSpeedAltitudeUpdated((int)kmPrHour, (int)z_pos);
+        }
+
         currentPos.set(x_pos, y_pos);
+        currentPosSetTime = now;
+
         try {
             if (grid.DiscoverT(currentPos, false) || null!=bonus.ValidBonusKeyFromPosT(currentPos)) { //Two transactions, OK
                 mapFragment.onScoreUpdated();
             }
         } catch (InvalidPositionException e) {
         }
+    }
+
+    public void updateGpsQualityDisplay(MapFragment mapFragment, GpsStatus gpsStatus) {
+        ArrayList<Integer> results = new ArrayList<>();
+        Iterable<GpsSatellite> satellites = gpsStatus.getSatellites();
+        for (GpsSatellite satellite : satellites) {
+            float snr = satellite.getSnr();
+
+            if (snr > 500.0) results.add(9);
+            else if (snr > 250) results.add(8);
+            else if (snr > 100) results.add(7);
+            else if (snr > 75) results.add(6);
+            else if (snr > 50) results.add(5);
+            else if (snr > 25) results.add(4);
+            else if (snr > 10) results.add(3);
+            else if (snr > 5) results.add(2);
+            else if (snr > 1) results.add(1);
+            else results.add(1);
+        }
+        Collections.sort(results);
+        mapFragment.onGpsQualityUpdated(results);
     }
 
     public void pushPositionHint(final IGeoPoint positionHint) {
