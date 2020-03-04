@@ -80,7 +80,7 @@ public class SyncHighscoreIntentService extends IntentService {
                 Secrets secrets = new Secrets();
                 secrets.Append((pathParams+nameParam).getBytes(StandardCharsets.UTF_8));
                 String urlString = GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
-                        +"?crc="+Integer.toString(secrets.Crc16());
+                        +"?crc="+ secrets.Crc16();
 
                 httpsClient = GameState.getInstance().getHttpsClient();
                 byte[] body = null;
@@ -101,7 +101,7 @@ public class SyncHighscoreIntentService extends IntentService {
                         sb.append(inputLine);
                     }
                     failed = true;
-                    throw new IOException("HTTP "+Integer.toString(statusCode)+": "+sb.toString());
+                    throw new IOException("HTTP "+ statusCode +": "+sb.toString());
                 } else {
                     highscoreList = new HighscoreList();
                     InputStreamReader isr = new InputStreamReader(is);
@@ -171,11 +171,11 @@ public class SyncHighscoreIntentService extends IntentService {
         sb.append(SYNC_HIGHSCORE_REST_PATH);
         sb.append(db.GetStringProperty(GridWalkingDBHelper.PROPERTY_USER_GUID));
         sb.append('/');
-        sb.append(Integer.toString(db.GetUnusedBonusCount()));
+        sb.append(db.GetUnusedBonusCount());
         byte i;
         for (i=Grid.LEVEL_COUNT-1; i>=0; i--) {
             sb.append('/');
-            sb.append(Integer.toString(db.GetLevelCount(i)));
+            sb.append(db.GetLevelCount(i));
         }
         sb.append('/');
         return sb.toString();

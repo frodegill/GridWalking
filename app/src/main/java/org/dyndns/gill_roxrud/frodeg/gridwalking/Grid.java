@@ -37,7 +37,7 @@ public class Grid {
     private static final byte MAX_MRU_COUNT = 10;
     private final List<Integer> mru_list = new ArrayList<>();
 
-    public Paint gridColours[] = null;
+    public Paint[] gridColours = null;
     private Paint selectedGridColour = null;
 
 
@@ -381,13 +381,13 @@ public class Grid {
                 if (!first) {
                     sb.append(':');
                 }
-                sb.append(Integer.toString(levelCount));
+                sb.append(levelCount);
                 score += (levelCount<<(2*i)) * (i+1); //Each level up represents 4 squares
                 first = false;
             }
         }
         sb.append(')');
-        return Long.toString(score) + sb.toString();
+        return score + sb.toString();
     }
 
     public long getScore() {

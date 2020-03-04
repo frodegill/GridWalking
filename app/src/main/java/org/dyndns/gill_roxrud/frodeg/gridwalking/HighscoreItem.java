@@ -51,12 +51,12 @@ public class HighscoreItem implements Parcelable {
 
     public void setItem(final String highscoreLine) {
         String[] atoms = highscoreLine.split(";");
-        position = Integer.valueOf(atoms[0]);
+        position = Integer.parseInt(atoms[0]);
         int i;
         for (i=0; i<Grid.LEVEL_COUNT; i++) {
-            levels[Grid.LEVEL_COUNT-i-1] = Integer.valueOf(atoms[1+i]);
+            levels[Grid.LEVEL_COUNT-i-1] = Integer.parseInt(atoms[1+i]);
         }
-        score = Long.valueOf(atoms[1+Grid.LEVEL_COUNT]);
+        score = Long.parseLong(atoms[1+Grid.LEVEL_COUNT]);
         guid = atoms[2+Grid.LEVEL_COUNT];
         username = atoms[3+Grid.LEVEL_COUNT];
         for (i=4+Grid.LEVEL_COUNT; i<atoms.length; i++) {
@@ -85,7 +85,7 @@ public class HighscoreItem implements Parcelable {
                 if (!first) {
                     sb.append(':');
                 }
-                sb.append(Integer.toString(levels[i]));
+                sb.append(levels[i]);
                 first = false;
             }
         }

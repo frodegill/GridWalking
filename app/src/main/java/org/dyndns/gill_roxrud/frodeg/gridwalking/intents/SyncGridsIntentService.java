@@ -67,7 +67,7 @@ public class SyncGridsIntentService extends IntentService {
                         sb.append(inputLine);
                     }
                     in.close();
-                    throw new IOException("HTTP "+Integer.toString(statusCode)+": "+sb.toString());
+                    throw new IOException("HTTP "+ statusCode +": "+sb.toString());
                 } else {
                     aGrid = db.SyncExternalGridsT(is);
                 }

@@ -47,8 +47,8 @@ public class HighscoreList implements Parcelable {
 
     public void setPosition(final String positionString) {
         String[] atoms = positionString.split(";");
-        playerPosition = Integer.valueOf(atoms[0]);
-        totalPlayerCount = Integer.valueOf(atoms[1]);
+        playerPosition = Integer.parseInt(atoms[0]);
+        totalPlayerCount = Integer.parseInt(atoms[1]);
     }
 
     public int getPlayerPosition() {
