@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.GnssStatus;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationListener;
@@ -43,11 +44,13 @@ import org.osmdroid.views.overlay.ScaleBarOverlay;
 import java.util.ArrayList;
 
 
-public class MapFragment extends Fragment implements LocationListener, GpsStatus.Listener {
+public class MapFragment extends Fragment implements LocationListener {
     private static final long  LOCATION_UPDATE_INTERVAL = 30L;
     private static final float LOCATION_UPDATE_DISTANCE = 25.0f;
 
     private MapView mapView;
+
+    private Object gpsListener = null;
 
 
     public static MapFragment newInstance() {
@@ -156,7 +159,7 @@ public class MapFragment extends Fragment implements LocationListener, GpsStatus
         final String latitudeString = db.GetStringProperty(GridWalkingDBHelper.PROPERTY_LATITUDE_POS);
         final String longitudeString = db.GetStringProperty(GridWalkingDBHelper.PROPERTY_LONGITUDE_POS);
         if (latitudeString!=null && longitudeString!=null) {
-            mapView.setExpectedCenter(new GeoPoint(Double.valueOf(latitudeString), Double.valueOf(longitudeString)));
+            mapView.setExpectedCenter(new GeoPoint(Double.parseDouble(latitudeString), Double.parseDouble(longitudeString)));
         }
         mapView.setUseDataConnection(gameState.getUseDataConnection());
 
@@ -247,7 +250,7 @@ public class MapFragment extends Fragment implements LocationListener, GpsStatus
         catch(NullPointerException e) {}
     }
 
-    static final int MAX_QUALITY_COUNT = 8;
+    private static final int MAX_QUALITY_COUNT = 8;
     public void onGpsQualityUpdated(ArrayList<Integer> quality) {
         String s = "";
         for (int index=0; index<MAX_QUALITY_COUNT && index<quality.size(); index++) {
@@ -295,7 +298,12 @@ public class MapFragment extends Fragment implements LocationListener, GpsStatus
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
             ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.removeUpdates(this);
-            locationManager.removeGpsStatusListener(this);
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                locationManager.removeGpsStatusListener((GpsStatus.Listener) gpsListener);
+            } else {
+                locationManager.unregisterGnssStatusCallback((GnssStatus.Callback) gpsListener);
+            }
         }
     }
 
@@ -308,19 +316,34 @@ public class MapFragment extends Fragment implements LocationListener, GpsStatus
                 return;
             }
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_UPDATE_INTERVAL, LOCATION_UPDATE_DISTANCE, this);
-            locationManager.addGpsStatusListener(this);
-        }
-    }
 
-    @Override
-    public void onGpsStatusChanged(int event) {
-        if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
-            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                    ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                GameState gameState = GameState.getInstance();
-                LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                gameState.updateGpsQualityDisplay(this, locationManager.getGpsStatus(null));
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                gpsListener = new GpsStatus.Listener() {
+                    @Override
+                    public void onGpsStatusChanged(int event) {
+                        if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
+                            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                                    ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                                GameState gameState = GameState.getInstance();
+                                LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                                gameState.updateGpsQualityDisplay(MapFragment.this, locationManager.getGpsStatus(null));
+                            }
+                        }
+                    }
+                };
+                locationManager.addGpsStatusListener((GpsStatus.Listener) gpsListener);
+            } else {
+                gpsListener = new GnssStatus.Callback() {
+                    @Override
+                    public void onSatelliteStatusChanged(GnssStatus status) {
+                        GameState gameState = GameState.getInstance();
+                        gameState.updateGpsQualityDisplay(MapFragment.this, status);
+                    }
+                };
+
+                locationManager.unregisterGnssStatusCallback((GnssStatus.Callback) gpsListener);
             }
         }
     }
+
 }
