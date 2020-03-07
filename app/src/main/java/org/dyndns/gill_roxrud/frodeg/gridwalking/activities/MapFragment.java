@@ -341,7 +341,7 @@ public class MapFragment extends Fragment implements LocationListener {
                     }
                 };
 
-                locationManager.unregisterGnssStatusCallback((GnssStatus.Callback) gpsListener);
+                locationManager.registerGnssStatusCallback((GnssStatus.Callback) gpsListener);
             }
         }
     }
