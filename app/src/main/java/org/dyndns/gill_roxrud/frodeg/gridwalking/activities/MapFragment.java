@@ -245,7 +245,7 @@ public class MapFragment extends Fragment implements LocationListener {
         TextView view;
         try {
             view = getView().findViewById(R.id.speed);
-            view.setText(altitude == 0.0 ? String.format("%dkm/h", speed) : String.format("%dkm/h | %dmasl", speed, altitude));
+            view.setText(altitude == 0.0 ? String.format(getString(R.string.speed), speed) : String.format(getString(R.string.speed_and_height), speed, altitude));
         }
         catch(NullPointerException e) {}
     }
