@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    buildToolsVersion "30.0.0"
 
     defaultConfig {
         applicationId "org.dyndns.gill_roxrud.frodeg.gridwalking"
@@ -21,9 +21,17 @@ android {
     useLibrary 'org.apache.http.legacy'
 }
 
+repositories {
+    mavenCentral()
+    maven{
+        url  'https://oss.sonatype.org/content/repositories/snapshots/'
+        name 'OSS-Sonatype'
+    }
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.12'
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'org.osmdroid:osmdroid-android:6.1.6'
+    implementation 'org.osmdroid:osmdroid-android:6.1.7-SNAPSHOT:debug@aar'
 }

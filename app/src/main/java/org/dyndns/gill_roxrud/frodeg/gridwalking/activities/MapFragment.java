@@ -84,7 +84,7 @@ public class MapFragment extends Fragment implements LocationListener {
         Configuration.getInstance().setDebugTileProviders(false);
         Configuration.getInstance().setDebugMode(false);
 
-        mapView.setTileSource(TileSourceFactory.OpenTopo);
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
