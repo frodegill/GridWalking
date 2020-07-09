@@ -15,6 +15,8 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClientCompat6;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClientCompat7;
 import org.osmdroid.api.IGeoPoint;
+import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,6 +102,18 @@ public class GameState {
         prefsEditor.putBoolean(GridWalkingPreferenceActivity.SHOW_SYNCED_GRIDS_PREFERENCE, ShowGridState.SYNCED==showGridState);
         prefsEditor.putBoolean(GridWalkingPreferenceActivity.SNAP_TO_CENTRE_PREFERENCE, ShowGridState.SYNCED!=showGridState);
         prefsEditor.apply();
+    }
+
+    public OnlineTileSourceBase getMapSource() {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
+        String mapSourceKey = sharedPrefs.getString(GridWalkingPreferenceActivity.MAP_SOURCE, "mapnik");
+        if ("hikebikemap".equals(mapSourceKey)) {
+            return TileSourceFactory.HIKEBIKEMAP;
+        } else if ("opentopomap".equals(mapSourceKey)) {
+            return TileSourceFactory.OpenTopo;
+        } else {
+            return TileSourceFactory.MAPNIK;
+        }
     }
 
     public String getHighscoreNickname() {

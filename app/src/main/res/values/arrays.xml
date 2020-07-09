@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_map_labels">
+        <item>Mapnik</item>
+        <item>HikeBikeMap</item>
+        <item>OpenTopoMap</item>
+    </string-array>
+
+    <string-array name="pref_map_values">
+        <item>mapnik</item>
+        <item>hikebikemap</item>
+        <item>opentopomap</item>
+    </string-array>
+</resources>

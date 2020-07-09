@@ -17,6 +17,13 @@
         android:defaultValue="true"
         android:title="@string/snap_to_centre"
         android:key="snap_to_centre_preference" />
+    <ListPreference
+        android:entries="@array/pref_map_labels"
+        android:entryValues="@array/pref_map_values"
+        android:defaultValue="mapnik"
+        android:title="@string/map_source"
+        android:key="map_source"
+        />
     <org.dyndns.gill_roxrud.frodeg.gridwalking.EditTextPreference
         android:defaultValue="@string/Anonymous"
         android:selectAllOnFocus="true"

@@ -3,6 +3,7 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -16,6 +17,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -34,7 +37,7 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.overlays.GridOverlay;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.overlays.MyLocationOverlay;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapView;
@@ -44,7 +47,7 @@ import org.osmdroid.views.overlay.ScaleBarOverlay;
 import java.util.ArrayList;
 
 
-public class MapFragment extends Fragment implements LocationListener {
+public class MapFragment extends Fragment implements LocationListener, SharedPreferences.OnSharedPreferenceChangeListener {
     private static final long  LOCATION_UPDATE_INTERVAL = 30L;
     private static final float LOCATION_UPDATE_DISTANCE = 25.0f;
 
@@ -62,6 +65,9 @@ public class MapFragment extends Fragment implements LocationListener {
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
+
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
+        sharedPrefs.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -84,7 +90,7 @@ public class MapFragment extends Fragment implements LocationListener {
         Configuration.getInstance().setDebugTileProviders(false);
         Configuration.getInstance().setDebugMode(false);
 
-        mapView.setTileSource(TileSourceFactory.MAPNIK);
+        mapView.setTileSource(gameState.getMapSource());
         mapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.SHOW_AND_FADEOUT);
         mapView.setMultiTouchControls(true);
         mapView.setTilesScaledToDpi(true);
@@ -136,6 +142,9 @@ public class MapFragment extends Fragment implements LocationListener {
     public void onDestroyView() {
         super.onDestroyView();
         mapView.onDetach();
+
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
+        sharedPrefs.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -341,4 +350,21 @@ public class MapFragment extends Fragment implements LocationListener {
         }
     }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if ("map_source".equals(key)) {
+            ITileSource oldMapSource = mapView.getTileProvider().getTileSource();
+
+            GameState gameState = GameState.getInstance();
+            ITileSource newMapSource = gameState.getMapSource();
+
+            if (oldMapSource != newMapSource) {
+                mapView.getTileProvider().clearTileCache();
+                mapView.setTileSource(newMapSource);
+            }
+        } else if ("offline_preference".equals(key)) {
+            GameState gameState = GameState.getInstance();
+            mapView.setUseDataConnection(gameState.getUseDataConnection());
+        }
+    }
 }

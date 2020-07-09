@@ -20,4 +20,5 @@
     <string name="Anonymous">Anonymous</string>
     <string name="restore_button">Tilbakestill fra fil</string>
     <string name="help_button">Hjelp</string>
+    <string name="map_source">Karttilbyder</string>
 </resources>
