@@ -361,6 +361,7 @@ public class MapFragment extends Fragment implements LocationListener, SharedPre
             if (oldMapSource != newMapSource) {
                 mapView.getTileProvider().clearTileCache();
                 mapView.setTileSource(newMapSource);
+                mapView.postInvalidate();
             }
         } else if ("offline_preference".equals(key)) {
             GameState gameState = GameState.getInstance();

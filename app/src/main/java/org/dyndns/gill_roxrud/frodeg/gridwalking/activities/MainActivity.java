@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -20,6 +21,7 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.util.StorageUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,7 +42,18 @@ public class MainActivity extends AppCompatActivity {
         Button restoreButton = findViewById(R.id.restore_button);
         restoreButton.setVisibility(Button.INVISIBLE);
 
+        Configuration.getInstance().load(GridWalkingApplication.getContext(), PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext()));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
+        if (!StorageUtils.isWritable()) {
+            Configuration.getInstance().setOsmdroidBasePath(StorageUtils.getStorage());
+            Configuration.getInstance().setOsmdroidTileCache(StorageUtils.getStorage());
+            if (!StorageUtils.isWritable()) {
+                TextView toastView = findViewById(R.id.toast);
+                if (toastView != null) {
+                    toastView.setText("Storage "+ Configuration.getInstance().getOsmdroidTileCache().getAbsolutePath() + " is NOT writable!");
+                }
+            }
+        }
 
         onStartButtonClicked(null);
     }
