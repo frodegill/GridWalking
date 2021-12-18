@@ -194,19 +194,20 @@ public class MapFragment extends Fragment implements LocationListener, SharedPre
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.mark_visited:
-                discoverSelectedGridT();
-                return true;
-            case R.id.sync_highscore:
-                ((MapActivity)getActivity()).syncHighscore();
-                return true;
-            case R.id.settings:
-                Intent i = new Intent(getContext(), GridWalkingPreferenceActivity.class);
-                startActivity(i);
-                return true;
+        final int itemId = item.getItemId();
+        if (itemId == R.id.mark_visited) {
+            discoverSelectedGridT();
+            return true;
+        } else if (itemId == R.id.sync_highscore) {
+            ((MapActivity) getActivity()).syncHighscore();
+            return true;
+        } else if (itemId == R.id.settings) {
+            Intent i = new Intent(getContext(), GridWalkingPreferenceActivity.class);
+            startActivity(i);
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     private void discoverSelectedGridT() {
