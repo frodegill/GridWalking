@@ -39,8 +39,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Button startButton = findViewById(R.id.start_button);
+        startButton.setOnClickListener(this::onStartButtonClicked);
+
         Button restoreButton = findViewById(R.id.restore_button);
         restoreButton.setVisibility(Button.INVISIBLE);
+        restoreButton.setOnClickListener(this::onRestoreButtonClicked);
+
+        Button helpButton = findViewById(R.id.help_button);
+        helpButton.setOnClickListener(this::onHelpButtonClicked);
+
+        TextView createdByText = findViewById(R.id.created_by_text);
+        createdByText.setOnClickListener(this::onCreatedByTextClicked);
 
         Configuration.getInstance().load(GridWalkingApplication.getContext(), PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext()));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
