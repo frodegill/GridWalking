@@ -131,6 +131,9 @@ public class MainActivity extends AppCompatActivity {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
             }
+            if (Build.VERSION.SDK_INT<=28 && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            }
             if (!permissions.isEmpty()) {
                 String[] params = permissions.toArray(new String[0]);
                 requestPermissions(params, REQUEST_CODE_ASK_MULTIPLE_APP_PERMISSIONS);
@@ -167,6 +170,10 @@ public class MainActivity extends AppCompatActivity {
                 Map<String, Integer> perms = new HashMap<>();
                 // Initial
                 perms.put(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
+                if (Build.VERSION.SDK_INT <= 28) {
+                    perms.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
+                }
+
                 // Fill with results
                 for (int i = 0; i < permissions.length; i++)
                     perms.put(permissions[i], grantResults[i]);
@@ -174,6 +181,15 @@ public class MainActivity extends AppCompatActivity {
                 if (perms.get(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     // Permission Denied
                     final String msg = "Location permission is required to show the user's location on map.";
+                    if (toastView != null) {
+                        toastView.setText(msg);
+                    } else {
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
+                    }
+                }
+                if (Build.VERSION.SDK_INT<=28 && perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    // Permission Denied
+                    final String msg = "Write External Storage permission is required to store map tile cache.";
                     if (toastView != null) {
                         toastView.setText(msg);
                     } else {
