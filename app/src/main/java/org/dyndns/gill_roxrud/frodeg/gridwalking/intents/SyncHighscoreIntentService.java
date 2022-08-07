@@ -66,7 +66,7 @@ public class SyncHighscoreIntentService extends IntentService {
             ArrayList<Set<Integer>> newGrids = new ArrayList<>();
             byte level;
             for (level=0; level<Grid.LEVEL_COUNT; level++) {
-                newGrids.add(new TreeSet<Integer>());
+                newGrids.add(new TreeSet<>());
             }
 
             String msg = null;
@@ -101,7 +101,7 @@ public class SyncHighscoreIntentService extends IntentService {
                         sb.append(inputLine);
                     }
                     failed = true;
-                    throw new IOException("HTTP "+ statusCode +": "+sb.toString());
+                    throw new IOException("HTTP "+ statusCode +": "+sb);
                 } else {
                     highscoreList = new HighscoreList();
                     InputStreamReader isr = new InputStreamReader(is);

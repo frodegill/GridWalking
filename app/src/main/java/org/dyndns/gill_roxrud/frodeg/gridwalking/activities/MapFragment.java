@@ -323,16 +323,13 @@ public class MapFragment extends Fragment implements LocationListener, SharedPre
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_UPDATE_INTERVAL, LOCATION_UPDATE_DISTANCE, this);
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                gpsListener = new GpsStatus.Listener() {
-                    @Override
-                    public void onGpsStatusChanged(int event) {
-                        if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
-                            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                                    ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                                GameState gameState = GameState.getInstance();
-                                LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                                gameState.updateGpsQualityDisplay(MapFragment.this, locationManager.getGpsStatus(null));
-                            }
+                gpsListener = (GpsStatus.Listener) event -> {
+                    if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
+                        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                                ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                            GameState gameState = GameState.getInstance();
+                            LocationManager locationManager1 = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+                            gameState.updateGpsQualityDisplay(MapFragment.this, locationManager1.getGpsStatus(null));
                         }
                     }
                 };

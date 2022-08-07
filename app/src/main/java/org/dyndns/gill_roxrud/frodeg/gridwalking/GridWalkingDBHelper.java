@@ -8,8 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -592,12 +591,12 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         return PROPERTY_LEVELCOUNT_PREFIX+ level;
     }
 
-    public void RestoreFromFileT(final File restoreFile) throws Exception {
+    public void RestoreFromFileT(final byte[] restoreFile) throws Exception {
         boolean successful = true;
         SQLiteDatabase dbInTransaction = StartTransaction();
 
         try {
-            FileInputStream is = new FileInputStream(restoreFile);
+            ByteArrayInputStream is = new ByteArrayInputStream(restoreFile);
             Secrets secrets = new Secrets();
 
             dbInTransaction.execSQL("DELETE FROM "+GRID_TABLE_NAME

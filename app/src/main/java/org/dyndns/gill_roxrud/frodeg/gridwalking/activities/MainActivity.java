@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,9 +20,12 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.util.StorageUtils;
 
-import java.io.File;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -54,16 +56,6 @@ public class MainActivity extends AppCompatActivity {
 
         Configuration.getInstance().load(GridWalkingApplication.getContext(), PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext()));
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
-        if (!StorageUtils.isWritable()) {
-            Configuration.getInstance().setOsmdroidBasePath(StorageUtils.getStorage());
-            Configuration.getInstance().setOsmdroidTileCache(StorageUtils.getStorage());
-            if (!StorageUtils.isWritable()) {
-                TextView toastView = findViewById(R.id.toast);
-                if (toastView != null) {
-                    toastView.setText("Storage "+ Configuration.getInstance().getOsmdroidTileCache().getAbsolutePath() + " is NOT writable!");
-                }
-            }
-        }
 
         onStartButtonClicked(null);
     }
@@ -76,16 +68,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRestoreButtonClicked(View v) {
-        File restoreFile = getRestoreFile();
-        if (null == restoreFile) {
-            return;
-        }
+        Thread thread = new Thread(() -> {
+            try {
+                URL restoreFileUrl = new URL("https://gill-roxrud.dyndns.org/gridwalking.dat");
+                URLConnection connection = restoreFileUrl.openConnection();
+                connection.connect();
 
-        try {
-            GameState.getInstance().getDB().RestoreFromFileT(restoreFile);
-        } catch (Exception e) {
-            Toast.makeText(MainActivity.this, "Resore failed: "+e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
+                try (InputStream is = new BufferedInputStream(restoreFileUrl.openStream());
+                     ByteArrayOutputStream os = new ByteArrayOutputStream(connection.getContentLength())) {
+                    byte[] data = new byte[10 * 1024];
+                    int count;
+                    while ((count = is.read(data)) != -1) {
+                        os.write(data, 0, count);
+                    }
+                    os.flush();
+
+                    GameState.getInstance().getDB().RestoreFromFileT(os.toByteArray());
+                }
+            } catch (Exception e) {
+                Toast.makeText(MainActivity.this, "Restore failed: "+e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+        thread.start();
     }
 
     public void onHelpButtonClicked(View v) {
@@ -94,36 +98,17 @@ public class MainActivity extends AppCompatActivity {
 
     public void onCreatedByTextClicked(View v) {
         if (++createdByTextClickedCount == 3) {
-            if (!needsRestorePermissions()) {
-                showRestoreButton();
-            }
+            showRestoreButton();
         }
     }
 
     private void showRestoreButton() {
-        File restoreFile = getRestoreFile();
-        if (null == restoreFile) {
-            return;
-        }
-
         Button restoreButton = findViewById(R.id.restore_button);
         restoreButton.setVisibility(Button.VISIBLE);
     }
 
-    private File getRestoreFile() {
-        final String state = Environment.getExternalStorageState();
-        if (!Environment.MEDIA_MOUNTED.equals(state) && !Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            return null;
-        }
-
-        File downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File restoreFile = new File(downloadDir, "gridwalking.dat");
-        return restoreFile.exists() ? restoreFile : null;
-    }
-
     // START PERMISSION CHECK
     final private int REQUEST_CODE_ASK_MULTIPLE_APP_PERMISSIONS = 124;
-    final private int REQUEST_CODE_ASK_MULTIPLE_RESTORE_PERMISSIONS = 125;
 
     private boolean needsAppPermissions() {
         if (Build.VERSION.SDK_INT >= 23) {
@@ -131,27 +116,9 @@ public class MainActivity extends AppCompatActivity {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
             }
-            if (Build.VERSION.SDK_INT<=28 && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            }
             if (!permissions.isEmpty()) {
                 String[] params = permissions.toArray(new String[0]);
                 requestPermissions(params, REQUEST_CODE_ASK_MULTIPLE_APP_PERMISSIONS);
-                return true;
-            } // else: We already have permissions, so handle as normal
-        }
-        return false;
-    }
-
-    private boolean needsRestorePermissions() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            List<String> permissions = new ArrayList<>();
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
-            }
-            if (!permissions.isEmpty()) {
-                String[] params = permissions.toArray(new String[0]);
-                requestPermissions(params, REQUEST_CODE_ASK_MULTIPLE_RESTORE_PERMISSIONS);
                 return true;
             } // else: We already have permissions, so handle as normal
         }
@@ -165,66 +132,26 @@ public class MainActivity extends AppCompatActivity {
             toastView.setText("");
         }
 
-        switch (requestCode) {
-            case REQUEST_CODE_ASK_MULTIPLE_APP_PERMISSIONS: {
-                Map<String, Integer> perms = new HashMap<>();
-                // Initial
-                perms.put(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
-                if (Build.VERSION.SDK_INT <= 28) {
-                    perms.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
-                }
+        if (requestCode == REQUEST_CODE_ASK_MULTIPLE_APP_PERMISSIONS) {
+            Map<String, Integer> perms = new HashMap<>();
+            // Initial
+            perms.put(Manifest.permission.ACCESS_FINE_LOCATION, PackageManager.PERMISSION_GRANTED);
 
-                // Fill with results
-                for (int i = 0; i < permissions.length; i++)
-                    perms.put(permissions[i], grantResults[i]);
-                // Check for ACCESS_FINE_LOCATION
-                if (perms.get(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // Permission Denied
-                    final String msg = "Location permission is required to show the user's location on map.";
-                    if (toastView != null) {
-                        toastView.setText(msg);
-                    } else {
-                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                    }
-                }
-                if (Build.VERSION.SDK_INT<=28 && perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    // Permission Denied
-                    final String msg = "Write External Storage permission is required to store map tile cache.";
-                    if (toastView != null) {
-                        toastView.setText(msg);
-                    } else {
-                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                    }
-                }
-                break;
-            }
-
-            case REQUEST_CODE_ASK_MULTIPLE_RESTORE_PERMISSIONS: {
-                Map<String, Integer> perms = new HashMap<>();
-                // Initial
-                perms.put(Manifest.permission.READ_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
-                // Fill with results
-                for (int i = 0; i < permissions.length; i++)
-                    perms.put(permissions[i], grantResults[i]);
-                // Check for READ_EXTERNAL_STORAGE
-                boolean permissionGranted = perms.get(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-
-                if (!permissionGranted) {
-                    // Permission Denied
-                    final String msg = "External Storage permission is required to restore from file.";
-                    if (toastView != null) {
-                        toastView.setText(msg);
-                    } else {
-                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-                    }
+            // Fill with results
+            for (int i = 0; i < permissions.length; i++)
+                perms.put(permissions[i], grantResults[i]);
+            // Check for ACCESS_FINE_LOCATION
+            if (perms.get(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // Permission Denied
+                final String msg = "Location permission is required to show the user's location on map.";
+                if (toastView != null) {
+                    toastView.setText(msg);
                 } else {
-                    showRestoreButton();
+                    Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
                 }
-                break;
             }
-
-            default:
-                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
