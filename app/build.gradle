@@ -1,13 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 33
-    buildToolsVersion "33.0.0"
-
     defaultConfig {
         applicationId "org.dyndns.gill_roxrud.frodeg.gridwalking"
+        compileSdk 34
         minSdkVersion 19
-        targetSdkVersion 33
+        targetSdk 34
         versionCode 49
         versionName "1.19"
     }
@@ -24,7 +22,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    testImplementation 'junit:junit:4.12'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
-    implementation 'org.osmdroid:osmdroid-android:6.1.13'
+    testImplementation 'junit:junit:4.13.2'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'org.osmdroid:osmdroid-android:6.1.16'
 }
