@@ -92,8 +92,11 @@ public class GridOverlay extends Overlay {
 
     private void drawSquares(final Canvas canvas, final Projection projection, final IGeoPoint sw, final IGeoPoint ne, final byte gridLevel) {
         GameState gameState = GameState.getInstance();
+        if (!gameState.getShowGrids()) {
+            return;
+        }
+
         Grid grid = gameState.getGrid();
-        GameState.ShowGridState showGridState = gameState.getShowGridState();
         byte fromLevel = (byte) Math.max(gridLevel-DRAW_LEVEL_DEPTH, Grid.LEVEL_0);
         Integer selectedGridX = null;
         Integer selectedGridY = null;
@@ -112,8 +115,7 @@ public class GridOverlay extends Overlay {
         int y;
         GridWalkingDBHelper db = GameState.getInstance().getDB();
         for (currentLevel = fromLevel; currentLevel < Grid.LEVEL_COUNT; currentLevel++) {
-            if (GameState.ShowGridState.SYNCED!=showGridState &&
-                db.GetLevelCount(currentLevel)==0 &&
+            if (db.GetLevelCount(currentLevel)==0 &&
                 !(0==currentLevel && null!=selectedGridKey)) {
                 continue;
             }
@@ -133,7 +135,7 @@ public class GridOverlay extends Overlay {
                 try {
                     int gridLeftKey = grid.ToKey(currentLeftGrid, y);
                     int gridRightKey = grid.ToKey(currentRightGrid, y);
-                    currentSet = db.ContainsGrid(gridLeftKey, gridRightKey+currentStepping, currentLevel, showGridState);
+                    currentSet = db.ContainsGrid(gridLeftKey, gridRightKey+currentStepping, currentLevel);
                 } catch (InvalidPositionException e) {
                     continue;
                 }

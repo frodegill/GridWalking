@@ -10,10 +10,6 @@
         android:title="@string/show_grids"
         android:key="show_grids_preference" />
     <CheckBoxPreference
-        android:defaultValue="false"
-        android:title="@string/show_synced_grids"
-        android:key="show_synced_grids_preference" />
-    <CheckBoxPreference
         android:defaultValue="true"
         android:title="@string/snap_to_centre"
         android:key="snap_to_centre_preference" />

@@ -8,8 +8,7 @@ import java.util.Map;
 public interface HttpsClient {
 
     enum RequestCode {
-        SYNC_HIGHSCORE,
-        SYNC_GRIDS
+        SYNC_HIGHSCORE
     }
 
     enum NetworkResponseCode {

@@ -89,7 +89,7 @@ public class Grid {
         Integer oldSelectedGridKey = gameState.getSelectedGridKey();
         Integer currentSelectedGridKey = null;
         try {
-            if (-1 == DiscoveredLevel(gridPoint, gameState.getShowGridState())) {
+            if (-1 == DiscoveredLevel(gridPoint)) {
                 currentSelectedGridKey = ToKey(gridPoint);
                 if (unselectIfSelected &&
                     oldSelectedGridKey!=null && oldSelectedGridKey.intValue()==currentSelectedGridKey.intValue()) {
@@ -109,9 +109,6 @@ public class Grid {
 
     public boolean DiscoverSelectedGridT() {
         GameState gameState = GameState.getInstance();
-        if (GameState.ShowGridState.SELF!=gameState.getShowGridState()) {
-            return false;
-        }
 
         Integer selectedGridKey = gameState.getSelectedGridKey();
         if (selectedGridKey == null) {
@@ -138,7 +135,7 @@ public class Grid {
             return false;
         }
 
-        if (-1 != DiscoveredLevel(p, GameState.ShowGridState.SELF)) {
+        if (-1 != DiscoveredLevel(p)) {
             return false;
         }
 
@@ -164,7 +161,7 @@ public class Grid {
         return true;
     }
 
-    private byte DiscoveredLevel(final Point<Integer> p, final GameState.ShowGridState showGridState) throws InvalidPositionException {
+    private byte DiscoveredLevel(final Point<Integer> p) throws InvalidPositionException {
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
         Point<Integer> lowerLeft;
@@ -176,7 +173,7 @@ public class Grid {
             }
             lowerLeft = GetLowerLeft(p, level);
             key = ToKey(lowerLeft);
-            if (db.ContainsGrid(key, level, showGridState)) {
+            if (db.ContainsGrid(key, level)) {
                 return level;
             }
         }
@@ -203,7 +200,7 @@ public class Grid {
             keys.add(gridKeys[i]);
         }
 
-        Set<Integer> keyMatches = db.ContainsGrid(keys, level, GameState.ShowGridState.SELF);
+        Set<Integer> keyMatches = db.ContainsGrid(keys, level);
         if (3 > keyMatches.size()) { //Not enough. Bail out
             return true;
         }
@@ -405,7 +402,7 @@ public class Grid {
     private void RecursiveRemoveGrid(final GridWalkingDBHelper db, final SQLiteDatabase dbInTransaction, final Point<Integer> p, final byte level) throws SQLException {
         try {
             int gridKey = ToKey(p);
-            if (db.ContainsGrid(gridKey, level, GameState.ShowGridState.SELF)) {
+            if (db.ContainsGrid(gridKey, level)) {
                 db.DeleteGrid(dbInTransaction, gridKey, level);
             }
 
@@ -431,7 +428,7 @@ public class Grid {
                     continue;
                 }
 
-                Set<Integer> levelKeys = db.GetLevelGrids(currentLevel, GameState.ShowGridState.SELF);
+                Set<Integer> levelKeys = db.GetLevelGrids(currentLevel);
                 for (Integer levelKey : levelKeys) {
                     try {
                         Rect<Integer> r = GetBoundingBoxKeys(FromKey(levelKey), currentLevel);

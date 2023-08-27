@@ -187,8 +187,8 @@ public class MapFragment extends Fragment implements LocationListener, SharedPre
         super.onPrepareOptionsMenu(menu);
         MenuItem item = menu.findItem(R.id.mark_visited);
         if (item != null) {
-            GameState.ShowGridState showGridState = GameState.getInstance().getShowGridState();
-            item.setVisible(GameState.ShowGridState.SELF==showGridState && gameState.getSelectedGridKey()!=null);
+            boolean showGrids = GameState.getInstance().getShowGrids();
+            item.setVisible(showGrids && gameState.getSelectedGridKey()!=null);
         }
     }
 
@@ -220,6 +220,10 @@ public class MapFragment extends Fragment implements LocationListener, SharedPre
     public void onLongPress(IGeoPoint geoPoint)
     {
         GameState gameState = GameState.getInstance();
+        if (!gameState.getShowGrids()) {
+            return;
+        }
+
         if (gameState.getBonus().GetUnusedBonusCount() == 0) {
             return;
         }

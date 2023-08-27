@@ -23,12 +23,6 @@ import java.util.Collections;
 
 
 public class GameState {
-    public enum ShowGridState {
-        NONE,
-        SELF,
-        SYNCED
-    }
-
     private static GameState instance = null;
 
     private final Grid grid;
@@ -87,20 +81,14 @@ public class GameState {
         return sharedPrefs.getBoolean(GridWalkingPreferenceActivity.SNAP_TO_CENTRE_PREFERENCE, true);
     }
 
-    public ShowGridState getShowGridState() {
+    public boolean getShowGrids() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
-        if (!sharedPrefs.getBoolean(GridWalkingPreferenceActivity.SHOW_GRIDS_PREFERENCE, true)) {
-            return ShowGridState.NONE;
-        } else {
-            return sharedPrefs.getBoolean(GridWalkingPreferenceActivity.SHOW_SYNCED_GRIDS_PREFERENCE, false) ? ShowGridState.SYNCED : ShowGridState.SELF;
-        }
+        return (sharedPrefs.getBoolean(GridWalkingPreferenceActivity.SHOW_GRIDS_PREFERENCE, true));
     }
 
-    public void setShowGridState(final ShowGridState showGridState) {
+    public void setShowGrids(final boolean showGrids) {
         SharedPreferences.Editor prefsEditor = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext()).edit();
-        prefsEditor.putBoolean(GridWalkingPreferenceActivity.SHOW_GRIDS_PREFERENCE, ShowGridState.NONE!=showGridState);
-        prefsEditor.putBoolean(GridWalkingPreferenceActivity.SHOW_SYNCED_GRIDS_PREFERENCE, ShowGridState.SYNCED==showGridState);
-        prefsEditor.putBoolean(GridWalkingPreferenceActivity.SNAP_TO_CENTRE_PREFERENCE, ShowGridState.SYNCED!=showGridState);
+        prefsEditor.putBoolean(GridWalkingPreferenceActivity.SHOW_GRIDS_PREFERENCE, showGrids);
         prefsEditor.apply();
     }
 
