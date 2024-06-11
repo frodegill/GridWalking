@@ -2,12 +2,11 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.location.GnssStatus;
-import android.location.GpsSatellite;
-import android.location.GpsStatus;
 import android.location.Location;
 import android.os.Build;
 import android.preference.PreferenceManager;
+
+import androidx.core.location.GnssStatusCompat;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.GridWalkingPreferenceActivity;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.MapFragment;
@@ -141,42 +140,25 @@ public class GameState {
         }
     }
 
-    public void updateGpsQualityDisplay(MapFragment mapFragment, Object gpsStatusObject) {
+    public void updateGpsQualityDisplay(MapFragment mapFragment, GnssStatusCompat gnssStatus) {
         ArrayList<Integer> results = new ArrayList<>();
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            Iterable<GpsSatellite> satellites = ((GpsStatus)gpsStatusObject).getSatellites();
-            for (GpsSatellite satellite : satellites) {
-                float snr = satellite.getSnr();
 
-                if (snr > 500) results.add(9);
-                else if (snr > 250) results.add(8);
-                else if (snr > 100) results.add(7);
-                else if (snr > 75) results.add(6);
-                else if (snr > 50) results.add(5);
-                else if (snr > 25) results.add(4);
-                else if (snr > 10) results.add(3);
-                else if (snr > 5) results.add(2);
-                else if (snr > 1) results.add(1);
-                else results.add(0);
-            }
-        } else {
-            GnssStatus gnssStatus = (GnssStatus)gpsStatusObject;
-            int satelliteCount = gnssStatus.getSatelliteCount();
-            for (int i = 0; i<satelliteCount; i++) {
-                float snr = gnssStatus.getCn0DbHz(i);
+        int satelliteCount = gnssStatus.getSatelliteCount();
+        for (int i = 0; i<satelliteCount; i++) {
+            float snr = gnssStatus.getCn0DbHz(i);
 
-                if (snr > 54) results.add(9);
-                else if (snr > 48) results.add(8);
-                else if (snr > 42) results.add(7);
-                else if (snr > 36) results.add(6);
-                else if (snr > 30) results.add(5);
-                else if (snr > 24) results.add(4);
-                else if (snr > 18) results.add(3);
-                else if (snr > 12) results.add(2);
-                else if (snr > 6) results.add(1);
-                else results.add(0);
-            }
+            if (snr > 54) results.add(9);
+            else if (snr > 48) results.add(8);
+            else if (snr > 42) results.add(7);
+            else if (snr > 36) results.add(6);
+            else if (snr > 30) results.add(5);
+            else if (snr > 24) results.add(4);
+            else if (snr > 18) results.add(3);
+            else if (snr > 12) results.add(2);
+            else if (snr > 6) results.add(1);
+            else results.add(0);
         }
+
         Collections.sort(results, Collections.<Integer>reverseOrder());
         mapFragment.onGpsQualityUpdated(results);
     }

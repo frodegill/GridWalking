@@ -7,17 +7,18 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.location.GnssStatus;
-import android.location.GpsStatus;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.location.GnssStatusCompat;
+import androidx.core.location.LocationListenerCompat;
+import androidx.core.location.LocationManagerCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -47,13 +48,13 @@ import org.osmdroid.views.overlay.ScaleBarOverlay;
 import java.util.ArrayList;
 
 
-public class MapFragment extends Fragment implements LocationListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public class MapFragment extends Fragment implements LocationListenerCompat, SharedPreferences.OnSharedPreferenceChangeListener {
     private static final long  LOCATION_UPDATE_INTERVAL = 30L;
     private static final float LOCATION_UPDATE_DISTANCE = 25.0f;
 
     private MapView mapView;
 
-    private Object gpsListener = null;
+    private GnssStatusCompat.Callback gnssStatusCallback = null;
 
 
     public static MapFragment newInstance() {
@@ -308,47 +309,29 @@ public class MapFragment extends Fragment implements LocationListener, SharedPre
             ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationManager.removeUpdates(this);
 
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                locationManager.removeGpsStatusListener((GpsStatus.Listener) gpsListener);
-            } else {
-                locationManager.unregisterGnssStatusCallback((GnssStatus.Callback) gpsListener);
-            }
+            LocationManagerCompat.unregisterGnssStatusCallback(locationManager, gnssStatusCallback);
         }
     }
 
     private void EnableLocationUpdates() {
         LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             if (!locationManager.getAllProviders().contains(LocationManager.GPS_PROVIDER)) {
                 Toast.makeText(getContext(), "Failed to find a Location Provider (GPS)", Toast.LENGTH_LONG).show();
                 return;
             }
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_UPDATE_INTERVAL, LOCATION_UPDATE_DISTANCE, this);
 
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                gpsListener = (GpsStatus.Listener) event -> {
-                    if (event == GpsStatus.GPS_EVENT_SATELLITE_STATUS) {
-                        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                                ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                            GameState gameState = GameState.getInstance();
-                            LocationManager locationManager1 = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-                            gameState.updateGpsQualityDisplay(MapFragment.this, locationManager1.getGpsStatus(null));
-                        }
-                    }
-                };
-                locationManager.addGpsStatusListener((GpsStatus.Listener) gpsListener);
-            } else {
-                gpsListener = new GnssStatus.Callback() {
-                    @Override
-                    public void onSatelliteStatusChanged(GnssStatus status) {
-                        GameState gameState = GameState.getInstance();
-                        gameState.updateGpsQualityDisplay(MapFragment.this, status);
-                    }
-                };
+            gnssStatusCallback = new GnssStatusCompat.Callback() {
+                @Override
+                public void onSatelliteStatusChanged(@NonNull GnssStatusCompat status) {
+                    GameState gameState = GameState.getInstance();
+                    gameState.updateGpsQualityDisplay(MapFragment.this, status);
+                }
+            };
 
-                locationManager.registerGnssStatusCallback((GnssStatus.Callback) gpsListener);
-            }
+            LocationManagerCompat.registerGnssStatusCallback(locationManager, gnssStatusCallback, new Handler(Looper.getMainLooper()));
         }
     }
 
