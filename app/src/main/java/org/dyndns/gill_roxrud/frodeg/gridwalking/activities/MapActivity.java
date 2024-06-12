@@ -1,22 +1,20 @@
 package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import androidx.fragment.app.FragmentManager;
-import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.intents.SyncHighscoreIntentService;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.worker.SyncHighscoreWorker;
 import org.osmdroid.config.Configuration;
 
 
@@ -48,29 +46,13 @@ public class MapActivity extends AppCompatActivity {
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int responseCode, Intent data) {
-        if (requestCode == HttpsClient.RequestCode.SYNC_HIGHSCORE.ordinal()) {
-            if (responseCode == HttpsClient.NetworkResponseCode.OK.ordinal()) {
-                Parcelable response = data.getParcelableExtra(SyncHighscoreIntentService.RESPONSE_EXTRA);
-                HighscoreList highscoreList = (HighscoreList) response;
-
-                Intent intent = new Intent(this, HighscoreActivity.class);
-                intent.putExtra(HighscoreActivity.HIGHSCORE_LIST, highscoreList);
-                ContextCompat.startActivity(this, intent, null);
-            } else {
-                String msg = data.getStringExtra(SyncHighscoreIntentService.RESPONSE_MSG_EXTRA);
-                Toast.makeText(this, "Syncing highscore failed: " + msg, Toast.LENGTH_LONG).show();
-            }
-        }
-        super.onActivityResult(requestCode, responseCode, data);
-    }
-
     void syncHighscore() {
-        PendingIntent pendingResult = createPendingResult(HttpsClient.RequestCode.SYNC_HIGHSCORE.ordinal(), new Intent(), 0);
-        Intent intent = new Intent(MapActivity.this, SyncHighscoreIntentService.class);
-        intent.putExtra(SyncHighscoreIntentService.PENDING_RESULT_EXTRA, pendingResult);
-        startService(intent);
+        OneTimeWorkRequest syncHighscoreWork = new OneTimeWorkRequest.Builder(SyncHighscoreWorker.class)
+                                                   .setConstraints(new Constraints.Builder()
+                                                                   .setRequiredNetworkType(NetworkType.CONNECTED)
+                                                                   .build())
+                                                   .build();
+        WorkManager.getInstance(GridWalkingApplication.getContext()).enqueue(syncHighscoreWork);
     }
 
 }

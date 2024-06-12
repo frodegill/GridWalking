@@ -1,16 +1,28 @@
-package org.dyndns.gill_roxrud.frodeg.gridwalking.intents;
+package org.dyndns.gill_roxrud.frodeg.gridwalking.worker;
 
-import android.app.IntentService;
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Grid;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingDBHelper;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Secrets;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.HighscoreActivity;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.MapActivity;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
 
 import java.io.BufferedReader;
@@ -26,35 +38,23 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-
-public class SyncHighscoreIntentService extends IntentService {
-
-    private static final String TAG = SyncHighscoreIntentService.class.getSimpleName();
+public class SyncHighscoreWorker extends Worker {
 
     private static final String GRIDWALKING_ENDPOINT = "https://gill-roxrud.dyndns.org:1416";
-    //private static final String GRIDWALKING_ENDPOINT = "http://10.0.2.2:1416";
     private static final String SYNC_HIGHSCORE_REST_PATH = "/gridwalking/sync/";
 
-    public static final String PENDING_RESULT_EXTRA = "pending_result";
-    public static final String RESPONSE_EXTRA       = "org.dyndns.gill_roxrud.frodeg.gridwalking.response";
-    public static final String RESPONSE_MSG_EXTRA   = "org.dyndns.gill_roxrud.frodeg.gridwalking.msg";
-
-
-    public SyncHighscoreIntentService() {
-        super(TAG);
+    public SyncHighscoreWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+        super(context, workerParams);
     }
 
+    @NonNull
     @Override
-    protected void onHandleIntent(Intent intent) {
-        PendingIntent reply = null;
-        HighscoreList highscoreList = null;
-
+    public Result doWork() {
+        final HighscoreList highscoreList = new HighscoreList();
         GridWalkingDBHelper db = null;
         SQLiteDatabase dbInTransaction = null;
         boolean failed = false;
         try {
-            reply = intent.getParcelableExtra(PENDING_RESULT_EXTRA);
-
             GameState gameState = GameState.getInstance();
             db = gameState.getDB();
             dbInTransaction = db.StartTransaction();
@@ -65,11 +65,11 @@ public class SyncHighscoreIntentService extends IntentService {
             Set<Integer> deletedGrids = new TreeSet<>();
             ArrayList<Set<Integer>> newGrids = new ArrayList<>();
             byte level;
-            for (level=0; level<Grid.LEVEL_COUNT; level++) {
+            for (level=0; level< Grid.LEVEL_COUNT; level++) {
                 newGrids.add(new TreeSet<>());
             }
 
-            String msg = null;
+            String errorMsg = null;
             HttpsClient httpsClient = null;
             Map<String,Object> result = null;
             BufferedReader in = null;
@@ -79,7 +79,7 @@ public class SyncHighscoreIntentService extends IntentService {
 
                 Secrets secrets = new Secrets();
                 secrets.Append((pathParams+nameParam).getBytes(StandardCharsets.UTF_8));
-                String urlString = GRIDWALKING_ENDPOINT+pathParams+URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
+                String urlString = GRIDWALKING_ENDPOINT+pathParams+ URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
                         +"?crc="+ secrets.Crc16();
 
                 httpsClient = GameState.getInstance().getHttpsClient();
@@ -92,9 +92,9 @@ public class SyncHighscoreIntentService extends IntentService {
                 result = httpsClient.httpPost(urlString, body);
                 int statusCode = (int)result.get(HttpsClient.STATUS_INT);
                 InputStream is = (InputStream)result.get(HttpsClient.RESPONSE_INPUTSTREAM);
+                InputStreamReader isr = new InputStreamReader(is);
+                in = new BufferedReader(isr);
                 if (statusCode >= 400) {
-                    InputStreamReader isr = new InputStreamReader(is);
-                    in = new BufferedReader(isr);
                     String inputLine;
                     StringBuilder sb = new StringBuilder();
                     while ((inputLine = in.readLine()) != null) {
@@ -103,9 +103,6 @@ public class SyncHighscoreIntentService extends IntentService {
                     failed = true;
                     throw new IOException("HTTP "+ statusCode +": "+sb);
                 } else {
-                    highscoreList = new HighscoreList();
-                    InputStreamReader isr = new InputStreamReader(is);
-                    in = new BufferedReader(isr);
                     boolean first = true;
                     String inputLine;
                     while ((inputLine = in.readLine()) != null) {
@@ -121,7 +118,7 @@ public class SyncHighscoreIntentService extends IntentService {
                 }
             } catch (Exception e) {
                 failed = true;
-                msg = e.getMessage();
+                errorMsg = e.getMessage();
             } finally {
                 try {
                     if (in != null) {
@@ -134,37 +131,32 @@ public class SyncHighscoreIntentService extends IntentService {
                 }
             }
 
-            Intent response = new Intent();
-            response.putExtra(RESPONSE_EXTRA, highscoreList);
-            if (msg != null) {
-                response.putExtra(RESPONSE_MSG_EXTRA, msg);
-            }
-
-            reply.send(this,
-                    failed ? HttpsClient.NetworkResponseCode.ERROR.ordinal() : HttpsClient.NetworkResponseCode.OK.ordinal(),
-                    response);
+            final String finalErrorMsg = errorMsg;
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (finalErrorMsg == null) {
+                    Intent intent = new Intent(GridWalkingApplication.getContext(), HighscoreActivity.class);
+                    intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+                    intent.putExtra(HighscoreActivity.HIGHSCORE_LIST, highscoreList);
+                    GridWalkingApplication.getContext().startActivity(intent);
+                } else {
+                    Toast.makeText(GridWalkingApplication.getContext(), "Syncing highscore failed: " + finalErrorMsg, Toast.LENGTH_LONG).show();
+                }
+            });
 
             db.CommitModifiedGrids(dbInTransaction, deletedGrids, newGrids);
 
         } catch (Exception e) {
-            reportError(reply, HttpsClient.NetworkResponseCode.ERROR.ordinal(), e.getMessage());
+            new Handler(Looper.getMainLooper()).post(() -> {
+                Toast.makeText(GridWalkingApplication.getContext(), "Syncing highscore failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            });
         } finally {
             if (db!=null && dbInTransaction!=null) {
                 db.EndTransaction(dbInTransaction, !failed);
             }
         }
-    }
 
-    private void reportError(PendingIntent reply, int errorCode, final String msg) {
-        if (reply != null) {
-            try {
-                Intent response = new Intent();
-                response.putExtra(RESPONSE_MSG_EXTRA, msg);
-                reply.send(this, errorCode, response);
-            } catch (PendingIntent.CanceledException e) {
-            }
-        }
-    }
+        return Result.success();
+   }
 
     private String generatePathParamString(final GridWalkingDBHelper db) {
         StringBuilder sb = new StringBuilder();

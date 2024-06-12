@@ -30,8 +30,6 @@
         android:theme="@style/AppTheme"
         android:fullBackupContent="@xml/backup_descriptor">
 
-        <service android:name=".intents.SyncHighscoreIntentService" android:exported="false"/>
-
         <activity android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
