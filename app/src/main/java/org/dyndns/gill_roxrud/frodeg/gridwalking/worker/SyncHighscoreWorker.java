@@ -21,7 +21,6 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Secrets;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.HighscoreActivity;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -32,9 +31,14 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class SyncHighscoreWorker extends Worker {
 
@@ -67,31 +71,31 @@ public class SyncHighscoreWorker extends Worker {
                 newGrids.add(new TreeSet<>());
             }
 
-            String errorMsg = null;
-            HttpsClient httpsClient = null;
-            Map<String,Object> result = null;
-            BufferedReader in = null;
-            try {
-                db.GetModifiedGrids(dbInTransaction, deletedGrids, newGrids);
-                boolean syncGrids = 10L<=gameState.getGrid().getScore();
+            db.GetModifiedGrids(dbInTransaction, deletedGrids, newGrids);
+            boolean syncGrids = 10L<=gameState.getGrid().getScore();
 
-                Secrets secrets = new Secrets();
-                secrets.Append((pathParams+nameParam).getBytes(StandardCharsets.UTF_8));
-                String urlString = GRIDWALKING_ENDPOINT+pathParams+ URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
-                        +"?crc="+ secrets.Crc16();
+            Secrets secrets = new Secrets();
+            secrets.Append((pathParams+nameParam).getBytes(StandardCharsets.UTF_8));
+            String urlString = GRIDWALKING_ENDPOINT+pathParams+ URLEncoder.encode(nameParam, "UTF-8").replaceAll("\\+", "%20")
+                    +"?crc="+ secrets.Crc16();
 
-                httpsClient = GameState.getInstance().getHttpsClient();
-                byte[] body = null;
-                if (syncGrids) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    generateBody(baos, deletedGrids, newGrids);
-                    body = baos.toByteArray();
-                }
-                result = httpsClient.httpPost(urlString, body);
-                int statusCode = (int)result.get(HttpsClient.STATUS_INT);
-                InputStream is = (InputStream)result.get(HttpsClient.RESPONSE_INPUTSTREAM);
-                InputStreamReader isr = new InputStreamReader(is);
-                in = new BufferedReader(isr);
+            byte[] body = null;
+            if (syncGrids) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                generateBody(baos, deletedGrids, newGrids);
+                body = baos.toByteArray();
+            }
+            RequestBody postBody = (body==null) ? RequestBody.create("", null) :
+                                                  RequestBody.create(body, MediaType.get("application/octet-stream"));
+            Request postRequest = new Request.Builder()
+                    .url(urlString)
+                    .post(postBody)
+                    .build();
+            try (Response postResponse = new OkHttpClient().newCall(postRequest).execute();
+                 InputStream is = postResponse.body().byteStream();
+                 InputStreamReader isr = new InputStreamReader(is);
+                 BufferedReader in = new BufferedReader(isr)) {
+                int statusCode = postResponse.code();
                 if (statusCode >= 400) {
                     String inputLine;
                     StringBuilder sb = new StringBuilder();
@@ -99,7 +103,7 @@ public class SyncHighscoreWorker extends Worker {
                         sb.append(inputLine);
                     }
                     failed = true;
-                    throw new IOException("HTTP "+ statusCode +": "+sb);
+                    throw new IOException("HTTP " + statusCode + ": " + sb);
                 } else {
                     boolean first = true;
                     String inputLine;
@@ -114,37 +118,20 @@ public class SyncHighscoreWorker extends Worker {
                         }
                     }
                 }
-            } catch (Exception e) {
-                failed = true;
-                errorMsg = e.getMessage();
-            } finally {
-                try {
-                    if (in != null) {
-                        in.close();
-                    }
-                    if (httpsClient != null && result != null) {
-                        httpsClient.disconnect(result);
-                    }
-                } catch (Exception e) {
-                }
             }
 
-            final String finalErrorMsg = errorMsg;
             new Handler(Looper.getMainLooper()).post(() -> {
-                if (finalErrorMsg == null) {
-                    Intent intent = new Intent(GridWalkingApplication.getContext(), HighscoreActivity.class);
-                    intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra(HighscoreActivity.HIGHSCORE_LIST, highscoreList);
-                    GridWalkingApplication.getContext().startActivity(intent);
-                } else {
-                    Toast.makeText(GridWalkingApplication.getContext(), "Syncing highscore failed: " + finalErrorMsg, Toast.LENGTH_LONG).show();
-                }
+                Intent intent = new Intent(GridWalkingApplication.getContext(), HighscoreActivity.class);
+                intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+                intent.putExtra(HighscoreActivity.HIGHSCORE_LIST, highscoreList);
+                GridWalkingApplication.getContext().startActivity(intent);
             });
 
             db.CommitModifiedGrids(dbInTransaction, deletedGrids, newGrids);
 
-        } catch (Exception e) {
-            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(GridWalkingApplication.getContext(), "Syncing highscore failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+        } catch (Throwable t) {
+            failed = true;
+            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(GridWalkingApplication.getContext(), "Syncing highscore failed: " + t.getMessage(), Toast.LENGTH_LONG).show());
         } finally {
             if (db!=null && dbInTransaction!=null) {
                 db.EndTransaction(dbInTransaction, !failed);
