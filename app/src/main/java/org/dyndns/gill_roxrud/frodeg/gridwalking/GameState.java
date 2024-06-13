@@ -15,6 +15,9 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.OkHttpClient;
 
 
 public class GameState {
@@ -23,6 +26,8 @@ public class GameState {
     private final Grid grid;
     private final Bonus bonus;
     private final GridWalkingDBHelper db;
+
+    private final OkHttpClient okHttpClient;
 
     private Integer selectedGridKey = null;
     private IGeoPoint positionHint = null;
@@ -37,6 +42,14 @@ public class GameState {
         grid = new Grid();
         bonus = new Bonus();
         db = new GridWalkingDBHelper(context);
+
+        okHttpClient = new OkHttpClient.Builder()
+                            .connectTimeout(30, TimeUnit.SECONDS)
+                            .readTimeout(60, TimeUnit.SECONDS)
+                            .writeTimeout(60, TimeUnit.SECONDS)
+                            .callTimeout(90, TimeUnit.SECONDS)
+                            .build();
+
         //String s = db.DumpDB();
         //System.out.println(s);
     }
@@ -57,6 +70,8 @@ public class GameState {
     }
 
     public GridWalkingDBHelper getDB() {return db;}
+
+    public OkHttpClient getHttpClient() {return okHttpClient;}
 
     public boolean getUseDataConnection() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());

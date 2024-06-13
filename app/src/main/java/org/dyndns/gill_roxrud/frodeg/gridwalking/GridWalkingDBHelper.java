@@ -182,7 +182,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 db.execSQL("INSERT INTO "+GRID_TABLE_NAME+"_tmp"
                         +"("+GRID_COLUMN_KEY+","+GRID_COLUMN_LEVEL+","+GRID_COLUMN_STATUS+") "
                         +"SELECT "
-                        +GRID_COLUMN_KEY+","+GRID_COLUMN_LEVEL+","+ GRID_STATUS_NEW
+                        +GRID_COLUMN_KEY+","+GRID_COLUMN_LEVEL+","+ GRID_COLUMN_STATUS
                         +" FROM "+GRID_TABLE_NAME
                         +" WHERE owner=0");
 

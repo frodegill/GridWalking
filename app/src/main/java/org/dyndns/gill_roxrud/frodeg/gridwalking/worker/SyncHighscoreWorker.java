@@ -35,7 +35,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
@@ -91,7 +90,7 @@ public class SyncHighscoreWorker extends Worker {
                     .url(urlString)
                     .post(postBody)
                     .build();
-            try (Response postResponse = new OkHttpClient().newCall(postRequest).execute();
+            try (Response postResponse = GameState.getInstance().getHttpClient().newCall(postRequest).execute();
                  InputStream is = postResponse.body().byteStream();
                  InputStreamReader isr = new InputStreamReader(is);
                  BufferedReader in = new BufferedReader(isr)) {
