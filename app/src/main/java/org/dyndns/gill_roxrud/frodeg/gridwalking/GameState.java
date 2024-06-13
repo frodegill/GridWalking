@@ -159,7 +159,7 @@ public class GameState {
             else results.add(0);
         }
 
-        Collections.sort(results, Collections.<Integer>reverseOrder());
+        Collections.sort(results, Collections.reverseOrder());
         mapFragment.onGpsQualityUpdated(results);
     }
 

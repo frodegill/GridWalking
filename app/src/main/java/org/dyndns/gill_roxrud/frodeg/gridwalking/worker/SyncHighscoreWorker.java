@@ -2,7 +2,6 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking.worker;
 
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
@@ -22,7 +21,6 @@ import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.Secrets;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.HighscoreActivity;
-import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.MapActivity;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.network.HttpsClient;
 
 import java.io.BufferedReader;
@@ -146,9 +144,7 @@ public class SyncHighscoreWorker extends Worker {
             db.CommitModifiedGrids(dbInTransaction, deletedGrids, newGrids);
 
         } catch (Exception e) {
-            new Handler(Looper.getMainLooper()).post(() -> {
-                Toast.makeText(GridWalkingApplication.getContext(), "Syncing highscore failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            });
+            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(GridWalkingApplication.getContext(), "Syncing highscore failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
         } finally {
             if (db!=null && dbInTransaction!=null) {
                 db.EndTransaction(dbInTransaction, !failed);
