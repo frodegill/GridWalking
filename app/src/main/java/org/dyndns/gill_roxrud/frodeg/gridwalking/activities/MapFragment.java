@@ -11,6 +11,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.location.GnssStatusCompat;
 import androidx.core.location.LocationListenerCompat;
@@ -76,7 +77,11 @@ public class MapFragment extends Fragment implements MenuProvider, LocationListe
         View view = inflater.inflate(R.layout.fragment_map, null);
         mapView = view.findViewById(R.id.mapview);
         mapView.setDestroyMode(false);
+        return view;
+    }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
 
@@ -106,8 +111,6 @@ public class MapFragment extends Fragment implements MenuProvider, LocationListe
         onScoreUpdated();
 
         requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
-
-        return view;
     }
 
     @Override
