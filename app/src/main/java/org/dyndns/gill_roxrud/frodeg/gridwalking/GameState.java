@@ -3,11 +3,11 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
-import android.preference.PreferenceManager;
 
 import androidx.core.location.GnssStatusCompat;
+import androidx.preference.PreferenceManager;
 
-import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.GridWalkingPreferenceActivity;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.GridWalkingPreferenceFragment;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.activities.MapFragment;
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
@@ -75,31 +75,29 @@ public class GameState {
 
     public boolean getUseDataConnection() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
-        return !sharedPrefs.getBoolean(GridWalkingPreferenceActivity.OFFLINE_PREFERENCE, false);
+        return !sharedPrefs.getBoolean(GridWalkingPreferenceFragment.OFFLINE_PREFERENCE, false);
     }
 
     public boolean getSnapToCentre() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
-        return sharedPrefs.getBoolean(GridWalkingPreferenceActivity.SNAP_TO_CENTRE_PREFERENCE, true);
+        return sharedPrefs.getBoolean(GridWalkingPreferenceFragment.SNAP_TO_CENTRE_PREFERENCE, true);
     }
 
     public boolean getShowGrids() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
-        return (sharedPrefs.getBoolean(GridWalkingPreferenceActivity.SHOW_GRIDS_PREFERENCE, true));
+        return (sharedPrefs.getBoolean(GridWalkingPreferenceFragment.SHOW_GRIDS_PREFERENCE, true));
     }
 
     public void setShowGrids(final boolean showGrids) {
         SharedPreferences.Editor prefsEditor = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext()).edit();
-        prefsEditor.putBoolean(GridWalkingPreferenceActivity.SHOW_GRIDS_PREFERENCE, showGrids);
+        prefsEditor.putBoolean(GridWalkingPreferenceFragment.SHOW_GRIDS_PREFERENCE, showGrids);
         prefsEditor.apply();
     }
 
     public OnlineTileSourceBase getMapSource() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
-        String mapSourceKey = sharedPrefs.getString(GridWalkingPreferenceActivity.MAP_SOURCE, "mapnik");
-        if ("hikebikemap".equals(mapSourceKey)) {
-            return TileSourceFactory.HIKEBIKEMAP;
-        } else if ("opentopomap".equals(mapSourceKey)) {
+        String mapSourceKey = sharedPrefs.getString(GridWalkingPreferenceFragment.MAP_SOURCE, "mapnik");
+        if ("opentopomap".equals(mapSourceKey)) {
             return TileSourceFactory.OpenTopo;
         } else {
             return TileSourceFactory.MAPNIK;
@@ -108,7 +106,7 @@ public class GameState {
 
     public String getHighscoreNickname() {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
-        return sharedPrefs.getString(GridWalkingPreferenceActivity.HIGHSCORE_NICKNAME_PREFERENCE, "Anonymous");
+        return sharedPrefs.getString(GridWalkingPreferenceFragment.HIGHSCORE_NICKNAME_PREFERENCE, "Anonymous");
     }
 
     public Integer getSelectedGridKey() {

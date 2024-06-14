@@ -2,9 +2,9 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import androidx.fragment.app.FragmentManager;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 import androidx.work.Constraints;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
