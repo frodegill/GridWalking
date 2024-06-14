@@ -74,16 +74,8 @@ public class MapFragment extends Fragment implements LocationListenerCompat, Sha
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, null);
-
         mapView = view.findViewById(R.id.mapview);
         mapView.setDestroyMode(false);
-
-        return view;
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
 
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
@@ -114,6 +106,8 @@ public class MapFragment extends Fragment implements LocationListenerCompat, Sha
         }
 
         onScoreUpdated();
+
+        return view;
     }
 
     @Override
