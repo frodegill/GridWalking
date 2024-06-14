@@ -179,12 +179,24 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                         +GRID_COLUMN_STATUS+" INTEGER NOT NULL DEFAULT "+ GRID_STATUS_NEW +", "
                         +"PRIMARY KEY ("+GRID_COLUMN_KEY+","+GRID_COLUMN_LEVEL+"))");
 
-                db.execSQL("INSERT INTO "+GRID_TABLE_NAME+"_tmp"
-                        +"("+GRID_COLUMN_KEY+","+GRID_COLUMN_LEVEL+","+GRID_COLUMN_STATUS+") "
-                        +"SELECT "
-                        +GRID_COLUMN_KEY+","+GRID_COLUMN_LEVEL+","+ GRID_COLUMN_STATUS
-                        +" FROM "+GRID_TABLE_NAME
-                        +" WHERE owner=0");
+                final String user_uuid = GetStringProperty(GridWalkingDBHelper.PROPERTY_USER_GUID);
+                if (user_uuid.equalsIgnoreCase("f0ac8e51-3afd-44a6-a65f-3db20e3de89e")) {
+                    //Sorry, Geir. I messed up. You will get a new UUID and have to sync all grids
+                    SetStringProperty(db, PROPERTY_USER_GUID, UUID.randomUUID().toString());
+                    db.execSQL("INSERT INTO " + GRID_TABLE_NAME + "_tmp"
+                            + "(" + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_COLUMN_STATUS + ") "
+                            + "SELECT "
+                            + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_STATUS_NEW
+                            + " FROM " + GRID_TABLE_NAME
+                            + " WHERE owner=0");
+                } else {
+                    db.execSQL("INSERT INTO " + GRID_TABLE_NAME + "_tmp"
+                            + "(" + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_COLUMN_STATUS + ") "
+                            + "SELECT "
+                            + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_COLUMN_STATUS
+                            + " FROM " + GRID_TABLE_NAME
+                            + " WHERE owner=0");
+                }
 
                 db.execSQL("DROP TABLE "+GRID_TABLE_NAME);
 
