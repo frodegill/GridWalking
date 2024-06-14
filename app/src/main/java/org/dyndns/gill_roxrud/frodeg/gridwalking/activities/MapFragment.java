@@ -15,7 +15,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.location.GnssStatusCompat;
 import androidx.core.location.LocationListenerCompat;
 import androidx.core.location.LocationManagerCompat;
+import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Lifecycle;
 import androidx.preference.PreferenceManager;
 
 import android.os.Handler;
@@ -48,7 +50,7 @@ import org.osmdroid.views.overlay.ScaleBarOverlay;
 import java.util.ArrayList;
 
 
-public class MapFragment extends Fragment implements LocationListenerCompat, SharedPreferences.OnSharedPreferenceChangeListener {
+public class MapFragment extends Fragment implements MenuProvider, LocationListenerCompat, SharedPreferences.OnSharedPreferenceChangeListener {
     private static final long  LOCATION_UPDATE_INTERVAL = 30L;
     private static final float LOCATION_UPDATE_DISTANCE = 25.0f;
 
@@ -64,8 +66,6 @@ public class MapFragment extends Fragment implements LocationListenerCompat, Sha
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        setHasOptionsMenu(true);
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(GridWalkingApplication.getContext());
         sharedPrefs.registerOnSharedPreferenceChangeListener(this);
@@ -96,8 +96,6 @@ public class MapFragment extends Fragment implements LocationListenerCompat, Sha
 
         repositionAndEnableMap();
 
-        setHasOptionsMenu(true);
-
         if (db.GetProperty(GridWalkingDBHelper.PROPERTY_BUGFIX_PURGE_DUPLICATES) != 0) {
             GameState.getInstance().getGrid().BugfixPurgeDuplicatesT();
         }
@@ -106,6 +104,8 @@ public class MapFragment extends Fragment implements LocationListenerCompat, Sha
         }
 
         onScoreUpdated();
+
+        requireActivity().addMenuProvider(this, getViewLifecycleOwner(), Lifecycle.State.RESUMED);
 
         return view;
     }
@@ -168,41 +168,6 @@ public class MapFragment extends Fragment implements LocationListenerCompat, Sha
         }
 
         EnableLocationUpdates();
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.activity_map, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(final Menu menu) {
-        GameState gameState = GameState.getInstance();
-        super.onPrepareOptionsMenu(menu);
-        MenuItem item = menu.findItem(R.id.mark_visited);
-        if (item != null) {
-            boolean showGrids = GameState.getInstance().getShowGrids();
-            item.setVisible(showGrids && gameState.getSelectedGridKey()!=null);
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        final int itemId = item.getItemId();
-        if (itemId == R.id.mark_visited) {
-            discoverSelectedGridT();
-            return true;
-        } else if (itemId == R.id.sync_highscore) {
-            ((MapActivity) getActivity()).syncHighscore();
-            return true;
-        } else if (itemId == R.id.settings) {
-            Intent i = new Intent(getContext(), GridWalkingPreferenceActivity.class);
-            startActivity(i);
-            return true;
-        } else {
-            return super.onOptionsItemSelected(item);
-        }
     }
 
     private void discoverSelectedGridT() {
@@ -347,4 +312,37 @@ public class MapFragment extends Fragment implements LocationListenerCompat, Sha
             mapView.setUseDataConnection(gameState.getUseDataConnection());
         }
     }
+
+    @Override
+    public void onPrepareMenu(@NonNull Menu menu) {
+        MenuItem item = menu.findItem(R.id.mark_visited);
+        if (item != null) {
+            GameState gameState = GameState.getInstance();
+            boolean showGrids = gameState.getShowGrids();
+            item.setVisible(showGrids && gameState.getSelectedGridKey()!=null);
+        }
+    }
+
+    @Override
+    public void onCreateMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
+        menuInflater.inflate(R.menu.activity_map, menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(@NonNull MenuItem menuItem) {
+        final int itemId = menuItem.getItemId();
+        if (itemId == R.id.mark_visited) {
+            discoverSelectedGridT();
+            return true;
+        } else if (itemId == R.id.sync_highscore) {
+            ((MapActivity) getActivity()).syncHighscore();
+            return true;
+        } else if (itemId == R.id.settings) {
+            Intent i = new Intent(getContext(), GridWalkingPreferenceActivity.class);
+            startActivity(i);
+            return true;
+        }
+        return false;
+    }
+
 }
