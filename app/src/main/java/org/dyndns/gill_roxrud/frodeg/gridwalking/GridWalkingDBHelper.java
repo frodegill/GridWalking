@@ -179,7 +179,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                         +GRID_COLUMN_STATUS+" INTEGER NOT NULL DEFAULT "+ GRID_STATUS_NEW +", "
                         +"PRIMARY KEY ("+GRID_COLUMN_KEY+","+GRID_COLUMN_LEVEL+"))");
 
-                final String user_uuid = GetStringProperty(GridWalkingDBHelper.PROPERTY_USER_GUID);
+                final String user_uuid = GetStringProperty(db, GridWalkingDBHelper.PROPERTY_USER_GUID);
                 if (user_uuid.equalsIgnoreCase("f0ac8e51-3afd-44a6-a65f-3db20e3de89e")) {
                     //Sorry, Geir. I messed up. You will get a new UUID and have to sync all grids
                     SetStringProperty(db, PROPERTY_USER_GUID, UUID.randomUUID().toString());
@@ -489,8 +489,8 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public String GetStringProperty(final String property) {
-        try (Cursor cursor = this.getReadableDatabase()
+    public String GetStringProperty(final SQLiteDatabase readableDb, final String property) {
+        try (Cursor cursor = readableDb
                 .rawQuery("SELECT " + PROPERTY_COLUMN_VALUE
                                 + " FROM " + PROPERTY_TABLE_NAME
                                 + " WHERE " + PROPERTY_COLUMN_KEY + "=?",
@@ -500,6 +500,10 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             }
             return cursor.isAfterLast() ? "" : cursor.getString(0);
         }
+    }
+
+    public String GetStringPropertyR(final String property) {
+        return GetStringProperty(this.getReadableDatabase(), property);
     }
 
     public void SetProperty(final SQLiteDatabase dbInTransaction, final String property, final int value) throws SQLException {

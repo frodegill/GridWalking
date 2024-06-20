@@ -143,7 +143,7 @@ public class SyncHighscoreWorker extends Worker {
     private String generatePathParamString(final GridWalkingDBHelper db) {
         StringBuilder sb = new StringBuilder();
         sb.append(SYNC_HIGHSCORE_REST_PATH);
-        sb.append(db.GetStringProperty(GridWalkingDBHelper.PROPERTY_USER_GUID));
+        sb.append(db.GetStringPropertyR(GridWalkingDBHelper.PROPERTY_USER_GUID));
         sb.append('/');
         sb.append(db.GetUnusedBonusCount());
         byte i;

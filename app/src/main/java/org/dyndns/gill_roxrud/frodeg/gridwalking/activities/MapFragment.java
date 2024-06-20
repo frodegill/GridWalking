@@ -158,8 +158,8 @@ public class MapFragment extends Fragment implements MenuProvider, LocationListe
         GameState gameState = GameState.getInstance();
         GridWalkingDBHelper db = gameState.getDB();
         mapView.getController().setZoom((double)db.GetProperty(GridWalkingDBHelper.PROPERTY_ZOOM_LEVEL));
-        final String latitudeString = db.GetStringProperty(GridWalkingDBHelper.PROPERTY_LATITUDE_POS);
-        final String longitudeString = db.GetStringProperty(GridWalkingDBHelper.PROPERTY_LONGITUDE_POS);
+        final String latitudeString = db.GetStringPropertyR(GridWalkingDBHelper.PROPERTY_LATITUDE_POS);
+        final String longitudeString = db.GetStringPropertyR(GridWalkingDBHelper.PROPERTY_LONGITUDE_POS);
         if (latitudeString!=null && longitudeString!=null) {
             mapView.setExpectedCenter(new GeoPoint(Double.parseDouble(latitudeString), Double.parseDouble(longitudeString)));
         }
