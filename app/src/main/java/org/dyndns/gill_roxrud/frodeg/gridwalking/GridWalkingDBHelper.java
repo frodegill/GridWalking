@@ -21,7 +21,7 @@ import java.util.UUID;
 public final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME         = "GridWalking.db";
-    private static final int    DATABASE_VERSION      = 6;
+    private static final int    DATABASE_VERSION      = 7;
 
     private static final String GRID_TABLE_NAME       = "grid";
     private static final String GRID_COLUMN_KEY       = "key";
@@ -34,7 +34,10 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
 
     private static final String BONUS_TABLE_NAME      = "bonus";
     private static final String BONUS_COLUMN_KEY      = "key";
+    private static final String BONUS_COLUMN_STATUS    = "status";
 
+    private static final int BONUS_STATUS_SYNCED       = 0;
+    private static final int BONUS_STATUS_NEW          = 1;
     private static final String PROPERTY_TABLE_NAME   = "properties";
     private static final String PROPERTY_COLUMN_KEY   = "key";
     private static final String PROPERTY_COLUMN_VALUE = "value";
@@ -63,7 +66,8 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                                                           +GRID_COLUMN_LEVEL+" INTEGER NOT NULL, "
                                                           +GRID_COLUMN_STATUS+" INTEGER NOT NULL DEFAULT "+ GRID_STATUS_NEW +", "
                                                           +"PRIMARY KEY ("+GRID_COLUMN_KEY+","+GRID_COLUMN_LEVEL+"))");
-            db.execSQL("CREATE TABLE "+BONUS_TABLE_NAME+"("+BONUS_COLUMN_KEY+" INTEGER PRIMARY KEY)");
+            db.execSQL("CREATE TABLE "+BONUS_TABLE_NAME+"("+BONUS_COLUMN_KEY+" INTEGER PRIMARY KEY, "
+                                                           +BONUS_COLUMN_STATUS+" INTEGER NOT NULL DEFAULT "+ BONUS_STATUS_NEW +")");
             db.execSQL("CREATE TABLE "+PROPERTY_TABLE_NAME+"("+PROPERTY_COLUMN_KEY+" TEXT PRIMARY KEY, "+PROPERTY_COLUMN_VALUE+" INTEGER)");
 
             ContentValues contentValues;
@@ -179,28 +183,31 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                         +GRID_COLUMN_STATUS+" INTEGER NOT NULL DEFAULT "+ GRID_STATUS_NEW +", "
                         +"PRIMARY KEY ("+GRID_COLUMN_KEY+","+GRID_COLUMN_LEVEL+"))");
 
-                final String user_uuid = GetStringProperty(db, GridWalkingDBHelper.PROPERTY_USER_GUID);
-                if (user_uuid.equalsIgnoreCase("f0ac8e51-3afd-44a6-a65f-3db20e3de89e")) {
-                    //Sorry, Geir. I messed up. You will get a new UUID and have to sync all grids
-                    SetStringProperty(db, PROPERTY_USER_GUID, UUID.randomUUID().toString());
-                    db.execSQL("INSERT INTO " + GRID_TABLE_NAME + "_tmp"
-                            + "(" + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_COLUMN_STATUS + ") "
-                            + "SELECT "
-                            + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_STATUS_NEW
-                            + " FROM " + GRID_TABLE_NAME
-                            + " WHERE owner=0");
-                } else {
-                    db.execSQL("INSERT INTO " + GRID_TABLE_NAME + "_tmp"
-                            + "(" + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_COLUMN_STATUS + ") "
-                            + "SELECT "
-                            + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_COLUMN_STATUS
-                            + " FROM " + GRID_TABLE_NAME
-                            + " WHERE owner=0");
-                }
+                db.execSQL("INSERT INTO " + GRID_TABLE_NAME + "_tmp"
+                        + "(" + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_COLUMN_STATUS + ") "
+                        + "SELECT "
+                        + GRID_COLUMN_KEY + "," + GRID_COLUMN_LEVEL + "," + GRID_COLUMN_STATUS
+                        + " FROM " + GRID_TABLE_NAME
+                        + " WHERE owner=0");
 
                 db.execSQL("DROP TABLE "+GRID_TABLE_NAME);
 
                 db.execSQL("ALTER TABLE "+GRID_TABLE_NAME+"_tmp RENAME TO "+GRID_TABLE_NAME);
+            }
+
+            if (oldVersion < 7) {
+                db.execSQL("CREATE TABLE "+BONUS_TABLE_NAME+"_tmp("+BONUS_COLUMN_KEY+" INTEGER PRIMARY KEY, "
+                        +BONUS_COLUMN_STATUS+" INTEGER NOT NULL DEFAULT "+ BONUS_STATUS_NEW +")");
+
+                db.execSQL("INSERT INTO "+BONUS_TABLE_NAME+"_tmp"
+                        +"("+BONUS_COLUMN_KEY+","+BONUS_COLUMN_STATUS+") "
+                        +"SELECT "
+                        +BONUS_COLUMN_KEY+","+BONUS_STATUS_NEW
+                        +" FROM "+BONUS_TABLE_NAME);
+
+                db.execSQL("DROP TABLE "+BONUS_TABLE_NAME);
+
+                db.execSQL("ALTER TABLE "+BONUS_TABLE_NAME+"_tmp RENAME TO "+BONUS_TABLE_NAME);
             }
         } catch (SQLException e) {
             successful = false;
@@ -358,6 +365,37 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         }
     }
 
+    public void GetModifiedBonuses(final SQLiteDatabase dbInTransaction, final Set<Integer> newBonuses) {
+        Cursor cursor = null;
+
+        newBonuses.clear();
+        try {
+            cursor = dbInTransaction
+                    .rawQuery("SELECT " + BONUS_COLUMN_KEY
+                                    + " FROM " + BONUS_TABLE_NAME
+                                    + " WHERE " + BONUS_COLUMN_STATUS + "="+ BONUS_STATUS_NEW,
+                            null);
+            if (cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    newBonuses.add(cursor.getInt(0));
+                    cursor.moveToNext();
+                }
+            }
+        }
+        finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    public void CommitModifiedBonuses(final SQLiteDatabase dbInTransaction, final Set<Integer> newBonuses) throws SQLException {
+        dbInTransaction.execSQL("UPDATE "+BONUS_TABLE_NAME
+                +" SET " + BONUS_COLUMN_STATUS + "="+ BONUS_STATUS_SYNCED
+                +" WHERE " + BONUS_COLUMN_KEY + " IN ("+ SetToString(newBonuses)+")"
+                +" AND " + BONUS_COLUMN_STATUS + "="+ BONUS_STATUS_NEW);
+    }
+
     boolean ContainsBonus(final int bonusKey) {
         try (Cursor cursor = this.getReadableDatabase()
                 .rawQuery("SELECT COUNT(*)"
@@ -434,6 +472,7 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
         try {
             ContentValues contentValues = new ContentValues();
             contentValues.put(BONUS_COLUMN_KEY, bonusKey);
+            contentValues.put(BONUS_COLUMN_STATUS, BONUS_STATUS_NEW);
             successful &= (-1 != dbInTransaction.insert(BONUS_TABLE_NAME, null, contentValues));
         } catch (SQLException e) {
             successful = false;
@@ -451,6 +490,17 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
             int bonusesFound = cursor.isAfterLast() ? 0 : cursor.getInt(0);
             int bonusesLeft = bonusesFound - GetProperty(PROPERTY_BONUSES_USED) + Bonus.START_BONUS;
             return Math.max(bonusesLeft, 0);
+        }
+    }
+
+    private void SetUnusedBonusCount(final SQLiteDatabase dbInTransaction, int unusedBonusCount) {
+        int bonusesFound = 0;
+        try (Cursor cursor = this.getReadableDatabase().rawQuery("SELECT COUNT(*) FROM " + BONUS_TABLE_NAME, null)) {
+            if (cursor.moveToFirst()) {
+                bonusesFound = cursor.isAfterLast() ? 0 : cursor.getInt(0);
+            }
+            int bonusesUsed = bonusesFound + Bonus.START_BONUS - unusedBonusCount;
+            SetProperty(dbInTransaction, PROPERTY_BONUSES_USED, Math.max(bonusesUsed, 0));
         }
     }
 
@@ -617,6 +667,17 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
                 }
                 UpdateLevelCountFromDb(dbInTransaction, level);
             }
+
+            int unusedBonusCount = FetchInt32(is, secrets);
+            int bonusKey;
+            while (0xFFFFFFFF != (bonusKey=FetchInt32(is, secrets))) {
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(BONUS_COLUMN_KEY, bonusKey);
+                contentValues.put(BONUS_COLUMN_STATUS, BONUS_STATUS_SYNCED);
+
+                successful &= (-1 != dbInTransaction.insert(BONUS_TABLE_NAME, null, contentValues));
+            }
+            SetUnusedBonusCount(dbInTransaction, unusedBonusCount);
 
             int uuidLength = FetchByte(is, secrets);
             String uuid = FetchString(is, uuidLength, secrets);

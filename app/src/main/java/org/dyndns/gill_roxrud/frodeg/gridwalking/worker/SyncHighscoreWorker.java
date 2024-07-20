@@ -42,7 +42,7 @@ import okhttp3.Response;
 public class SyncHighscoreWorker extends Worker {
 
     private static final String GRIDWALKING_ENDPOINT = "https://gill-roxrud.dyndns.org:1416";
-    private static final String SYNC_HIGHSCORE_REST_PATH = "/gridwalking/sync/";
+    private static final String SYNC_HIGHSCORE_REST_PATH = "/gridwalking/sync2/";
 
     public SyncHighscoreWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -71,6 +71,11 @@ public class SyncHighscoreWorker extends Worker {
             }
 
             db.GetModifiedGrids(dbInTransaction, deletedGrids, newGrids);
+
+            int unusedBonuses = db.GetUnusedBonusCount();
+            Set<Integer> newBonuses = new TreeSet<>();
+            db.GetModifiedBonuses(dbInTransaction, newBonuses);
+
             boolean syncGrids = 10L<=gameState.getGrid().getScore();
 
             Secrets secrets = new Secrets();
@@ -81,7 +86,7 @@ public class SyncHighscoreWorker extends Worker {
             byte[] body = null;
             if (syncGrids) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                generateBody(baos, deletedGrids, newGrids);
+                generateBody(baos, deletedGrids, newGrids, unusedBonuses, newBonuses);
                 body = baos.toByteArray();
             }
             RequestBody postBody = (body==null) ? RequestBody.create("", null) :
@@ -144,8 +149,6 @@ public class SyncHighscoreWorker extends Worker {
         StringBuilder sb = new StringBuilder();
         sb.append(SYNC_HIGHSCORE_REST_PATH);
         sb.append(db.GetStringPropertyR(GridWalkingDBHelper.PROPERTY_USER_GUID));
-        sb.append('/');
-        sb.append(db.GetUnusedBonusCount());
         byte i;
         for (i=Grid.LEVEL_COUNT-1; i>=0; i--) {
             sb.append('/');
@@ -155,13 +158,18 @@ public class SyncHighscoreWorker extends Worker {
         return sb.toString();
     }
 
-    private void generateBody(final OutputStream outputStream, final Set<Integer> deletedGrids, final ArrayList<Set<Integer>> newGrids) throws IOException {
+    private void generateBody(final OutputStream outputStream,
+                              final Set<Integer> deletedGrids, final ArrayList<Set<Integer>> newGrids,
+                              final int unusedBonuses, final Set<Integer> newBonuses) throws IOException {
         appendList(outputStream, deletedGrids);
 
         byte level;
         for (level=0; level<Grid.LEVEL_COUNT; level++) {
             appendList(outputStream, newGrids.get(level));
         }
+
+        appendInt32(outputStream, unusedBonuses);
+        appendList(outputStream, newBonuses);
     }
 
     private void appendList(final OutputStream outputStream, Set<Integer> list) throws IOException {
