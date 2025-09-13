@@ -4,6 +4,7 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.widget.ListView;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreAdapter;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreItem;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.HighscoreList;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.InsetHelper;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 
 import java.util.ArrayList;
@@ -24,7 +26,10 @@ public class HighscoreActivity extends AppCompatActivity {
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         this.setContentView(R.layout.activity_highscore);
+
+        InsetHelper.applySystemBarInsets(findViewById(R.id.activity_highscore_layout));
 
         final ListView highscoreListView = findViewById(R.id.highscoreList);
         ArrayList<HighscoreItem> highscoreArrayList = new ArrayList<>();

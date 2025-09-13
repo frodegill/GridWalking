@@ -8,6 +8,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
 import androidx.preference.PreferenceManager;
 
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.BuildConfig;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GameState;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.InsetHelper;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 import org.osmdroid.config.Configuration;
 
@@ -40,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_main);
 
         Button startButton = findViewById(R.id.start_button);
@@ -59,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
 
         onStartButtonClicked(null);
+
+        InsetHelper.applySystemBarInsets(findViewById(R.id.activity_main_layout));
     }
 
     public void onStartButtonClicked(View v) {

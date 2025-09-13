@@ -2,6 +2,7 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 
 import android.content.Context;
 import android.os.Bundle;
+
 import androidx.fragment.app.FragmentManager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
@@ -13,6 +14,7 @@ import androidx.work.WorkManager;
 import android.view.WindowManager;
 
 import org.dyndns.gill_roxrud.frodeg.gridwalking.GridWalkingApplication;
+import org.dyndns.gill_roxrud.frodeg.gridwalking.InsetHelper;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.R;
 import org.dyndns.gill_roxrud.frodeg.gridwalking.worker.SyncHighscoreWorker;
 import org.osmdroid.config.Configuration;
@@ -30,6 +32,8 @@ public class MapActivity extends AppCompatActivity {
         Configuration.getInstance().setMapViewHardwareAccelerated(true);
 
         this.setContentView(R.layout.activity_map);
+
+        InsetHelper.applySystemBarInsets(findViewById(R.id.activity_map_layout));
 
         FragmentManager fm = this.getSupportFragmentManager();
         if (fm.findFragmentByTag(MAP_FRAGMENT_TAG) == null) {
