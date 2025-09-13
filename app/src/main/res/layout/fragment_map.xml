@@ -67,7 +67,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
-            android:layout_weight="50">
+            android:layout_weight="50"
+            android:layout_marginStart="16dp">
             <TextView android:id="@+id/speed"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
@@ -91,7 +92,6 @@
             <TextView android:id="@+id/gpsquality"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginRight="16dp"
                 android:layout_marginEnd="16dp"
                 android:textStyle="bold" />
         </LinearLayout>
