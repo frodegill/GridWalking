@@ -20,7 +20,7 @@ import java.util.Set;
 
 public class GridOverlay extends Overlay {
 
-    static final private int DRAW_LEVEL_DEPTH = 5;
+    static final private int DRAW_LEVEL_DEPTH = 6;
 
     private final MapFragment mapFragment;
 
