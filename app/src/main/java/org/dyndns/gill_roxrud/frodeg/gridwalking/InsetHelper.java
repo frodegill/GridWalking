@@ -22,18 +22,14 @@ public class InsetHelper {
     public static void applySystemBarInsets(final View view, boolean applyLeft, boolean applyTop, boolean applyRight, boolean applyBottom) {
         if (view == null) return;
 
-        ViewCompat.setOnApplyWindowInsetsListener(view, new OnApplyWindowInsetsListener() {
-            @Override
-            @NonNull
-            public WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat insets) {
-                int left = applyLeft ? insets.getInsets(Type.systemBars()).left : 0;
-                int top = applyTop ? insets.getInsets(Type.systemBars()).top : 0;
-                int right = applyRight ? insets.getInsets(Type.systemBars()).right : 0;
-                int bottom = applyBottom ? insets.getInsets(Type.systemBars()).bottom : 0;
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            int left = applyLeft ? insets.getInsets(Type.systemBars()).left : 0;
+            int top = applyTop ? insets.getInsets(Type.systemBars()).top : 0;
+            int right = applyRight ? insets.getInsets(Type.systemBars()).right : 0;
+            int bottom = applyBottom ? insets.getInsets(Type.systemBars()).bottom : 0;
 
-                v.setPadding(left, top, right, bottom);
-                return insets;
-            }
+            v.setPadding(left, top, right, bottom);
+            return insets;
         });
     }
 

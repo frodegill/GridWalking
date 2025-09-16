@@ -366,25 +366,18 @@ public final class GridWalkingDBHelper extends SQLiteOpenHelper {
     }
 
     public void GetModifiedBonuses(final SQLiteDatabase dbInTransaction, final Set<Integer> newBonuses) {
-        Cursor cursor = null;
 
         newBonuses.clear();
-        try {
-            cursor = dbInTransaction
-                    .rawQuery("SELECT " + BONUS_COLUMN_KEY
-                                    + " FROM " + BONUS_TABLE_NAME
-                                    + " WHERE " + BONUS_COLUMN_STATUS + "="+ BONUS_STATUS_NEW,
-                            null);
+        try (Cursor cursor = dbInTransaction
+                .rawQuery("SELECT " + BONUS_COLUMN_KEY
+                            + " FROM " + BONUS_TABLE_NAME
+                            + " WHERE " + BONUS_COLUMN_STATUS + "=" + BONUS_STATUS_NEW,
+                        null)) {
             if (cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
                     newBonuses.add(cursor.getInt(0));
                     cursor.moveToNext();
                 }
-            }
-        }
-        finally {
-            if (cursor != null) {
-                cursor.close();
             }
         }
     }
