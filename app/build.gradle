@@ -4,10 +4,10 @@ android {
     defaultConfig {
         applicationId "org.dyndns.gill_roxrud.frodeg.gridwalking"
         compileSdk = 36
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdk 36
-        versionCode 62
-        versionName "1.25"
+        versionCode 63
+        versionName "1.26"
     }
     buildTypes {
         release {
@@ -28,8 +28,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.preference:preference:1.2.1'
-    implementation 'androidx.work:work-runtime:2.10.4'
-    implementation("com.squareup.okhttp3:okhttp:5.1.0")
+    implementation 'androidx.work:work-runtime:2.11.1'
+    implementation("com.squareup.okhttp3:okhttp:5.3.2")
     implementation 'org.osmdroid:osmdroid-android:6.1.20'
     testImplementation 'junit:junit:4.13.2'
 }
