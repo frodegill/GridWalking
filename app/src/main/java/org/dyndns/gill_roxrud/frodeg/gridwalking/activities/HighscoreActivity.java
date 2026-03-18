@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.os.Parcelable;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import android.widget.ListView;
 import android.widget.TextView;
@@ -26,6 +28,10 @@ public class HighscoreActivity extends AppCompatActivity {
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+        insetsController.setAppearanceLightStatusBars(true);
 
         this.setContentView(R.layout.activity_highscore);
 

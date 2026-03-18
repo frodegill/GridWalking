@@ -3,6 +3,8 @@ package org.dyndns.gill_roxrud.frodeg.gridwalking.activities;
 import android.content.Context;
 import android.os.Bundle;
 
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
@@ -26,6 +28,10 @@ public class MapActivity extends AppCompatActivity {
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+        insetsController.setAppearanceLightStatusBars(true);
 
         Context context = GridWalkingApplication.getContext();
         Configuration.getInstance().load(context, PreferenceManager.getDefaultSharedPreferences(context));
